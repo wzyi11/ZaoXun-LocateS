@@ -1,4 +1,4 @@
-import { Space, SpaceInput } from '../model/SpaceModel';
+import { Space } from '../model/SpaceModel';
 import { Item } from '../model/ItemModel';
 import { SpaceRepository } from '../data/SpaceRepository';
 import { ItemRepository } from '../data/ItemRepository';
@@ -16,29 +16,37 @@ export struct SpacePage {
   private spaceRepo: SpaceRepository = new SpaceRepository();
   private itemRepo: ItemRepository = new ItemRepository();
 
-  private get parentId(): number {
+  aboutToAppear(): void {
+    this.loadSpaces();
+  }
+
+  getParentId(): number {
     if (this.breadcrumb.length === 0) {
       return 0;
     }
     return this.breadcrumb[this.breadcrumb.length - 1].id;
   }
 
-  private get showItems(): boolean {
+  isShowingItems(): boolean {
     return this.breadcrumb.length >= 3;
-  }
-
-  aboutToAppear(): void {
-    this.loadSpaces();
   }
 
   async loadSpaces(): Promise<void> {
     this.loading = true;
-    this.spaces = await this.spaceRepo.getByParent(this.parentId);
+    try {
+      this.spaces = await this.spaceRepo.getByParent(this.getParentId());
+    } catch (e) {
+      this.spaces = [];
+    }
     this.loading = false;
   }
 
   async loadItems(spaceId: number): Promise<void> {
-    this.items = await this.itemRepo.getBySpaceId(spaceId);
+    try {
+      this.items = await this.itemRepo.getBySpaceId(spaceId);
+    } catch (e) {
+      this.items = [];
+    }
   }
 
   async onSpaceTap(space: Space): Promise<void> {
@@ -69,7 +77,7 @@ export struct SpacePage {
     const level: number = this.breadcrumb.length + 1;
     await this.spaceRepo.insert({
       name: name,
-      parentId: this.parentId,
+      parentId: this.getParentId(),
       level: level,
       icon: this.getIconForLevel(level),
     });
@@ -129,7 +137,7 @@ export struct SpacePage {
           .padding({ left: 16, right: 16, top: 10, bottom: 6 })
         }
 
-        if (this.showItems) {
+        if (this.isShowingItems()) {
           if (this.items.length === 0) {
             Column() {
               EmptyState({ icon: '📦', title: '该格子暂无物品', subtitle: '在物品管理中添加物品并分配到此空间' })
@@ -226,7 +234,7 @@ export struct SpacePage {
       .width('100%')
       .height('100%')
 
-      if (!this.showItems) {
+      if (!this.isShowingItems()) {
         Button() {
           Text('+')
             .fontSize(28)
@@ -263,9 +271,6 @@ export struct SpacePage {
             TextInput({ text: this.newSpaceName, placeholder: `输入${this.getLevelLabel()}名称` })
               .onChange((value: string) => {
                 this.newSpaceName = value;
-              })
-              .onSubmit(() => {
-                this.addSpace();
               })
             Row({ space: 12 }) {
               Button('取消')
