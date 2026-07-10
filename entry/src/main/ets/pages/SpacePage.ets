@@ -62,11 +62,19 @@ export struct SpacePage {
   async onBreadcrumbTap(index: number): Promise<void> {
     if (index < 0) {
       this.breadcrumb = [];
-    } else {
-      this.breadcrumb = this.breadcrumb.slice(0, index + 1);
+      this.items = [];
+      await this.loadSpaces();
+      return;
     }
-    this.items = [];
-    await this.loadSpaces();
+
+    this.breadcrumb = this.breadcrumb.slice(0, index + 1);
+
+    if (this.isShowingItems()) {
+      await this.loadItems(this.getParentId());
+    } else {
+      this.items = [];
+      await this.loadSpaces();
+    }
   }
 
   async addSpace(): Promise<void> {
@@ -74,16 +82,30 @@ export struct SpacePage {
     if (name === '') {
       return;
     }
+
+    const parentId: number = this.getParentId();
     const level: number = this.breadcrumb.length + 1;
-    await this.spaceRepo.insert({
-      name: name,
-      parentId: this.getParentId(),
-      level: level,
-      icon: this.getIconForLevel(level),
-    });
-    this.newSpaceName = '';
-    this.showAddDialog = false;
-    await this.loadSpaces();
+
+    try {
+      const rowId: number = await this.spaceRepo.insert({
+        name: name,
+        parentId: parentId,
+        level: level,
+        icon: this.getIconForLevel(level),
+      });
+
+      console.info(`Space inserted rowId=${rowId}, parentId=${parentId}, level=${level}`);
+
+      this.newSpaceName = '';
+      this.showAddDialog = false;
+
+      this.loading = true;
+      this.spaces = await this.spaceRepo.getByParent(parentId);
+      this.loading = false;
+    } catch (err) {
+      this.loading = false;
+      console.error(`Add space failed: ${JSON.stringify(err)}`);
+    }
   }
 
   getIconForLevel(level: number): string {

@@ -13,7 +13,9 @@ export class SpaceRepository {
       'level': space.level,
       'icon': space.icon,
     };
-    return await store.insert(SPACE_TABLE_NAME, valueBucket);
+    const rowId: number = await store.insert(SPACE_TABLE_NAME, valueBucket);
+    console.info(`SpaceRepository.insert name="${space.name}" parentId=${space.parentId} level=${space.level} rowId=${rowId}`);
+    return rowId;
   }
 
   async getByParent(parentId: number): Promise<Space[]> {
@@ -32,6 +34,7 @@ export class SpaceRepository {
       });
     }
     resultSet.close();
+    console.info(`SpaceRepository.getByParent parentId=${parentId} count=${spaces.length}`);
     return spaces;
   }
 
