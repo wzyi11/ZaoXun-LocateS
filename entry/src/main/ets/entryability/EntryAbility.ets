@@ -19,12 +19,16 @@ export default class EntryAbility extends UIAbility {
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onDestroy');
   }
 
-  onWindowStageCreate(windowStage: window.WindowStage): void {
+  async onWindowStageCreate(windowStage: window.WindowStage): Promise<void> {
     // Main window is created, set main page for this ability
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
 
-    // 初始化数据库
-    Database.getInstance().init(this.context);
+    // 初始化数据库（await确保表创建完成后再加载页面）
+    try {
+      await Database.getInstance().init(this.context);
+    } catch (err) {
+      hilog.error(DOMAIN, 'testTag', 'Failed to init database. Cause: %{public}s', JSON.stringify(err));
+    }
 
     // Configure immersive window for blur effects
     windowStage.getMainWindow().then((mainWindow) => {
