@@ -72,6 +72,51 @@ export class ItemRepository {
     return await store.delete(predicates);
   }
 
+  async getById(id: number): Promise<Item | null> {
+    const store = this.db.getStore();
+    const predicates = new relationalStore.RdbPredicates(ITEM_TABLE_NAME);
+    predicates.equalTo('id', id);
+    const resultSet = await store.query(predicates, ['id', 'name', 'category', 'spaceId', 'image', 'purchaseDate', 'note', 'createTime']);
+    let item: Item | null = null;
+    if (resultSet.goToNextRow()) {
+      item = {
+        id: resultSet.getLong(resultSet.getColumnIndex('id')),
+        name: resultSet.getString(resultSet.getColumnIndex('name')),
+        category: resultSet.getString(resultSet.getColumnIndex('category')),
+        spaceId: resultSet.getLong(resultSet.getColumnIndex('spaceId')),
+        image: resultSet.getString(resultSet.getColumnIndex('image')),
+        purchaseDate: resultSet.getString(resultSet.getColumnIndex('purchaseDate')),
+        note: resultSet.getString(resultSet.getColumnIndex('note')),
+        createTime: resultSet.getString(resultSet.getColumnIndex('createTime')),
+      };
+    }
+    resultSet.close();
+    return item;
+  }
+
+  async getBySpaceId(spaceId: number): Promise<Item[]> {
+    const store = this.db.getStore();
+    const predicates = new relationalStore.RdbPredicates(ITEM_TABLE_NAME);
+    predicates.equalTo('spaceId', spaceId);
+    predicates.orderByDesc('createTime');
+    const resultSet = await store.query(predicates, ['id', 'name', 'category', 'spaceId', 'image', 'purchaseDate', 'note', 'createTime']);
+    const items: Item[] = [];
+    while (resultSet.goToNextRow()) {
+      items.push({
+        id: resultSet.getLong(resultSet.getColumnIndex('id')),
+        name: resultSet.getString(resultSet.getColumnIndex('name')),
+        category: resultSet.getString(resultSet.getColumnIndex('category')),
+        spaceId: resultSet.getLong(resultSet.getColumnIndex('spaceId')),
+        image: resultSet.getString(resultSet.getColumnIndex('image')),
+        purchaseDate: resultSet.getString(resultSet.getColumnIndex('purchaseDate')),
+        note: resultSet.getString(resultSet.getColumnIndex('note')),
+        createTime: resultSet.getString(resultSet.getColumnIndex('createTime')),
+      });
+    }
+    resultSet.close();
+    return items;
+  }
+
   async update(item: Item): Promise<number> {
     const store = this.db.getStore();
     const valueBucket: relationalStore.ValueBucket = {

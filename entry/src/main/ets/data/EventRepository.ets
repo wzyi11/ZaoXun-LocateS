@@ -64,4 +64,44 @@ export class EventRepository {
     resultSet.close();
     return items;
   }
+
+  async getById(id: number): Promise<Event | null> {
+    const store = this.db.getStore();
+    const predicates = new relationalStore.RdbPredicates(EVENT_TABLE_NAME);
+    predicates.equalTo('id', id);
+    const resultSet = await store.query(predicates, ['id', 'title', 'date', 'note', 'status', 'createTime']);
+    let event: Event | null = null;
+    if (resultSet.goToNextRow()) {
+      event = {
+        id: resultSet.getLong(resultSet.getColumnIndex('id')),
+        title: resultSet.getString(resultSet.getColumnIndex('title')),
+        date: resultSet.getString(resultSet.getColumnIndex('date')),
+        note: resultSet.getString(resultSet.getColumnIndex('note')),
+        status: resultSet.getLong(resultSet.getColumnIndex('status')),
+        createTime: resultSet.getString(resultSet.getColumnIndex('createTime')),
+      };
+    }
+    resultSet.close();
+    return event;
+  }
+
+  async updateEventItemPrepared(id: number, isPrepared: boolean): Promise<number> {
+    const store = this.db.getStore();
+    const valueBucket: relationalStore.ValueBucket = {
+      'isPrepared': isPrepared ? 1 : 0,
+    };
+    const predicates = new relationalStore.RdbPredicates(EVENT_ITEM_TABLE_NAME);
+    predicates.equalTo('id', id);
+    return await store.update(valueBucket, predicates);
+  }
+
+  async complete(eventId: number): Promise<number> {
+    const store = this.db.getStore();
+    const valueBucket: relationalStore.ValueBucket = {
+      'status': 1,
+    };
+    const predicates = new relationalStore.RdbPredicates(EVENT_TABLE_NAME);
+    predicates.equalTo('id', eventId);
+    return await store.update(valueBucket, predicates);
+  }
 }
