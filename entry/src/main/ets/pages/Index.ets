@@ -1,5 +1,6 @@
 // import { router } from '@kit.AbilityKit';
 import { router } from '@kit.ArkUI';
+import { ItemPage } from './ItemPage';
 import { SpacePage } from './SpacePage';
 import { EventPage } from './EventPage';
 
@@ -18,20 +19,7 @@ struct Index {
         controller: this.tabsController
       }) {
         TabContent() {
-          // ItemPage placeholder - 物品 tab
-          Column() {
-            Text('物品管理')
-              .fontSize(20)
-              .fontWeight(FontWeight.Bold)
-              .margin({ top: 40 })
-            Text('添加、查找、管理你的物品')
-              .fontSize(14)
-              .fontColor('#999')
-              .margin({ top: 8 })
-          }
-          .width('100%')
-          .height('100%')
-          .alignItems(HorizontalAlign.Center)
+          ItemPage()
         }
         .tabBar('📦 物品')
 

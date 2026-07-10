@@ -1,0 +1,18 @@
+@Component
+export struct ItemPage {
+  build() {
+    Column() {
+      Text('物品管理')
+        .fontSize(20)
+        .fontWeight(FontWeight.Bold)
+        .margin({ top: 40 })
+      Text('添加、查找、管理你的物品')
+        .fontSize(14)
+        .fontColor('#999')
+        .margin({ top: 8 })
+    }
+    .width('100%')
+    .height('100%')
+    .alignItems(HorizontalAlign.Center)
+  }
+}
