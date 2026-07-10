@@ -7,74 +7,39 @@ import { EventPage } from './EventPage';
 @Entry
 @Component
 struct Index {
-  @State currentBottomNav: number = 0;   // 0=首页 1=我的
+  @State currentBottomNav: number = 0;
+  @State currentTabIndex: number = 0;
 
-  private tabsController: TabsController = new TabsController();
+  onPageShow(): void {
+    this.currentBottomNav = 0;
+  }
 
   build() {
     Column() {
-      // === Top three tabs (immersive floating tabs) ===
-      Tabs({
-        barPosition: BarPosition.Start,
-        controller: this.tabsController
-      }) {
-        TabContent() {
+      Row() {
+        this.buildTopTab('📦 物品', 0)
+        this.buildTopTab('🏠 空间', 1)
+        this.buildTopTab('🎒 事件', 2)
+      }
+      .width('100%')
+      .height(48)
+      .backgroundColor(Color.White)
+
+      if (this.currentBottomNav === 0) {
+        if (this.currentTabIndex === 0) {
           ItemPage()
-        }
-        .tabBar('📦 物品')
-
-        TabContent() {
+        } else if (this.currentTabIndex === 1) {
           SpacePage()
-        }
-        .tabBar('🏠 空间')
-
-        TabContent() {
+        } else {
           EventPage()
         }
-        .tabBar('🎒 事件')
       }
-      .barOverlap(true)
-      .barBackgroundBlurStyle(BlurStyle.Thin)
-      .barBackgroundColor('#E8F0F0F0')
-      .layoutWeight(1)
 
-      // === Bottom navigation (immersive blur effect) ===
+      Blank()
+
       Row() {
-        Button() {
-          Column({ space: 2 }) {
-            Text('🏠')
-              .fontSize(24)
-            Text('首页')
-              .fontSize(11)
-              .fontColor(this.currentBottomNav === 0 ? '#007AFF' : '#999')
-          }
-          .alignItems(HorizontalAlign.Center)
-        }
-        .type(ButtonType.Normal)
-        .backgroundColor(Color.Transparent)
-        .onClick(() => {
-          this.currentBottomNav = 0;
-          this.tabsController.changeIndex(0);
-        })
-        .layoutWeight(1)
-
-        Button() {
-          Column({ space: 2 }) {
-            Text('👤')
-              .fontSize(24)
-            Text('我的')
-              .fontSize(11)
-              .fontColor(this.currentBottomNav === 1 ? '#007AFF' : '#999')
-          }
-          .alignItems(HorizontalAlign.Center)
-        }
-        .type(ButtonType.Normal)
-        .backgroundColor(Color.Transparent)
-        .onClick(() => {
-          this.currentBottomNav = 1;
-          router.pushUrl({ url: 'pages/ProfilePage' });
-        })
-        .layoutWeight(1)
+        this.buildBottomTab('🏠', '首页', 0)
+        this.buildBottomTab('👤', '我的', 1)
       }
       .width('100%')
       .height(56)
@@ -86,6 +51,55 @@ struct Index {
     .width('100%')
     .height('100%')
     .backgroundColor('#F5F5F5')
-    .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
+  }
+
+  @Builder
+  buildTopTab(label: string, index: number) {
+    Column({ space: 4 }) {
+      Text(label)
+        .fontSize(15)
+        .fontColor(this.currentTabIndex === index ? '#007AFF' : '#666')
+        .fontWeight(this.currentTabIndex === index ? FontWeight.Medium : FontWeight.Normal)
+      if (this.currentTabIndex === index) {
+        Divider()
+          .width(24)
+          .height(3)
+          .color('#007AFF')
+          .borderRadius(2)
+      }
+    }
+    .alignItems(HorizontalAlign.Center)
+    .justifyContent(FlexAlign.Center)
+    .layoutWeight(1)
+    .height('100%')
+    .onClick(() => {
+      this.currentTabIndex = index;
+    })
+  }
+
+  @Builder
+  buildBottomTab(icon: string, label: string, index: number) {
+    Button() {
+      Column({ space: 2 }) {
+        Text(icon)
+          .fontSize(24)
+        Text(label)
+          .fontSize(11)
+          .fontColor(this.currentBottomNav === index ? '#007AFF' : '#999')
+      }
+      .alignItems(HorizontalAlign.Center)
+    }
+    .type(ButtonType.Normal)
+    .backgroundColor(Color.Transparent)
+    .onClick(() => {
+      if (index === 0) {
+        this.currentBottomNav = 0;
+        AppStorage.setOrCreate('itemRefreshToken', Date.now());
+      } else {
+        this.currentBottomNav = 1;
+        router.pushUrl({ url: 'pages/ProfilePage' });
+      }
+    })
+    .layoutWeight(1)
   }
 }

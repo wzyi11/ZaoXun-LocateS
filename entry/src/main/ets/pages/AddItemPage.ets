@@ -127,6 +127,7 @@ export struct AddItemPage {
       createTime: createTime,
     };
     await this.repo.insert(itemInput);
+    AppStorage.setOrCreate('itemRefreshToken', Date.now());
     router.back();
   }
 }

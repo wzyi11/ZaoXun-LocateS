@@ -31,6 +31,13 @@ export struct SpacePage {
     return this.breadcrumb.length >= 3;
   }
 
+  getNavTitle(): string {
+    if (this.breadcrumb.length === 0) {
+      return '空间管理';
+    }
+    return this.breadcrumb[this.breadcrumb.length - 1].name;
+  }
+
   async loadSpaces(): Promise<void> {
     this.loading = true;
     try {
@@ -47,6 +54,15 @@ export struct SpacePage {
     } catch (e) {
       this.items = [];
     }
+  }
+
+  async goBackOneLevel(): Promise<void> {
+    if (this.breadcrumb.length === 0) {
+      return;
+    }
+    this.breadcrumb = this.breadcrumb.slice(0, this.breadcrumb.length - 1);
+    this.items = [];
+    await this.loadSpaces();
   }
 
   async onSpaceTap(space: Space): Promise<void> {
@@ -99,9 +115,18 @@ export struct SpacePage {
       this.newSpaceName = '';
       this.showAddDialog = false;
 
-      this.loading = true;
-      this.spaces = await this.spaceRepo.getByParent(parentId);
+      const created: Space = {
+        id: rowId,
+        name: name,
+        parentId: parentId,
+        level: level,
+        icon: this.getIconForLevel(level),
+      };
+      this.spaces = this.spaces.concat([created]);
       this.loading = false;
+
+      const refreshed: Space[] = await this.spaceRepo.getByParent(parentId);
+      this.spaces = refreshed;
     } catch (err) {
       this.loading = false;
       console.error(`Add space failed: ${JSON.stringify(err)}`);
@@ -132,6 +157,30 @@ export struct SpacePage {
   build() {
     Stack() {
       Column() {
+        Row() {
+          if (this.breadcrumb.length > 0) {
+            Button('‹ 返回')
+              .type(ButtonType.Normal)
+              .backgroundColor(Color.Transparent)
+              .fontColor('#007AFF')
+              .fontSize(15)
+              .padding({ left: 0, right: 8 })
+              .onClick(() => {
+                this.goBackOneLevel();
+              })
+          }
+          Text(this.getNavTitle())
+            .fontSize(17)
+            .fontWeight(FontWeight.Medium)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+            .layoutWeight(1)
+        }
+        .width('100%')
+        .height(48)
+        .padding({ left: 12, right: 12 })
+        .backgroundColor(Color.White)
+
         if (this.breadcrumb.length > 0) {
           Flex({ wrap: FlexWrap.Wrap }) {
             Text('全部')
@@ -156,7 +205,7 @@ export struct SpacePage {
             }, (space: Space, index: number) => space.id.toString())
           }
           .width('100%')
-          .padding({ left: 16, right: 16, top: 10, bottom: 6 })
+          .padding({ left: 16, right: 16, top: 4, bottom: 4 })
         }
 
         if (this.isShowingItems()) {
