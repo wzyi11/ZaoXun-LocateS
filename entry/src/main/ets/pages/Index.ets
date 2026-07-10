@@ -1,4 +1,5 @@
-import { router } from '@kit.AbilityKit';
+// import { router } from '@kit.AbilityKit';
+import { router } from '@kit.ArkUI';
 import { SpacePage } from './SpacePage';
 import { EventPage } from './EventPage';
 
