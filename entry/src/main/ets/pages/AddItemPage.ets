@@ -116,10 +116,7 @@ export struct AddItemPage {
     if (this.name.trim() === '') {
       return;
     }
-    const now: Date = new Date();
-    const createTime: string =
-      `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()} ` +
-      `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+    const createTime: string = new Date().toISOString();
     const itemInput: ItemInput = {
       name: this.name.trim(),
       category: this.category,

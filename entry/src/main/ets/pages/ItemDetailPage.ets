@@ -13,6 +13,9 @@ export struct ItemDetailPage {
     const itemId: number = AppStorage.get<number>('currentItemId') ?? 0;
     if (itemId > 0) {
       this.loadItem(itemId);
+    } else {
+      this.item = null;
+      this.loading = false;
     }
   }
 
