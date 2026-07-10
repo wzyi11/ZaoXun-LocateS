@@ -6,6 +6,13 @@ export interface Space {
   icon: string;
 }
 
+export interface SpaceInput {
+  name: string;
+  parentId: number;
+  level: number;
+  icon: string;
+}
+
 export const SPACE_TABLE_NAME = 'space';
 export const SPACE_CREATE_SQL = `
   CREATE TABLE IF NOT EXISTS ${SPACE_TABLE_NAME} (

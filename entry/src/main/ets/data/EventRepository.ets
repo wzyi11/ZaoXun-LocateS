@@ -1,13 +1,13 @@
 import { relationalStore } from '@kit.ArkData';
-import { Event, EventItem, EVENT_TABLE_NAME, EVENT_ITEM_TABLE_NAME } from '../model/EventModel';
+import { Event, EventInput, EventItem, EVENT_TABLE_NAME, EVENT_ITEM_TABLE_NAME } from '../model/EventModel';
 import { Database } from './Database';
 
 export class EventRepository {
   private db: Database = Database.getInstance();
 
-  async insert(event: Omit<Event, 'id'>): Promise<number> {
+  async insert(event: EventInput): Promise<number> {
     const store = this.db.getStore();
-    const valueBucket: relationalStore.ValueBucket = {
+    const valueBucket: relationalStore.ValuesBucket = {
       'title': event.title,
       'date': event.date,
       'note': event.note,
@@ -39,7 +39,7 @@ export class EventRepository {
 
   async linkItem(eventId: number, itemId: number): Promise<number> {
     const store = this.db.getStore();
-    const valueBucket: relationalStore.ValueBucket = {
+    const valueBucket: relationalStore.ValuesBucket = {
       'eventId': eventId,
       'itemId': itemId,
       'isPrepared': 0,
@@ -87,7 +87,7 @@ export class EventRepository {
 
   async updateEventItemPrepared(id: number, isPrepared: boolean): Promise<number> {
     const store = this.db.getStore();
-    const valueBucket: relationalStore.ValueBucket = {
+    const valueBucket: relationalStore.ValuesBucket = {
       'isPrepared': isPrepared ? 1 : 0,
     };
     const predicates = new relationalStore.RdbPredicates(EVENT_ITEM_TABLE_NAME);
@@ -97,7 +97,7 @@ export class EventRepository {
 
   async complete(eventId: number): Promise<number> {
     const store = this.db.getStore();
-    const valueBucket: relationalStore.ValueBucket = {
+    const valueBucket: relationalStore.ValuesBucket = {
       'status': 1,
     };
     const predicates = new relationalStore.RdbPredicates(EVENT_TABLE_NAME);

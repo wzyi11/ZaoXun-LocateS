@@ -1,13 +1,13 @@
 import { relationalStore } from '@kit.ArkData';
-import { Space, SPACE_TABLE_NAME } from '../model/SpaceModel';
+import { Space, SpaceInput, SPACE_TABLE_NAME } from '../model/SpaceModel';
 import { Database } from './Database';
 
 export class SpaceRepository {
   private db: Database = Database.getInstance();
 
-  async insert(space: Omit<Space, 'id'>): Promise<number> {
+  async insert(space: SpaceInput): Promise<number> {
     const store = this.db.getStore();
-    const valueBucket: relationalStore.ValueBucket = {
+    const valueBucket: relationalStore.ValuesBucket = {
       'name': space.name,
       'parentId': space.parentId,
       'level': space.level,

@@ -9,6 +9,16 @@ export interface Item {
   createTime: string;    // 创建时间
 }
 
+export interface ItemInput {
+  name: string;
+  category: string;
+  spaceId: number;
+  image: string;
+  purchaseDate: string;
+  note: string;
+  createTime: string;
+}
+
 export const ITEM_TABLE_NAME = 'item';
 export const ITEM_CREATE_SQL = `
   CREATE TABLE IF NOT EXISTS ${ITEM_TABLE_NAME} (

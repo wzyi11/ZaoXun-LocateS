@@ -7,6 +7,14 @@ export interface Event {
   createTime: string;
 }
 
+export interface EventInput {
+  title: string;
+  date: string;
+  note: string;
+  status: number;
+  createTime: string;
+}
+
 export interface EventItem {
   id: number;
   eventId: number;

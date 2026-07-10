@@ -1,14 +1,14 @@
 import { relationalStore } from '@kit.ArkData';
-import { Item, ITEM_TABLE_NAME } from '../model/ItemModel';
+import { Item, ItemInput, ITEM_TABLE_NAME } from '../model/ItemModel';
 import { Database } from './Database';
 import { BusinessError } from '@kit.BasicServicesKit';
 
 export class ItemRepository {
   private db: Database = Database.getInstance();
 
-  async insert(item: Omit<Item, 'id'>): Promise<number> {
+  async insert(item: ItemInput): Promise<number> {
     const store = this.db.getStore();
-    const valueBucket: relationalStore.ValueBucket = {
+    const valueBucket: relationalStore.ValuesBucket = {
       'name': item.name,
       'category': item.category,
       'spaceId': item.spaceId,
@@ -119,7 +119,7 @@ export class ItemRepository {
 
   async update(item: Item): Promise<number> {
     const store = this.db.getStore();
-    const valueBucket: relationalStore.ValueBucket = {
+    const valueBucket: relationalStore.ValuesBucket = {
       'name': item.name,
       'category': item.category,
       'spaceId': item.spaceId,
