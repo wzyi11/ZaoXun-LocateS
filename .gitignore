@@ -1,3 +1,8 @@
 .superpowers/
 oh_modules/
 .worktrees/
+.cache/
+.hvigor/
+.idea/
+build/
+entry/build/
