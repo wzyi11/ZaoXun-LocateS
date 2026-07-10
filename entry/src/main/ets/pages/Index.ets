@@ -12,6 +12,7 @@ struct Index {
 
   onPageShow(): void {
     this.currentBottomNav = 0;
+    this.refreshCurrentTab();
   }
 
   build() {
@@ -23,19 +24,24 @@ struct Index {
       }
       .width('100%')
       .height(48)
+      .padding({ left: 12, right: 12 })
       .backgroundColor(Color.White)
 
-      if (this.currentBottomNav === 0) {
-        if (this.currentTabIndex === 0) {
-          ItemPage()
-        } else if (this.currentTabIndex === 1) {
-          SpacePage()
+      Stack() {
+        if (this.currentBottomNav === 0) {
+          if (this.currentTabIndex === 0) {
+            ItemPage()
+          } else if (this.currentTabIndex === 1) {
+            SpacePage()
+          } else {
+            EventPage()
+          }
         } else {
-          EventPage()
+          Blank()
         }
       }
-
-      Blank()
+      .width('100%')
+      .layoutWeight(1)
 
       Row() {
         this.buildBottomTab('🏠', '首页', 0)
@@ -50,6 +56,7 @@ struct Index {
     }
     .width('100%')
     .height('100%')
+    .padding({ top: 36 })
     .backgroundColor('#F5F5F5')
   }
 
@@ -74,6 +81,7 @@ struct Index {
     .height('100%')
     .onClick(() => {
       this.currentTabIndex = index;
+      this.refreshCurrentTab();
     })
   }
 
@@ -94,12 +102,21 @@ struct Index {
     .onClick(() => {
       if (index === 0) {
         this.currentBottomNav = 0;
-        AppStorage.setOrCreate('itemRefreshToken', Date.now());
+        this.refreshCurrentTab();
       } else {
         this.currentBottomNav = 1;
         router.pushUrl({ url: 'pages/ProfilePage' });
       }
     })
     .layoutWeight(1)
+  }
+
+  refreshCurrentTab(): void {
+    const token: number = Date.now();
+    if (this.currentTabIndex === 0) {
+      AppStorage.setOrCreate('itemRefreshToken', token);
+    } else if (this.currentTabIndex === 1) {
+      AppStorage.setOrCreate('spaceRefreshToken', token);
+    }
   }
 }

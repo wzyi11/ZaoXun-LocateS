@@ -12,10 +12,14 @@ export struct ItemPage {
   @State searchKeyword: string = '';
   @State selectedCategory: string = '全部';
   @State loading: boolean = true;
-  @StorageProp('itemRefreshToken') @Watch('onRefreshToken') itemRefreshToken: number = 0;
+  @StorageLink('itemRefreshToken') @Watch('onRefreshToken') itemRefreshToken: number = 0;
   private repo: ItemRepository = new ItemRepository();
 
   aboutToAppear(): void {
+    this.loadItems();
+  }
+
+  onPageShow(): void {
     this.loadItems();
   }
 

@@ -13,11 +13,23 @@ export struct SpacePage {
   @State loading: boolean = true;
   @State showAddDialog: boolean = false;
   @State newSpaceName: string = '';
+  @StorageLink('spaceRefreshToken') @Watch('onSpaceRefreshToken') spaceRefreshToken: number = 0;
   private spaceRepo: SpaceRepository = new SpaceRepository();
   private itemRepo: ItemRepository = new ItemRepository();
 
   aboutToAppear(): void {
     this.loadSpaces();
+  }
+
+  async onSpaceRefreshToken(): Promise<void> {
+    if (this.spaceRefreshToken <= 0) {
+      return;
+    }
+    if (this.isShowingItems()) {
+      await this.loadItems(this.getParentId());
+    } else {
+      await this.loadSpaces();
+    }
   }
 
   getParentId(): number {
@@ -168,13 +180,21 @@ export struct SpacePage {
               .onClick(() => {
                 this.goBackOneLevel();
               })
+              .width(72)
+          } else {
+            Blank()
+              .width(72)
           }
           Text(this.getNavTitle())
             .fontSize(17)
             .fontWeight(FontWeight.Medium)
+            .fontColor('#222')
+            .textAlign(TextAlign.Center)
             .maxLines(1)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
             .layoutWeight(1)
+          Blank()
+            .width(72)
         }
         .width('100%')
         .height(48)
