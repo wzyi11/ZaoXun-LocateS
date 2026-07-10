@@ -1,6 +1,6 @@
 @Entry
 @Component
-struct SpacePage {
+export struct SpacePage {
   build() {
     Column() {
       Text('空间管理')

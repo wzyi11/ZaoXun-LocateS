@@ -5,18 +5,9 @@ import { EventPage } from './EventPage';
 @Entry
 @Component
 struct Index {
-  @State currentTabIndex: number = 0;    // 0=物品 1=空间 2=事件
   @State currentBottomNav: number = 0;   // 0=首页 1=我的
-  @StorageLink('deviceSupportsImmersive') deviceSupportsImmersive: boolean = true;
 
   private tabsController: TabsController = new TabsController();
-
-  aboutToAppear(): void {
-    // Detect device support for immersive blur effect
-    // Fallback: use BlurStyle.Thin for all devices on HarmonyOS 6.1
-    // Since @hms.hds.hdsMaterial is unavailable, we use native ArkUI blur
-    this.deviceSupportsImmersive = true;
-  }
 
   build() {
     Column() {
@@ -56,9 +47,6 @@ struct Index {
       .barOverlap(true)
       .barBackgroundBlurStyle(BlurStyle.Thin)
       .barBackgroundColor('#E8F0F0F0')
-      .onChange((index: number) => {
-        this.currentTabIndex = index;
-      })
       .layoutWeight(1)
 
       // === Bottom navigation (immersive blur effect) ===
@@ -109,5 +97,6 @@ struct Index {
     .width('100%')
     .height('100%')
     .backgroundColor('#F5F5F5')
+    .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
   }
 }

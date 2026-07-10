@@ -1,6 +1,6 @@
 @Entry
 @Component
-struct EventPage {
+export struct EventPage {
   build() {
     Column() {
       Text('事件管理')
