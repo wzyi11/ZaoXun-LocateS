@@ -321,14 +321,21 @@ export struct EventDetailPage {
                     Text(detail.isPrepared ? '✅' : '⬜')
                       .fontSize(20)
                     Column({ space: 2 }) {
-                      Text(detail.itemName)
-                        .fontSize(14)
-                        .fontColor(detail.isPrepared ? '#999' : '#333')
-                        .decoration({
-                          type: detail.isPrepared ? TextDecorationType.LineThrough : TextDecorationType.None
-                        })
-                        .maxLines(1)
-                        .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      if (detail.isPrepared) {
+                        Text(detail.itemName)
+                          .fontSize(14)
+                          .fontColor('#999')
+                          .decoration({ type: TextDecorationType.LineThrough })
+                          .maxLines(1)
+                          .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      } else {
+                        Text(detail.itemName)
+                          .fontSize(14)
+                          .fontColor('#333')
+                          .decoration({ type: TextDecorationType.None })
+                          .maxLines(1)
+                          .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      }
                       if (detail.itemCategory !== '') {
                         Text(detail.itemCategory)
                           .fontSize(11)
