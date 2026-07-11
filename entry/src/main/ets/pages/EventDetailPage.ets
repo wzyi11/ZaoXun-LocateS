@@ -355,7 +355,7 @@ export struct EventDetailPage {
                     }
                   })
                 }
-              }, (detail: EventItemDetail, index: number) => detail.eventItemId.toString())
+              }, (detail: EventItemDetail, index: number) => `${detail.eventItemId}_${detail.isPrepared ? 'p' : 'u'}`)
             }
             .width('100%')
             .layoutWeight(1)
