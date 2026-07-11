@@ -20,11 +20,14 @@ export struct EventDetailPage {
   @State prepared: number = 0;
   @State total: number = 0;
   @State loading: boolean = true;
+  @State currentEventId: number = 0;
+  @State updatingItemId: number = 0;
   private eventRepo: EventRepository = new EventRepository();
   private itemRepo: ItemRepository = new ItemRepository();
 
   aboutToAppear(): void {
     const eventId: number = AppStorage.get<number>('currentEventId') ?? 0;
+    this.currentEventId = eventId;
     if (eventId > 0) {
       this.loadData(eventId);
     } else {
@@ -32,40 +35,57 @@ export struct EventDetailPage {
     }
   }
 
-  async loadData(eventId: number): Promise<void> {
-    this.loading = true;
+  async loadData(eventId: number, showLoading: boolean = true): Promise<void> {
+    if (showLoading) {
+      this.loading = true;
+    }
     const evt: Event | null = await this.eventRepo.getById(eventId);
     this.event = evt;
-    if (evt !== null) {
-      const eventItems: EventItem[] = await this.eventRepo.getEventItems(eventId);
-      const list: EventItemDetail[] = [];
-      let prepCount: number = 0;
-      for (let i = 0; i < eventItems.length; i++) {
-        const ei: EventItem = eventItems[i];
-        const item: Item | null = await this.itemRepo.getById(ei.itemId);
-        const detail: EventItemDetail = {
-          'eventItemId': ei.id,
-          'itemId': ei.itemId,
-          'itemName': item !== null ? item.name : '未知物品',
-          'itemCategory': item !== null ? item.category : '',
-          'isPrepared': ei.isPrepared,
-        };
-        if (ei.isPrepared) {
-          prepCount = prepCount + 1;
-        }
-        list.push(detail);
-      }
-      this.checklist = list;
-      this.prepared = prepCount;
-      this.total = eventItems.length;
+    if (evt === null) {
+      this.checklist = [];
+      this.prepared = 0;
+      this.total = 0;
+      this.loading = false;
+      return;
     }
+
+    const eventItems: EventItem[] = await this.eventRepo.getEventItems(eventId);
+    const list: EventItemDetail[] = [];
+    let prepCount: number = 0;
+    for (let i = 0; i < eventItems.length; i++) {
+      const ei: EventItem = eventItems[i];
+      const item: Item | null = await this.itemRepo.getById(ei.itemId);
+      const detail: EventItemDetail = {
+        'eventItemId': ei.id,
+        'itemId': ei.itemId,
+        'itemName': item !== null ? item.name : '未知物品',
+        'itemCategory': item !== null ? item.category : '',
+        'isPrepared': ei.isPrepared,
+      };
+      if (ei.isPrepared) {
+        prepCount = prepCount + 1;
+      }
+      list.push(detail);
+    }
+    this.checklist = list;
+    this.prepared = prepCount;
+    this.total = eventItems.length;
     this.loading = false;
   }
 
   async togglePrepared(index: number): Promise<void> {
+    if (index < 0 || index >= this.checklist.length) {
+      return;
+    }
+
     const detail: EventItemDetail = this.checklist[index];
+    if (this.updatingItemId !== 0) {
+      return;
+    }
+
     const newPrepared: boolean = !detail.isPrepared;
-    await this.eventRepo.updateEventItemPrepared(detail.eventItemId, newPrepared);
+    this.updatingItemId = detail.eventItemId;
+
     const newList: EventItemDetail[] = [];
     let prepCount: number = 0;
     for (let i = 0; i < this.checklist.length; i++) {
@@ -84,6 +104,22 @@ export struct EventDetailPage {
     }
     this.checklist = newList;
     this.prepared = prepCount;
+    this.total = newList.length;
+
+    try {
+      await this.eventRepo.updateEventItemPrepared(detail.eventItemId, newPrepared);
+      if (this.currentEventId > 0) {
+        await this.loadData(this.currentEventId, false);
+      }
+      AppStorage.setOrCreate('eventRefreshToken', Date.now());
+    } catch (err) {
+      console.error(`Toggle prepared failed: ${JSON.stringify(err)}`);
+      if (this.currentEventId > 0) {
+        await this.loadData(this.currentEventId, false);
+      }
+    } finally {
+      this.updatingItemId = 0;
+    }
   }
 
   async markComplete(): Promise<void> {
@@ -307,7 +343,9 @@ export struct EventDetailPage {
                   .backgroundColor(Color.White)
                   .borderRadius(8)
                   .onClick(() => {
-                    this.togglePrepared(index);
+                    if (!this.isCompleted()) {
+                      this.togglePrepared(index);
+                    }
                   })
                 }
               }, (detail: EventItemDetail, index: number) => detail.eventItemId.toString())
