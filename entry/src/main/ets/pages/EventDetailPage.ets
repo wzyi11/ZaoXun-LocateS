@@ -91,8 +91,14 @@ export struct EventDetailPage {
       return;
     }
     await this.eventRepo.complete(this.event.id);
-    const updatedEvent: Event = this.event;
-    updatedEvent.status = 1;
+    const updatedEvent: Event = {
+      'id': this.event.id,
+      'title': this.event.title,
+      'date': this.event.date,
+      'note': this.event.note,
+      'status': 1,
+      'createTime': this.event.createTime,
+    };
     this.event = updatedEvent;
     AppStorage.setOrCreate('eventRefreshToken', Date.now());
   }
@@ -278,9 +284,6 @@ export struct EventDetailPage {
                   Row({ space: 10 }) {
                     Text(detail.isPrepared ? '✅' : '⬜')
                       .fontSize(20)
-                      .onClick(() => {
-                        this.togglePrepared(index);
-                      })
                     Column({ space: 2 }) {
                       Text(detail.itemName)
                         .fontSize(14)
@@ -303,6 +306,9 @@ export struct EventDetailPage {
                   .padding({ left: 16, right: 16, top: 12, bottom: 12 })
                   .backgroundColor(Color.White)
                   .borderRadius(8)
+                  .onClick(() => {
+                    this.togglePrepared(index);
+                  })
                 }
               }, (detail: EventItemDetail, index: number) => detail.eventItemId.toString())
             }
