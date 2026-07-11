@@ -1,0 +1,322 @@
+import { router } from '@kit.ArkUI';
+import { Event, EventItem } from '../model/EventModel';
+import { Item } from '../model/ItemModel';
+import { EventRepository } from '../data/EventRepository';
+import { ItemRepository } from '../data/ItemRepository';
+
+interface EventItemDetail {
+  eventItemId: number;
+  itemId: number;
+  itemName: string;
+  itemCategory: string;
+  isPrepared: boolean;
+}
+
+@Entry
+@Component
+export struct EventDetailPage {
+  @State event: Event | null = null;
+  @State checklist: EventItemDetail[] = [];
+  @State prepared: number = 0;
+  @State total: number = 0;
+  @State loading: boolean = true;
+  private eventRepo: EventRepository = new EventRepository();
+  private itemRepo: ItemRepository = new ItemRepository();
+
+  aboutToAppear(): void {
+    const eventId: number = AppStorage.get<number>('currentEventId') ?? 0;
+    if (eventId > 0) {
+      this.loadData(eventId);
+    } else {
+      this.loading = false;
+    }
+  }
+
+  async loadData(eventId: number): Promise<void> {
+    this.loading = true;
+    const evt: Event | null = await this.eventRepo.getById(eventId);
+    this.event = evt;
+    if (evt !== null) {
+      const eventItems: EventItem[] = await this.eventRepo.getEventItems(eventId);
+      const list: EventItemDetail[] = [];
+      let prepCount: number = 0;
+      for (let i = 0; i < eventItems.length; i++) {
+        const ei: EventItem = eventItems[i];
+        const item: Item | null = await this.itemRepo.getById(ei.itemId);
+        const detail: EventItemDetail = {
+          'eventItemId': ei.id,
+          'itemId': ei.itemId,
+          'itemName': item !== null ? item.name : '未知物品',
+          'itemCategory': item !== null ? item.category : '',
+          'isPrepared': ei.isPrepared,
+        };
+        if (ei.isPrepared) {
+          prepCount = prepCount + 1;
+        }
+        list.push(detail);
+      }
+      this.checklist = list;
+      this.prepared = prepCount;
+      this.total = eventItems.length;
+    }
+    this.loading = false;
+  }
+
+  async togglePrepared(index: number): Promise<void> {
+    const detail: EventItemDetail = this.checklist[index];
+    const newPrepared: boolean = !detail.isPrepared;
+    await this.eventRepo.updateEventItemPrepared(detail.eventItemId, newPrepared);
+    const newList: EventItemDetail[] = [];
+    let prepCount: number = 0;
+    for (let i = 0; i < this.checklist.length; i++) {
+      const item: EventItemDetail = this.checklist[i];
+      const isPrep: boolean = i === index ? newPrepared : item.isPrepared;
+      newList.push({
+        'eventItemId': item.eventItemId,
+        'itemId': item.itemId,
+        'itemName': item.itemName,
+        'itemCategory': item.itemCategory,
+        'isPrepared': isPrep,
+      });
+      if (isPrep) {
+        prepCount = prepCount + 1;
+      }
+    }
+    this.checklist = newList;
+    this.prepared = prepCount;
+  }
+
+  async markComplete(): Promise<void> {
+    if (this.event === null) {
+      return;
+    }
+    await this.eventRepo.complete(this.event.id);
+    const updatedEvent: Event = this.event;
+    updatedEvent.status = 1;
+    this.event = updatedEvent;
+    AppStorage.setOrCreate('eventRefreshToken', Date.now());
+  }
+
+  getStatusText(): string {
+    if (this.event === null) {
+      return '';
+    }
+    return this.event.status === 1 ? '已完成' : '进行中';
+  }
+
+  getStatusColor(): string {
+    if (this.event === null) {
+      return '#999';
+    }
+    return this.event.status === 1 ? '#34C759' : '#007AFF';
+  }
+
+  getProgressText(): string {
+    return `${this.prepared}/${this.total}`;
+  }
+
+  getProgressValue(): number {
+    if (this.total === 0) {
+      return 0;
+    }
+    return this.prepared / this.total * 100;
+  }
+
+  allPrepared(): boolean {
+    return this.total > 0 && this.prepared === this.total;
+  }
+
+  isCompleted(): boolean {
+    return this.event !== null && this.event.status === 1;
+  }
+
+  build() {
+    Column() {
+      Row() {
+        Button('返回')
+          .type(ButtonType.Normal)
+          .backgroundColor(Color.Transparent)
+          .fontColor('#007AFF')
+          .onClick(() => {
+            router.back();
+          })
+        Blank()
+        Text('事件详情')
+          .fontSize(17)
+          .fontWeight(FontWeight.Medium)
+        Blank()
+        if (!this.isCompleted() && this.event !== null) {
+          Button('完成')
+            .type(ButtonType.Normal)
+            .backgroundColor(Color.Transparent)
+            .fontColor('#34C759')
+            .onClick(() => {
+              this.markComplete();
+            })
+        }
+      }
+      .width('100%')
+      .padding(16)
+      .backgroundColor(Color.White)
+
+      if (this.loading) {
+        Column() {
+          LoadingProgress()
+            .width(40)
+            .height(40)
+            .color('#007AFF')
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .justifyContent(FlexAlign.Center)
+      } else if (this.event === null) {
+        Column() {
+          Text('事件不存在')
+            .fontSize(16)
+            .fontColor('#999')
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .justifyContent(FlexAlign.Center)
+      } else {
+        Column({ space: 16 }) {
+          Row({ space: 8 }) {
+            Text(this.event.title)
+              .fontSize(18)
+              .fontColor('#333')
+              .fontWeight(FontWeight.Bold)
+              .layoutWeight(1)
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+            Text(this.getStatusText())
+              .fontSize(12)
+              .fontColor(this.getStatusColor())
+              .padding({ left: 8, right: 8, top: 3, bottom: 3 })
+              .backgroundColor(this.isCompleted() ? '#E8F8EE' : '#EBF5FF')
+              .borderRadius(4)
+          }
+          .width('100%')
+          .padding(16)
+          .backgroundColor(Color.White)
+          .borderRadius(8)
+
+          if (this.event.date !== '' || this.event.note !== '') {
+            Column({ space: 8 }) {
+              if (this.event.date !== '') {
+                Row() {
+                  Text('日期')
+                    .fontSize(14)
+                    .fontColor('#999')
+                    .width(50)
+                  Text(this.event.date)
+                    .fontSize(15)
+                    .fontColor('#333')
+                    .layoutWeight(1)
+                }
+                .width('100%')
+              }
+              if (this.event.note !== '') {
+                Row() {
+                  Text('备注')
+                    .fontSize(14)
+                    .fontColor('#999')
+                    .width(50)
+                  Text(this.event.note)
+                    .fontSize(15)
+                    .fontColor('#333')
+                    .layoutWeight(1)
+                }
+                .width('100%')
+              }
+            }
+            .width('100%')
+            .padding(16)
+            .backgroundColor(Color.White)
+            .borderRadius(8)
+            .alignItems(HorizontalAlign.Start)
+          }
+
+          Column({ space: 8 }) {
+            Row() {
+              Text('清单进度')
+                .fontSize(14)
+                .fontColor('#666')
+                .fontWeight(FontWeight.Medium)
+              Blank()
+              Text(this.getProgressText())
+                .fontSize(14)
+                .fontColor('#007AFF')
+                .fontWeight(FontWeight.Medium)
+            }
+            .width('100%')
+
+            Progress({
+              value: this.getProgressValue(),
+              total: 100,
+              type: ProgressType.Linear
+            })
+              .width('100%')
+              .height(6)
+              .color(this.isCompleted() ? '#34C759' : '#007AFF')
+              .backgroundColor('#F0F0F0')
+          }
+          .width('100%')
+          .padding(16)
+          .backgroundColor(Color.White)
+          .borderRadius(8)
+
+          if (this.total > 0) {
+            Text('物品清单')
+              .fontSize(14)
+              .fontColor('#666')
+              .fontWeight(FontWeight.Medium)
+              .padding({ left: 4 })
+
+            List({ space: 4 }) {
+              ForEach(this.checklist, (detail: EventItemDetail, index: number) => {
+                ListItem() {
+                  Row({ space: 10 }) {
+                    Text(detail.isPrepared ? '✅' : '⬜')
+                      .fontSize(20)
+                      .onClick(() => {
+                        this.togglePrepared(index);
+                      })
+                    Column({ space: 2 }) {
+                      Text(detail.itemName)
+                        .fontSize(14)
+                        .fontColor(detail.isPrepared ? '#999' : '#333')
+                        .decoration({
+                          type: detail.isPrepared ? TextDecorationType.LineThrough : TextDecorationType.None
+                        })
+                        .maxLines(1)
+                        .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      if (detail.itemCategory !== '') {
+                        Text(detail.itemCategory)
+                          .fontSize(11)
+                          .fontColor('#999')
+                      }
+                    }
+                    .alignItems(HorizontalAlign.Start)
+                    .layoutWeight(1)
+                  }
+                  .width('100%')
+                  .padding({ left: 16, right: 16, top: 12, bottom: 12 })
+                  .backgroundColor(Color.White)
+                  .borderRadius(8)
+                }
+              }, (detail: EventItemDetail, index: number) => detail.eventItemId.toString())
+            }
+            .width('100%')
+            .layoutWeight(1)
+            .divider({ strokeWidth: 0 })
+          }
+        }
+        .padding(16)
+        .layoutWeight(1)
+      }
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#F5F5F5')
+  }
+}

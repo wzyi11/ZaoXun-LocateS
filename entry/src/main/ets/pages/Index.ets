@@ -117,6 +117,8 @@ struct Index {
       AppStorage.setOrCreate('itemRefreshToken', token);
     } else if (this.currentTabIndex === 1) {
       AppStorage.setOrCreate('spaceRefreshToken', token);
+    } else if (this.currentTabIndex === 2) {
+      AppStorage.setOrCreate('eventRefreshToken', token);
     }
   }
 }
