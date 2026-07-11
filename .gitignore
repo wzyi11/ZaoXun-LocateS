@@ -6,3 +6,4 @@ oh_modules/
 .idea/
 build/
 entry/build/
+.appanalyzer/
