@@ -1,3 +1,4 @@
+import { router } from '@kit.ArkUI';
 import { Item } from '../model/ItemModel';
 import { Event } from '../model/EventModel';
 import { ItemRepository } from '../data/ItemRepository';
@@ -80,10 +81,22 @@ struct ProfilePage {
   build() {
     Column() {
       Row() {
+        Button('返回')
+          .type(ButtonType.Normal)
+          .backgroundColor(Color.Transparent)
+          .fontColor('#007AFF')
+          .onClick(() => {
+            router.back();
+          })
+        Blank()
         Text('我的')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
         Blank()
+        Button('返回')
+          .type(ButtonType.Normal)
+          .backgroundColor(Color.Transparent)
+          .fontColor(Color.Transparent)
       }
       .width('100%')
       .padding({ left: 16, right: 16, top: 12, bottom: 12 })
@@ -137,7 +150,7 @@ struct ProfilePage {
               }
               .width('100%')
 
-              Flex({ wrap: FlexWrap.Wrap }) {
+              Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.SpaceEvenly }) {
                 ForEach(this.categoryCounts, (cc: CategoryCount, index: number) => {
                   Column({ space: 4 }) {
                     Text(cc.count.toString())
@@ -151,7 +164,7 @@ struct ProfilePage {
                   .width(72)
                   .padding({ top: 8, bottom: 8 })
                   .alignItems(HorizontalAlign.Center)
-                  .margin({ right: 20, bottom: 4 })
+                  .margin({ bottom: 4 })
                 }, (cc: CategoryCount, index: number) => cc.name)
               }
               .width('100%')
@@ -297,6 +310,7 @@ struct ProfilePage {
     }
     .width('100%')
     .height('100%')
+    .padding({ top: 36 })
     .backgroundColor('#F5F5F5')
   }
 }
