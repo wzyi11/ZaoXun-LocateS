@@ -8,6 +8,7 @@ import { EventPage } from './EventPage';
 @Component
 struct Index {
   @State currentBottomNav: number = 0;
+  //    222222
   @State currentTabIndex: number = 0;
 
   onPageShow(): void {
