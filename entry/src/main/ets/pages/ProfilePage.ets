@@ -21,7 +21,7 @@ struct ProfilePage {
   @State upcomingEvents: Event[] = [];
   @State loading: boolean = true;
   @StorageLink('itemRefreshToken') @Watch('onProfileRefresh') itemRefreshToken: number = 0;
-  @StorageLink('eventRefreshToken') eventRefreshToken: number = 0;
+  @StorageLink('eventRefreshToken') @Watch('onProfileRefresh') eventRefreshToken: number = 0;
   private itemRepo: ItemRepository = new ItemRepository();
   private eventRepo: EventRepository = new EventRepository();
 
@@ -39,6 +39,7 @@ struct ProfilePage {
 
   async loadStats(): Promise<void> {
     this.loading = true;
+    try {
     const items: Item[] = await this.itemRepo.getAll();
     const events: Event[] = await this.eventRepo.getAll();
 
@@ -75,7 +76,11 @@ struct ProfilePage {
     this.activeEventCount = activeCnt;
     this.completedEventCount = completedCnt;
     this.upcomingEvents = upcoming;
+    } catch (err) {
+      console.error('[ProfilePage] loadStats failed', JSON.stringify(err));
+    } finally {
     this.loading = false;
+    }
   }
 
   build() {
