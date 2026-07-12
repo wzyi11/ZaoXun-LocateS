@@ -7,7 +7,9 @@ import { EventPage } from './EventPage';
 @Entry
 @Component
 struct Index {
+  // 下面的导航
   @State currentBottomNav: number = 0;
+  // 上面选中的tab
   @State currentTabIndex: number = 0;
 
   onPageShow(): void {
