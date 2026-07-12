@@ -1,4 +1,3 @@
-// import { router } from '@kit.AbilityKit';
 import { router } from '@kit.ArkUI';
 import { ItemPage } from './ItemPage';
 import { SpacePage } from './SpacePage';

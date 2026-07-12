@@ -122,7 +122,7 @@ export struct ItemPage {
           .layoutWeight(1)
           .divider({ strokeWidth: 0 })
           .scrollBar(BarState.Off)
-          .padding({ top: 4 })
+          .padding({ top: 4, bottom: 80 })
         }
       }
       .width('100%')
