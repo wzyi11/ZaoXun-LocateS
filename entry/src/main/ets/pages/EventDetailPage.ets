@@ -1,8 +1,12 @@
 import { router } from '@kit.ArkUI';
+import { systemShare } from '@kit.ShareKit';
+import { uniformTypeDescriptor as utd } from '@kit.ArkData';
+import { common } from '@kit.AbilityKit';
 import { Event, EventItem } from '../model/EventModel';
 import { Item } from '../model/ItemModel';
 import { EventRepository } from '../data/EventRepository';
 import { ItemRepository } from '../data/ItemRepository';
+import { BusinessError } from '@kit.BasicServicesKit';
 
 interface EventItemDetail {
   eventItemId: number;
@@ -172,6 +176,71 @@ export struct EventDetailPage {
     return this.event !== null && this.event.status === 1;
   }
 
+  buildShareText(): string {
+    if (this.event === null) {
+      return '';
+    }
+
+    const statusText: string = this.isCompleted() ? '已完成' : '进行中';
+    const progressText: string = this.total > 0 ? ` (${this.prepared}/${this.total})` : '';
+
+    const lines: string[] = [];
+    lines.push(`【事件】${this.event.title}`);
+    if (this.event.date !== '') {
+      lines.push(`日期: ${this.event.date}`);
+    }
+    lines.push(`状态: ${statusText}${progressText}`);
+    if (this.event.note !== '') {
+      lines.push(`备注: ${this.event.note}`);
+    }
+
+    if (this.total > 0) {
+      lines.push('');
+      lines.push('物品清单:');
+      for (let i = 0; i < this.checklist.length; i++) {
+        const detail: EventItemDetail = this.checklist[i];
+        const marker: string = detail.isPrepared ? '✅' : '⬜';
+        lines.push(`  ${marker} ${detail.itemName}`);
+      }
+    }
+
+    lines.push('');
+    lines.push('-- 来自智能收纳管家');
+    return lines.join('\n');
+  }
+
+  doShare(): void {
+    if (this.event === null) {
+      return;
+    }
+
+    const shareText: string = this.buildShareText();
+    if (shareText === '') {
+      return;
+    }
+
+    try {
+      const shareData: systemShare.SharedData = new systemShare.SharedData({
+        utd: utd.UniformDataType.TEXT,
+        content: shareText,
+        title: this.event.title,
+        description: `事件分享: ${this.event.title}`,
+      });
+      const controller: systemShare.ShareController = new systemShare.ShareController(shareData);
+      const context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
+      controller.show(context, {
+        selectionMode: systemShare.SelectionMode.SINGLE,
+        previewMode: systemShare.SharePreviewMode.DETAIL,
+      }).then(() => {
+        console.info('ShareController show success.');
+      }).catch((error: BusinessError) => {
+        console.error(`ShareController show error. code: ${error.code}, message: ${error.message}`);
+      });
+    } catch (err) {
+      console.error(`Share failed: ${JSON.stringify(err)}`);
+    }
+  }
+
   build() {
     Column() {
       Row() {
@@ -187,6 +256,13 @@ export struct EventDetailPage {
           .fontSize(17)
           .fontWeight(FontWeight.Medium)
         Blank()
+        Button('分享')
+          .type(ButtonType.Normal)
+          .backgroundColor(Color.Transparent)
+          .fontColor('#007AFF')
+          .onClick(() => {
+            this.doShare();
+          })
         if (!this.isCompleted() && this.event !== null) {
           Button('完成')
             .type(ButtonType.Normal)
@@ -368,6 +444,7 @@ export struct EventDetailPage {
     }
     .width('100%')
     .height('100%')
+    .padding({ top: 36 })
     .backgroundColor('#F5F5F5')
   }
 }

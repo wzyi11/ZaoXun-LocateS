@@ -267,6 +267,7 @@ export struct SpacePage {
             .layoutWeight(1)
             .divider({ strokeWidth: 0 })
             .scrollBar(BarState.Off)
+            .padding({ top: 4, bottom: 80 })
           }
         } else if (this.loading) {
           Column() {

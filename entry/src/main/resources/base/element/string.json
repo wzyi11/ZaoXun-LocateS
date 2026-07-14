@@ -11,6 +11,14 @@
     {
       "name": "EntryAbility_label",
       "value": "label"
+    },
+    {
+      "name": "form_display_name",
+      "value": "收纳管家"
+    },
+    {
+      "name": "form_description",
+      "value": "查看进行中的事件和待办清单"
     }
   ]
 }
