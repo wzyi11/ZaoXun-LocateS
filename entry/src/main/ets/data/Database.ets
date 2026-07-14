@@ -4,6 +4,7 @@ import { common } from '@kit.AbilityKit';
 import { ITEM_CREATE_SQL } from '../model/ItemModel';
 import { SPACE_CREATE_SQL } from '../model/SpaceModel';
 import { EVENT_CREATE_SQL, EVENT_ITEM_CREATE_SQL } from '../model/EventModel';
+import { CATEGORY_CREATE_SQL } from '../model/CategoryModel';
 
 const DB_NAME = 'smart_storage.db';
 const DB_VERSION = 1;
@@ -34,6 +35,7 @@ export class Database {
       await this.store.executeSql(SPACE_CREATE_SQL);
       await this.store.executeSql(EVENT_CREATE_SQL);
       await this.store.executeSql(EVENT_ITEM_CREATE_SQL);
+      await this.store.executeSql(CATEGORY_CREATE_SQL);
       console.info('Database initialized successfully');
     } catch (err) {
       let e = err as BusinessError;
