@@ -3,18 +3,46 @@ import { router } from '@kit.ArkUI';
 import { ItemPage } from './ItemPage';
 import { SpacePage } from './SpacePage';
 import { EventPage } from './EventPage';
+import { AddItemSheetContent } from '../components/AddItemSheetContent';
 
 @Entry
 @Component
 struct Index {
-  // 底部导航，两个，用来变样式
+  // 底部导航
   @State currentBottomNav: number = 0;
-  // 顶部选项，3个
+  // 顶部选项
   @State currentTabIndex: number = 0;
+  // 半模态面板
+  @State showAddItemSheet: boolean = false;
+  @StorageLink('triggerAddItemSheet') @Watch('onTriggerAddItemSheet') triggerAddItemSheet: number = 0;
+  @StorageLink('addItemSaved') @Watch('onAddItemSaved') addItemSaved: number = 0;
 
   onPageShow(): void {
     this.currentBottomNav = 0;
     this.refreshCurrentTab();
+  }
+
+  onTriggerAddItemSheet(): void {
+    if (this.triggerAddItemSheet > 0) {
+      if (!this.showAddItemSheet) {
+        this.showAddItemSheet = true;
+      }
+    }
+  }
+
+  onAddItemSaved(): void {
+    if (this.addItemSaved > 0) {
+      this.showAddItemSheet = false;
+    }
+  }
+
+  @Builder
+  AddItemSheetBuilder() {
+    Column() {
+      AddItemSheetContent()
+    }
+    .width('100%')
+    .height('100%')
   }
 
   build() {
@@ -60,6 +88,15 @@ struct Index {
     .height('100%')
     .padding({ top: 36 })
     .backgroundColor('#F5F5F5')
+    .bindSheet(this.showAddItemSheet, this.AddItemSheetBuilder(), {
+      detents: [SheetSize.MEDIUM, SheetSize.LARGE, 600],
+      preferType: SheetType.BOTTOM,
+      dragBar: true,
+      title: { title: '添加物品' },
+      onDisappear: () => {
+        this.showAddItemSheet = false;
+      },
+    })
   }
 
   @Builder

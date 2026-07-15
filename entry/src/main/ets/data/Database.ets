@@ -1,13 +1,13 @@
 import { relationalStore } from '@kit.ArkData';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { common } from '@kit.AbilityKit';
-import { ITEM_CREATE_SQL } from '../model/ItemModel';
+import { ITEM_CREATE_SQL, ITEM_MIGRATE_V2_SQL } from '../model/ItemModel';
 import { SPACE_CREATE_SQL } from '../model/SpaceModel';
 import { EVENT_CREATE_SQL, EVENT_ITEM_CREATE_SQL } from '../model/EventModel';
 import { CATEGORY_CREATE_SQL } from '../model/CategoryModel';
 
 const DB_NAME = 'smart_storage.db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export class Database {
   private static instance: Database;
@@ -36,6 +36,19 @@ export class Database {
       await this.store.executeSql(EVENT_CREATE_SQL);
       await this.store.executeSql(EVENT_ITEM_CREATE_SQL);
       await this.store.executeSql(CATEGORY_CREATE_SQL);
+
+      // 版本升级：v1→v2 增加 price/quantity/expiryDate
+      if (this.store.version === 1) {
+        for (const sql of ITEM_MIGRATE_V2_SQL) {
+          try {
+            await this.store.executeSql(sql);
+          } catch (_e) {
+            // 列可能已存在，忽略错误
+          }
+        }
+        this.store.version = DB_VERSION;
+      }
+
       console.info('Database initialized successfully');
     } catch (err) {
       let e = err as BusinessError;

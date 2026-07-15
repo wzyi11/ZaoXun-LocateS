@@ -1,5 +1,5 @@
 import { router } from '@kit.ArkUI';
-import { Item, ItemInput } from '../model/ItemModel';
+import { Item } from '../model/ItemModel';
 import { ItemRepository } from '../data/ItemRepository';
 import { CategoryRepository } from '../data/CategoryRepository';
 import { EmptyState } from '../components/EmptyState';
@@ -77,14 +77,6 @@ export struct ItemPage {
   private categoryRepo: CategoryRepository = new CategoryRepository();
   private addCategoryDialogController: CustomDialogController | null = null;
 
-  // ---- 半模态面板状态 ----
-  @State showAddItemSheet: boolean = false;
-  @State sheetKey: number = 0;
-  @State newItemName: string = '';
-  @State newItemCategory: string = '其他';
-  @State newItemDate: string = '';
-  @State newItemNote: string = '';
-
   aboutToAppear(): void {
     this.addCategoryDialogController = new CustomDialogController({
       builder: AddCategoryDialog({ onConfirm: (name: string) => this.onAddCategoryConfirm(name) }),
@@ -159,150 +151,6 @@ export struct ItemPage {
         this.loadCategories();
       });
     }
-  }
-
-  resetNewItemForm(): void {
-    this.newItemName = '';
-    this.newItemCategory = '其他';
-    this.newItemDate = '';
-    this.newItemNote = '';
-  }
-
-  async saveNewItem(): Promise<void> {
-    if (this.newItemName.trim() === '') {
-      return;
-    }
-    const createTime: string = new Date().toISOString();
-    const itemInput: ItemInput = {
-      name: this.newItemName.trim(),
-      category: this.newItemCategory,
-      spaceId: 0,
-      image: '',
-      purchaseDate: this.newItemDate,
-      note: this.newItemNote,
-      createTime: createTime,
-    };
-    await this.repo.insert(itemInput);
-    AppStorage.setOrCreate('itemRefreshToken', Date.now());
-    this.resetNewItemForm();
-    this.showAddItemSheet = false;
-    this.loadItems();
-  }
-
-  @Builder
-  addItemSheet() {
-    Column() {
-      // 标题区
-      Text('添加物品')
-        .fontSize(20)
-        .fontWeight(FontWeight.Bold)
-        .fontColor('#1A1A1A')
-        .width('100%')
-        .textAlign(TextAlign.Start)
-        .margin({ bottom: 20 })
-
-      Scroll() {
-        Column({ space: 20 }) {
-          // 名称
-          Column({ space: 6 }) {
-            Text('名称')
-              .fontSize(14)
-              .fontColor('#666')
-            TextInput({ text: this.newItemName, placeholder: '输入物品名称' })
-              .height(44)
-              .backgroundColor('#F5F5F5')
-              .borderRadius(10)
-              .padding({ left: 14 })
-              .onChange((value: string) => {
-                this.newItemName = value;
-              })
-          }
-          .width('100%')
-          .alignItems(HorizontalAlign.Start)
-
-          // 分类
-          Column({ space: 6 }) {
-            Text('分类')
-              .fontSize(14)
-              .fontColor('#666')
-            Flex({ wrap: FlexWrap.Wrap }) {
-              ForEach(this.categories.filter(c => c !== '全部'), (cat: string) => {
-                Text(cat)
-                  .fontSize(13)
-                  .fontColor(cat === this.newItemCategory ? '#fff' : '#666')
-                  .padding({ left: 14, right: 14, top: 6, bottom: 6 })
-                  .backgroundColor(cat === this.newItemCategory ? '#007AFF' : '#F0F0F0')
-                  .borderRadius(16)
-                  .margin({ right: 8, bottom: 8 })
-                  .onClick(() => {
-                    this.newItemCategory = cat;
-                  })
-              })
-            }
-            .width('100%')
-          }
-          .width('100%')
-          .alignItems(HorizontalAlign.Start)
-
-          // 购买日期
-          Column({ space: 6 }) {
-            Text('购买日期')
-              .fontSize(14)
-              .fontColor('#666')
-            TextInput({ text: this.newItemDate, placeholder: 'YYYY-MM-DD' })
-              .height(44)
-              .backgroundColor('#F5F5F5')
-              .borderRadius(10)
-              .padding({ left: 14 })
-              .onChange((value: string) => {
-                this.newItemDate = value;
-              })
-          }
-          .width('100%')
-          .alignItems(HorizontalAlign.Start)
-
-          // 备注
-          Column({ space: 6 }) {
-            Text('备注')
-              .fontSize(14)
-              .fontColor('#666')
-            TextInput({ text: this.newItemNote, placeholder: '备注信息（选填）' })
-              .height(44)
-              .backgroundColor('#F5F5F5')
-              .borderRadius(10)
-              .padding({ left: 14 })
-              .onChange((value: string) => {
-                this.newItemNote = value;
-              })
-          }
-          .width('100%')
-          .alignItems(HorizontalAlign.Start)
-        }
-        .width('100%')
-      }
-      .layoutWeight(1)
-      .width('100%')
-
-      // 保存按钮
-      Button() {
-        Text('保存')
-          .fontSize(16)
-          .fontColor(Color.White)
-          .fontWeight(FontWeight.Medium)
-      }
-      .width('100%')
-      .height(48)
-      .backgroundColor(this.newItemName.trim() ? '#007AFF' : '#B0D4FF')
-      .borderRadius(24)
-      .margin({ top: 16, bottom: 8 })
-      .enabled(this.newItemName.trim().length > 0)
-      .onClick(() => {
-        this.saveNewItem();
-      })
-    }
-    .padding({ left: 24, right: 24, top: 8, bottom: 24 })
-    .width('100%')
-    .height('100%')
   }
 
   build() {
@@ -407,23 +255,10 @@ export struct ItemPage {
       .offset({ x: -24, y: -24 })
       .shadow({ radius: 8, color: '#33007AFF', offsetY: 4 })
       .onClick(() => {
-        this.resetNewItemForm();
-        this.showAddItemSheet = false;
-        this.sheetKey++;
-        this.showAddItemSheet = true;
+        AppStorage.setOrCreate('triggerAddItemSheet', Date.now());
       })
     }
     .width('100%')
     .height('100%')
-    //.key('addSheet-' + this.sheetKey)
-    .bindSheet(this.showAddItemSheet, this.addItemSheet, {
-      height: '75%',
-      dragBar: true,
-      showClose: true,
-      title: { title: '添加物品' },
-      onDisappear: () => {
-        this.showAddItemSheet = false;
-      },
-    })
   }
 }

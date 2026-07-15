@@ -126,6 +126,9 @@ export struct AddItemPage {
       purchaseDate: this.purchaseDate,
       note: this.note,
       createTime: createTime,
+      price: '',
+      quantity: 0,
+      expiryDate: ''
     };
     await this.repo.insert(itemInput);
     AppStorage.setOrCreate('itemRefreshToken', Date.now());
