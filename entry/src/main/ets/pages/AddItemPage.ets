@@ -1,6 +1,7 @@
 import { router } from '@kit.ArkUI';
 import { Item, ItemInput } from '../model/ItemModel';
 import { ItemRepository } from '../data/ItemRepository';
+import { PageBackground } from '../components/PageBackground';
 
 const CATEGORIES: string[] = ['衣物', '书籍', '数码', '厨房', '文件', '其他'];
 
@@ -14,7 +15,8 @@ export struct AddItemPage {
   private repo: ItemRepository = new ItemRepository();
 
   build() {
-    Column() {
+    Stack() { PageBackground()
+      Column() {
       Row() {
         Button('取消')
           .type(ButtonType.Normal)
@@ -109,8 +111,7 @@ export struct AddItemPage {
     }
     .width('100%')
     .height('100%')
-    .padding({ top: 36 })
-    .backgroundColor('#F5F5F5')
+    }
   }
 
   async save(): Promise<void> {

@@ -3,6 +3,7 @@ import { Item } from '../model/ItemModel';
 import { Event } from '../model/EventModel';
 import { ItemRepository } from '../data/ItemRepository';
 import { EventRepository } from '../data/EventRepository';
+import { PageBackground } from '../components/PageBackground';
 
 interface CategoryCount {
   name: string;
@@ -84,7 +85,9 @@ struct ProfilePage {
   }
 
   build() {
-    Column() {
+    Stack() {
+      PageBackground()
+      Column() {
       Row() {
         Button('返回')
           .type(ButtonType.Normal)
@@ -286,6 +289,27 @@ struct ProfilePage {
           }
 
           ListItem() {
+            Row({ space: 8 }) {
+              Text('🎨')
+                .fontSize(20)
+              Text('背景设置')
+                .fontSize(15)
+                .fontColor('#333')
+                .layoutWeight(1)
+              Text('›')
+                .fontSize(16)
+                .fontColor('#CCC')
+            }
+            .width('100%')
+            .padding(16)
+            .backgroundColor(Color.White)
+            .borderRadius(8)
+            .onClick(() => {
+              router.pushUrl({ url: 'pages/BackgroundSettingsPage' });
+            })
+          }
+
+          ListItem() {
             Column({ space: 4 }) {
               Text('智能收纳管家')
                 .fontSize(16)
@@ -316,6 +340,8 @@ struct ProfilePage {
     .width('100%')
     .height('100%')
     .padding({ top: 36 })
-    .backgroundColor('#F5F5F5')
+    }
+    .width('100%')
+    .height('100%')
   }
 }

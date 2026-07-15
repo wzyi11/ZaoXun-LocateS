@@ -7,6 +7,7 @@ import { Item } from '../model/ItemModel';
 import { EventRepository } from '../data/EventRepository';
 import { ItemRepository } from '../data/ItemRepository';
 import { BusinessError } from '@kit.BasicServicesKit';
+import { PageBackground } from '../components/PageBackground';
 
 interface EventItemDetail {
   eventItemId: number;
@@ -242,7 +243,8 @@ export struct EventDetailPage {
   }
 
   build() {
-    Column() {
+    Stack() { PageBackground()
+      Column() {
       Row() {
         Button('返回')
           .type(ButtonType.Normal)
@@ -445,6 +447,8 @@ export struct EventDetailPage {
     .width('100%')
     .height('100%')
     .padding({ top: 36 })
-    .backgroundColor('#F5F5F5')
+    }
+    .width('100%')
+    .height('100%')
   }
 }

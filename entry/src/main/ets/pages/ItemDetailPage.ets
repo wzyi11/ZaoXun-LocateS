@@ -1,6 +1,7 @@
 import { router } from '@kit.ArkUI';
 import { Item } from '../model/ItemModel';
 import { ItemRepository } from '../data/ItemRepository';
+import { PageBackground } from '../components/PageBackground';
 
 @Entry
 @Component
@@ -38,7 +39,8 @@ export struct ItemDetailPage {
   }
 
   build() {
-    Column() {
+    Stack() { PageBackground()
+      Column() {
       Row() {
         Button('返回')
           .type(ButtonType.Normal)
@@ -178,6 +180,8 @@ export struct ItemDetailPage {
     .width('100%')
     .height('100%')
     .padding({ top: 36 })
-    .backgroundColor('#F5F5F5')
+}
+    .width('100%')
+    .height('100%')
   }
 }

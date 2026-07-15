@@ -19,6 +19,30 @@
     {
       "name": "form_description",
       "value": "查看进行中的事件和待办清单"
+    },
+    {
+      "name": "bg_settings_title",
+      "value": "背景设置"
+    },
+    {
+      "name": "bg_gradient_section",
+      "value": "渐变色预设"
+    },
+    {
+      "name": "bg_image_section",
+      "value": "预设图片"
+    },
+    {
+      "name": "bg_custom_section",
+      "value": "自定义背景"
+    },
+    {
+      "name": "bg_restore_default",
+      "value": "恢复默认"
+    },
+    {
+      "name": "bg_select_from_album",
+      "value": "从相册选择"
     }
   ]
 }
