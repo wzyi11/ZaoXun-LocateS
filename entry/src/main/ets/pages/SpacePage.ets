@@ -346,41 +346,64 @@ export struct SpacePage {
     }
   }
 
+  // @Builder
+  // NavigationHeader() {
+  //   Row() {
+  //     if (this.breadcrumb.length > 0) {
+  //       Button('‹ 返回')
+  //         .type(ButtonType.Normal)
+  //         .backgroundColor(Color.Transparent)
+  //         .fontColor('#007AFF')
+  //         .fontSize(15)
+  //         .padding({ left: 0, right: 8 })
+  //         .onClick(() => {
+  //           this.goBackOneLevel();
+  //         })
+  //         .width(72)
+  //     } else {
+  //       Blank()
+  //         .width(72)
+  //     }
+  //     Text(this.getNavTitle())
+  //       .fontSize(17)
+  //       .fontWeight(FontWeight.Medium)
+  //       .fontColor('#222')
+  //       .textAlign(TextAlign.Center)
+  //       .maxLines(1)
+  //       .textOverflow({ overflow: TextOverflow.Ellipsis })
+  //       .layoutWeight(1)
+  //     Blank()
+  //       .width(72)
+  //   }
+  //   .width('100%')
+  //   .height(48)
+  //   .padding({ left: 12, right: 12 })
+  //   .backgroundColor(Color.White)
+  // }
+
   @Builder
   NavigationHeader() {
-    Row() {
-      if (this.breadcrumb.length > 0) {
+    if (this.breadcrumb.length > 0) {
+      Row(){
         Button('‹ 返回')
           .type(ButtonType.Normal)
           .backgroundColor(Color.Transparent)
           .fontColor('#007AFF')
           .fontSize(15)
           .padding({ left: 0, right: 8 })
-          .onClick(() => {
-            this.goBackOneLevel();
-          })
-          .width(72)
-      } else {
-        Blank()
+          .onClick(() => { this.goBackOneLevel() })
           .width(72)
       }
-      Text(this.getNavTitle())
-        .fontSize(17)
-        .fontWeight(FontWeight.Medium)
-        .fontColor('#222')
-        .textAlign(TextAlign.Center)
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-        .layoutWeight(1)
-      Blank()
-        .width(72)
-    }
-    .width('100%')
-    .height(48)
-    .padding({ left: 12, right: 12 })
-    .backgroundColor(Color.White)
-  }
+      .width('100%')
+      .height(48)
+      .padding({ left: 12, right: 12 })
 
+    } else {
+      Row() {}
+      .height(20)
+    }
+  }
+  
   @Builder
   BreadcrumbBar() {
     if (this.breadcrumb.length > 0) {
