@@ -1,12 +1,14 @@
 import { router } from '@kit.ArkUI';
 import { Item, ItemInput } from '../model/ItemModel';
 import { Space } from '../model/SpaceModel';
+import { Category } from '../model/CategoryModel';
 import { ItemRepository } from '../data/ItemRepository';
 import { CategoryRepository } from '../data/CategoryRepository';
 import { SpaceRepository } from '../data/SpaceRepository';
 import { EmptyState } from '../components/EmptyState';
 import { ItemCard } from '../components/ItemCard';
 import { CategoryGrid } from '../components/CategoryGrid';
+import { ConfirmDeleteDialog } from '../components/ConfirmDeleteDialog';
 
 interface ItemLocationLabel {
   itemId: number;
@@ -80,11 +82,14 @@ export struct ItemPage {
   @State loading: boolean = true;
   @State categories: string[] = [];
   @State itemLocationLabels: ItemLocationLabel[] = [];
+  @State showCategoryManageSheet: boolean = false;
+  @State managedCategories: Category[] = [];
   @StorageLink('itemRefreshToken') @Watch('onRefreshToken') itemRefreshToken: number = 0;
   private repo: ItemRepository = new ItemRepository();
   private categoryRepo: CategoryRepository = new CategoryRepository();
   private spaceRepo: SpaceRepository = new SpaceRepository();
   private addCategoryDialogController: CustomDialogController | null = null;
+  private deleteCategoryDialogController: CustomDialogController | null = null;
 
   // ---- 半模态面板状态 ----
   @State showAddItemSheet: boolean = false;
@@ -211,6 +216,42 @@ export struct ItemPage {
         this.loadCategories();
       });
     }
+  }
+
+  async openCategoryManageSheet(): Promise<void> {
+    this.managedCategories = await this.categoryRepo.getAll();
+    this.showCategoryManageSheet = true;
+  }
+
+  openDeleteCategoryDialog(category: Category): void {
+    this.deleteCategoryDialogController = new CustomDialogController({
+      builder: ConfirmDeleteDialog({
+        title: '删除分类',
+        message: `确认删除“${category.name}”？该分类下的物品会改为“其他”。`,
+        onConfirm: () => {
+          this.deleteCategory(category);
+        }
+      }),
+      autoCancel: true,
+      customStyle: true,
+      cornerRadius: 16,
+    });
+    this.deleteCategoryDialogController.open();
+  }
+
+  async deleteCategory(category: Category): Promise<void> {
+    if (category.name === '其他') {
+      return;
+    }
+    await this.repo.updateCategory(category.name, '其他');
+    await this.categoryRepo.delete(category.id);
+    if (this.selectedCategory === category.name) {
+      this.selectedCategory = '全部';
+    }
+    await this.loadCategories();
+    await this.loadItems();
+    this.managedCategories = await this.categoryRepo.getAll();
+    AppStorage.setOrCreate('itemRefreshToken', Date.now());
   }
 
   resetNewItemForm(): void {
@@ -357,6 +398,56 @@ export struct ItemPage {
     .height('100%')
   }
 
+  @Builder
+  categoryManageSheet() {
+    Column() {
+      Scroll() {
+        if (this.managedCategories.length === 0) {
+          EmptyState({ icon: '🏷', title: '还没有分类', subtitle: '点击分类栏的加号添加分类' })
+        } else {
+          Column({ space: 8 }) {
+            ForEach(this.managedCategories, (category: Category, index: number) => {
+              Row() {
+                Text(category.name)
+                  .fontSize(15)
+                  .fontColor('#333')
+                  .fontWeight(FontWeight.Medium)
+                  .layoutWeight(1)
+                if (category.name === '其他') {
+                  Text('默认')
+                    .fontSize(12)
+                    .fontColor('#999')
+                } else {
+                  Button('删除')
+                    .type(ButtonType.Normal)
+                    .fontColor(Color.White)
+                    .backgroundColor('#FF3B30')
+                    .borderRadius(14)
+                    .height(28)
+                    .fontSize(12)
+                    .padding({ left: 12, right: 12 })
+                    .onClick(() => {
+                      this.openDeleteCategoryDialog(category);
+                    })
+                }
+              }
+              .width('100%')
+              .padding(12)
+              .backgroundColor(Color.White)
+              .borderRadius(8)
+            }, (category: Category, index: number) => category.id.toString())
+          }
+          .width('100%')
+        }
+      }
+      .layoutWeight(1)
+      .width('100%')
+    }
+    .padding({ left: 24, right: 24, top: 8, bottom: 24 })
+    .width('100%')
+    .height('100%')
+  }
+
   build() {
     Stack() {
       Column() {
@@ -382,7 +473,7 @@ export struct ItemPage {
         .margin({left: 16, right: 16, top: 12, bottom: 4 })
 
         // 分类标签栏
-        Row() {
+        Row({ space: 8 }) {
           CategoryGrid({
             categories: this.categories,
             selected: this.selectedCategory,
@@ -393,6 +484,19 @@ export struct ItemPage {
               this.onAddCategoryTap();
             }
           })
+            .layoutWeight(1)
+          Button('管理')
+            .type(ButtonType.Normal)
+            .fontColor('#007AFF')
+            .backgroundColor('#EBF5FF')
+            .borderRadius(14)
+            .height(28)
+            .fontSize(12)
+            .padding({ left: 10, right: 10 })
+            .margin({ right: 12, bottom: 6 })
+            .onClick(() => {
+              this.openCategoryManageSheet();
+            })
         }
         .width("100%")
 
@@ -443,6 +547,15 @@ export struct ItemPage {
       }
       .width('100%')
       .height('100%')
+      .bindSheet(this.showCategoryManageSheet, this.categoryManageSheet, {
+        height: '60%',
+        dragBar: true,
+        showClose: true,
+        title: { title: '管理分类' },
+        onDisappear: () => {
+          this.showCategoryManageSheet = false;
+        },
+      })
 
       // 右下角添加物品按钮
       Button() {

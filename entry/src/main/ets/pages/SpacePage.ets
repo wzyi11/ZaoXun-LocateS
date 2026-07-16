@@ -4,6 +4,7 @@ import { Item } from '../model/ItemModel';
 import { SpaceRepository } from '../data/SpaceRepository';
 import { ItemRepository } from '../data/ItemRepository';
 import { EmptyState } from '../components/EmptyState';
+import { ConfirmDeleteDialog } from '../components/ConfirmDeleteDialog';
 import { camera, cameraPicker } from '@kit.CameraKit';
 import { picker, fileIo as fs, fileUri } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';
@@ -39,6 +40,7 @@ export struct SpacePage {
   private spaceRepo: SpaceRepository = new SpaceRepository();
   private itemRepo: ItemRepository = new ItemRepository();
   private scrollController: Scroller = new Scroller();
+  private deleteSpaceDialogController: CustomDialogController | null = null;
 
   aboutToAppear(): void {
     this.loadSpaces();
@@ -346,6 +348,57 @@ export struct SpacePage {
     }
   }
 
+  openDeleteSpaceDialog(space: Space): void {
+    const isRootSpace: boolean = space.level === 1;
+    this.deleteSpaceDialogController = new CustomDialogController({
+      builder: ConfirmDeleteDialog({
+        title: isRootSpace ? '删除空间' : '删除分区',
+        message: isRootSpace
+          ? `确认删除“${space.name}”？该空间下的分区会一并删除，相关物品会变为未分配。`
+          : `确认删除“${space.name}”？该分区下的物品会变为未分配。`,
+        onConfirm: () => {
+          this.deleteSpace(space);
+        }
+      }),
+      autoCancel: true,
+      customStyle: true,
+      cornerRadius: 16,
+    });
+    this.deleteSpaceDialogController.open();
+  }
+
+  async deleteSpace(space: Space): Promise<void> {
+    if (space.level === 1) {
+      const sections: Space[] = await this.spaceRepo.getByParent(space.id);
+      const affectedSpaceIds: number[] = [space.id];
+      for (let i = 0; i < sections.length; i++) {
+        affectedSpaceIds.push(sections[i].id);
+      }
+      await this.itemRepo.clearSpaceIds(affectedSpaceIds);
+      await this.spaceRepo.deleteByParent(space.id);
+      await this.spaceRepo.delete(space.id);
+      if (this.breadcrumb.length > 0 && this.breadcrumb[0].id === space.id) {
+        this.breadcrumb = [];
+        this.items = [];
+      }
+    } else {
+      await this.itemRepo.clearSpaceId(space.id);
+      await this.spaceRepo.delete(space.id);
+      if (this.breadcrumb.length > 0 && this.getParentId() === space.id) {
+        await this.goBackOneLevel();
+      }
+    }
+
+    this.clearPendingMarker();
+    if (this.isSectionPage()) {
+      await this.loadItems(this.getParentId());
+    } else {
+      await this.loadSpaces();
+    }
+    AppStorage.setOrCreate('itemRefreshToken', Date.now());
+    AppStorage.setOrCreate('spaceRefreshToken', Date.now());
+  }
+
   // @Builder
   // NavigationHeader() {
   //   Row() {
@@ -461,6 +514,18 @@ export struct SpacePage {
                 .fontColor('#333')
                 .fontWeight(FontWeight.Medium)
                 .layoutWeight(1)
+              Button('删除')
+                .type(ButtonType.Normal)
+                .fontColor(Color.White)
+                .backgroundColor('#FF3B30')
+                .borderRadius(14)
+                .height(28)
+                .fontSize(12)
+                .padding({ left: 12, right: 12 })
+                .margin({ right: 8 })
+                .onClick(() => {
+                  this.openDeleteSpaceDialog(space);
+                })
               Text('>')
                 .fontSize(18)
                 .fontColor('#CCC')
@@ -586,6 +651,18 @@ export struct SpacePage {
                   .fontColor('#333')
                   .fontWeight(FontWeight.Medium)
                   .layoutWeight(1)
+                Button('删除')
+                  .type(ButtonType.Normal)
+                  .fontColor(Color.White)
+                  .backgroundColor('#FF3B30')
+                  .borderRadius(14)
+                  .height(28)
+                  .fontSize(12)
+                  .padding({ left: 12, right: 12 })
+                  .margin({ right: 8 })
+                  .onClick(() => {
+                    this.openDeleteSpaceDialog(section);
+                  })
                 Text('>')
                   .fontSize(18)
                   .fontColor('#CCC')

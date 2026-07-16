@@ -72,6 +72,32 @@ export class ItemRepository {
     return await store.delete(predicates);
   }
 
+  async updateCategory(oldCategory: string, newCategory: string): Promise<number> {
+    const store = this.db.getStore();
+    const valueBucket: relationalStore.ValuesBucket = {
+      'category': newCategory,
+    };
+    const predicates = new relationalStore.RdbPredicates(ITEM_TABLE_NAME);
+    predicates.equalTo('category', oldCategory);
+    return await store.update(valueBucket, predicates);
+  }
+
+  async clearSpaceId(spaceId: number): Promise<number> {
+    const store = this.db.getStore();
+    const valueBucket: relationalStore.ValuesBucket = {
+      'spaceId': 0,
+    };
+    const predicates = new relationalStore.RdbPredicates(ITEM_TABLE_NAME);
+    predicates.equalTo('spaceId', spaceId);
+    return await store.update(valueBucket, predicates);
+  }
+
+  async clearSpaceIds(spaceIds: number[]): Promise<void> {
+    for (let i = 0; i < spaceIds.length; i++) {
+      await this.clearSpaceId(spaceIds[i]);
+    }
+  }
+
   async getById(id: number): Promise<Item | null> {
     const store = this.db.getStore();
     const predicates = new relationalStore.RdbPredicates(ITEM_TABLE_NAME);

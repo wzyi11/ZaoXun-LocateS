@@ -29,6 +29,22 @@ export class CategoryRepository {
     return categories;
   }
 
+  async getByName(name: string): Promise<Category | null> {
+    const store = this.db.getStore();
+    const predicates = new relationalStore.RdbPredicates(CATEGORY_TABLE_NAME);
+    predicates.equalTo('name', name);
+    const resultSet = await store.query(predicates, ['id', 'name']);
+    let category: Category | null = null;
+    if (resultSet.goToNextRow()) {
+      category = {
+        id: resultSet.getLong(resultSet.getColumnIndex('id')),
+        name: resultSet.getString(resultSet.getColumnIndex('name')),
+      };
+    }
+    resultSet.close();
+    return category;
+  }
+
   async delete(id: number): Promise<number> {
     const store = this.db.getStore();
     const predicates = new relationalStore.RdbPredicates(CATEGORY_TABLE_NAME);

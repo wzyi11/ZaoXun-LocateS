@@ -8,6 +8,7 @@ import { EventRepository } from '../data/EventRepository';
 import { ItemRepository } from '../data/ItemRepository';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { PageBackground } from '../components/PageBackground';
+import { ConfirmDeleteDialog } from '../components/ConfirmDeleteDialog';
 
 interface EventItemDetail {
   eventItemId: number;
@@ -29,6 +30,7 @@ export struct EventDetailPage {
   @State updatingItemId: number = 0;
   private eventRepo: EventRepository = new EventRepository();
   private itemRepo: ItemRepository = new ItemRepository();
+  private deleteDialogController: CustomDialogController | null = null;
 
   aboutToAppear(): void {
     const eventId: number = AppStorage.get<number>('currentEventId') ?? 0;
@@ -146,6 +148,34 @@ export struct EventDetailPage {
     };
     this.event = updatedEvent;
     AppStorage.setOrCreate('eventRefreshToken', Date.now());
+  }
+
+  async deleteEvent(): Promise<void> {
+    if (this.event === null) {
+      return;
+    }
+    await this.eventRepo.delete(this.event.id);
+    AppStorage.setOrCreate('eventRefreshToken', Date.now());
+    router.back();
+  }
+
+  openDeleteEventDialog(): void {
+    if (this.event === null) {
+      return;
+    }
+    this.deleteDialogController = new CustomDialogController({
+      builder: ConfirmDeleteDialog({
+        title: '删除事件',
+        message: `确认删除“${this.event.title}”？事件清单也会一并删除。`,
+        onConfirm: () => {
+          this.deleteEvent();
+        }
+      }),
+      autoCancel: true,
+      customStyle: true,
+      cornerRadius: 16,
+    });
+    this.deleteDialogController.open();
   }
 
   getStatusText(): string {
@@ -269,6 +299,15 @@ export struct EventDetailPage {
           .onClick(() => {
             this.doShare();
           })
+        if (this.event !== null) {
+          Button('删除')
+            .type(ButtonType.Normal)
+            .backgroundColor(Color.Transparent)
+            .fontColor('#FF3B30')
+            .onClick(() => {
+              this.openDeleteEventDialog();
+            })
+        }
         if (!this.isCompleted() && this.event !== null) {
           Button('完成')
             .type(ButtonType.Normal)

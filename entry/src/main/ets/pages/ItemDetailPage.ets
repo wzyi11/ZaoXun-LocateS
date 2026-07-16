@@ -5,8 +5,10 @@ import { Category } from '../model/CategoryModel';
 import { ItemRepository } from '../data/ItemRepository';
 import { SpaceRepository } from '../data/SpaceRepository';
 import { CategoryRepository } from '../data/CategoryRepository';
+import { EventRepository } from '../data/EventRepository';
 import { PageBackground } from '../components/PageBackground';
 import { EmptyState } from '../components/EmptyState';
+import { ConfirmDeleteDialog } from '../components/ConfirmDeleteDialog';
 
 const DEFAULT_CATEGORIES: string[] = ['衣物', '书籍', '数码', '厨房', '文件', '其他'];
 
@@ -27,6 +29,8 @@ export struct ItemDetailPage {
   private repo: ItemRepository = new ItemRepository();
   private spaceRepo: SpaceRepository = new SpaceRepository();
   private categoryRepo: CategoryRepository = new CategoryRepository();
+  private eventRepo: EventRepository = new EventRepository();
+  private deleteDialogController: CustomDialogController | null = null;
 
   aboutToAppear(): void {
     const itemId: number = AppStorage.get<number>('currentItemId') ?? 0;
@@ -48,9 +52,32 @@ export struct ItemDetailPage {
 
   async deleteItem(): Promise<void> {
     if (this.item !== null) {
+      await this.eventRepo.deleteEventItemsByItemId(this.item.id);
       await this.repo.delete(this.item.id);
+      AppStorage.setOrCreate('itemRefreshToken', Date.now());
+      AppStorage.setOrCreate('spaceRefreshToken', Date.now());
+      AppStorage.setOrCreate('eventRefreshToken', Date.now());
       router.back();
     }
+  }
+
+  openDeleteItemDialog(): void {
+    if (this.item === null) {
+      return;
+    }
+    this.deleteDialogController = new CustomDialogController({
+      builder: ConfirmDeleteDialog({
+        title: '删除物品',
+        message: `确认删除“${this.item.name}”？删除后不可恢复。`,
+        onConfirm: () => {
+          this.deleteItem();
+        }
+      }),
+      autoCancel: true,
+      customStyle: true,
+      cornerRadius: 16,
+    });
+    this.deleteDialogController.open();
   }
 
   getDetailTitle(): string {
@@ -320,7 +347,7 @@ export struct ItemDetailPage {
             .backgroundColor(Color.Transparent)
             .fontColor('#FF3B30')
             .onClick(() => {
-              this.deleteItem();
+              this.openDeleteItemDialog();
             })
         }
       }

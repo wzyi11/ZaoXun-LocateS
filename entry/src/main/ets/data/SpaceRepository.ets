@@ -88,4 +88,18 @@ export class SpaceRepository {
     resultSet.close();
     return space;
   }
+
+  async delete(id: number): Promise<number> {
+    const store = this.db.getStore();
+    const predicates = new relationalStore.RdbPredicates(SPACE_TABLE_NAME);
+    predicates.equalTo('id', id);
+    return await store.delete(predicates);
+  }
+
+  async deleteByParent(parentId: number): Promise<number> {
+    const store = this.db.getStore();
+    const predicates = new relationalStore.RdbPredicates(SPACE_TABLE_NAME);
+    predicates.equalTo('parentId', parentId);
+    return await store.delete(predicates);
+  }
 }
