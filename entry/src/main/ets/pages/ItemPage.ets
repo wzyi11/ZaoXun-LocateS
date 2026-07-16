@@ -1,10 +1,17 @@
 import { router } from '@kit.ArkUI';
 import { Item, ItemInput } from '../model/ItemModel';
+import { Space } from '../model/SpaceModel';
 import { ItemRepository } from '../data/ItemRepository';
 import { CategoryRepository } from '../data/CategoryRepository';
+import { SpaceRepository } from '../data/SpaceRepository';
 import { EmptyState } from '../components/EmptyState';
 import { ItemCard } from '../components/ItemCard';
 import { CategoryGrid } from '../components/CategoryGrid';
+
+interface ItemLocationLabel {
+  itemId: number;
+  label: string;
+}
 
 @CustomDialog
 struct AddCategoryDialog {
@@ -72,9 +79,11 @@ export struct ItemPage {
   @State selectedCategory: string = '全部';
   @State loading: boolean = true;
   @State categories: string[] = [];
+  @State itemLocationLabels: ItemLocationLabel[] = [];
   @StorageLink('itemRefreshToken') @Watch('onRefreshToken') itemRefreshToken: number = 0;
   private repo: ItemRepository = new ItemRepository();
   private categoryRepo: CategoryRepository = new CategoryRepository();
+  private spaceRepo: SpaceRepository = new SpaceRepository();
   private addCategoryDialogController: CustomDialogController | null = null;
 
   // ---- 半模态面板状态 ----
@@ -122,9 +131,52 @@ export struct ItemPage {
 
   async loadItems(): Promise<void> {
     this.loading = true;
-    this.items = await this.repo.getAll();
+    const items: Item[] = await this.repo.getAll();
+    this.itemLocationLabels = await this.buildItemLocationLabels(items);
+    this.items = items;
     this.applyFilters();
     this.loading = false;
+  }
+
+  async buildItemLocationLabels(items: Item[]): Promise<ItemLocationLabel[]> {
+    const labels: ItemLocationLabel[] = [];
+    for (let i = 0; i < items.length; i++) {
+      labels.push({
+        itemId: items[i].id,
+        label: await this.resolveLocationLabel(items[i].spaceId),
+      });
+    }
+    return labels;
+  }
+
+  async resolveLocationLabel(spaceId: number): Promise<string> {
+    if (spaceId <= 0) {
+      return '未分配';
+    }
+
+    const space: Space | null = await this.spaceRepo.getById(spaceId);
+    if (space === null) {
+      return '未分配';
+    }
+
+    if (space.level === 2) {
+      const parent: Space | null = await this.spaceRepo.getById(space.parentId);
+      if (parent === null) {
+        return space.name;
+      }
+      return `${parent.name} -> ${space.name}`;
+    }
+
+    return space.name;
+  }
+
+  getItemLocationLabel(itemId: number): string {
+    for (let i = 0; i < this.itemLocationLabels.length; i++) {
+      if (this.itemLocationLabels[i].itemId === itemId) {
+        return this.itemLocationLabels[i].label;
+      }
+    }
+    return '未分配';
   }
 
   applyFilters(): void {
@@ -372,7 +424,7 @@ export struct ItemPage {
                 ItemCard({
                   name: item.name,
                   category: item.category,
-                  location: item.spaceId > 0 ? `空间${item.spaceId}` : '未分配',
+                  location: this.getItemLocationLabel(item.id),
                   onTap: () => {
                     AppStorage.setOrCreate('currentItemId', item.id);
                     router.pushUrl({ url: 'pages/ItemDetailPage' });

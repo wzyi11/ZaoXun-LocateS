@@ -31,7 +31,7 @@ struct Index {
       .width('100%')
       .height(48)
       .padding({ left: 12, right: 12 })
-      .backgroundColor(Color.White)
+      // .backgroundColor(Color.White)
 
       Stack() {
         if (this.currentBottomNav === 0) {
