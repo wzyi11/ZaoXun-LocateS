@@ -40,6 +40,10 @@ export struct EventDetailPage {
     }
   }
 
+  aboutToDisappear(): void {
+    AppStorage.setOrCreate('eventRefreshToken', Date.now());
+  }
+
   async loadData(eventId: number, showLoading: boolean = true): Promise<void> {
     if (showLoading) {
       this.loading = true;

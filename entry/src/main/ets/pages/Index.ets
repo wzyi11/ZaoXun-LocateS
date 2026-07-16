@@ -12,6 +12,7 @@ struct Index {
   @State currentBottomNav: number = 0;
   // 顶部选项，3个
   @State currentTabIndex: number = 0;
+  private tabRefreshSeq: number = 0;
 
   onPageShow(): void {
     this.currentBottomNav = 0;
@@ -119,7 +120,8 @@ struct Index {
   }
 
   refreshCurrentTab(): void {
-    const token: number = Date.now();
+    this.tabRefreshSeq++;
+    const token: number = this.tabRefreshSeq;
     if (this.currentTabIndex === 0) {
       AppStorage.setOrCreate('itemRefreshToken', token);
     } else if (this.currentTabIndex === 1) {
