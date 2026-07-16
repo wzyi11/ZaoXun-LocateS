@@ -11,6 +11,7 @@ import { common } from '@kit.AbilityKit';
 const SECTION_COLORS: string[] = ['#5B8DEF', '#7ED957', '#F59A2A', '#B06CFF', '#F45B69'];
 const IMAGE_PANEL_WIDTH: number = 360;
 const IMAGE_PANEL_HEIGHT: number = 260;
+const IMAGE_SCROLL_HEIGHT: number = 520;
 
 @Entry
 @Component
@@ -20,10 +21,16 @@ export struct SpacePage {
   @State breadcrumb: Space[] = [];
   @State loading: boolean = true;
   @State showAddDialog: boolean = false;
+  @State showFullscreenImage: boolean = false;
+  @State fsImageWidth: number = 360;
+  @State fsImageHeight: number = 780;
   @State showAddSheet: boolean = false;
   @State sheetKey: number = 0;
   @State selectedImageURI: string = '';
   @State selectedImageName: string = '';
+  @State showSectionItemSheet: boolean = false;
+  @State sectionItemSheetKey: number = 0;
+  @State unassignedItems: Item[] = [];
   @State newSpaceName: string = '';
   @State pendingMarkerX: number = -1;
   @State pendingMarkerY: number = -1;
@@ -31,6 +38,7 @@ export struct SpacePage {
   @StorageLink('itemRefreshToken') @Watch('onItemRefreshToken') itemRefreshToken: number = 0;
   private spaceRepo: SpaceRepository = new SpaceRepository();
   private itemRepo: ItemRepository = new ItemRepository();
+  private scrollController: Scroller = new Scroller();
 
   aboutToAppear(): void {
     this.loadSpaces();
@@ -146,8 +154,20 @@ export struct SpacePage {
   setPendingMarker(event: ClickEvent): void {
     const rawX: number = Number(event.x);
     const rawY: number = Number(event.y);
+    const scrollOffset = this.scrollController.currentOffset();
+    const offsetY: number = scrollOffset ? scrollOffset.yOffset : 0;
+    const adjustedY: number = rawY + offsetY;
     const x: number = Math.max(0.06, Math.min(0.94, rawX / IMAGE_PANEL_WIDTH));
-    const y: number = Math.max(0.08, Math.min(0.92, rawY / IMAGE_PANEL_HEIGHT));
+    const y: number = Math.max(0.08, Math.min(0.92, adjustedY / IMAGE_SCROLL_HEIGHT));
+    this.pendingMarkerX = x;
+    this.pendingMarkerY = y;
+  }
+
+  setPendingMarkerFullscreen(event: ClickEvent): void {
+    const rawX: number = Number(event.x);
+    const rawY: number = Number(event.y);
+    const x: number = Math.max(0.06, Math.min(0.94, rawX / this.fsImageWidth));
+    const y: number = Math.max(0.08, Math.min(0.92, rawY / this.fsImageHeight));
     this.pendingMarkerX = x;
     this.pendingMarkerY = y;
   }
@@ -301,6 +321,31 @@ export struct SpacePage {
     }
   }
 
+  async loadUnassignedItems(): Promise<void> {
+    try {
+      this.unassignedItems = await this.itemRepo.getUnassigned();
+    } catch (err) {
+      this.unassignedItems = [];
+      console.error(`loadUnassignedItems failed: ${JSON.stringify(err)}`);
+    }
+  }
+
+  async assignItemToSection(itemId: number): Promise<void> {
+    try {
+      const item = await this.itemRepo.getById(itemId);
+      if (item) {
+        item.spaceId = this.getParentId();
+        await this.itemRepo.update(item);
+        await this.loadUnassignedItems();
+        await this.loadItems(this.getParentId());
+        AppStorage.setOrCreate('itemRefreshToken', Date.now());
+        AppStorage.setOrCreate('spaceRefreshToken', Date.now());
+      }
+    } catch (err) {
+      console.error(`assignItemToSection failed: ${JSON.stringify(err)}`);
+    }
+  }
+
   @Builder
   NavigationHeader() {
     Row() {
@@ -420,59 +465,69 @@ export struct SpacePage {
     Scroll() {
       Column({ space: 12 }) {
         Stack() {
-          Image($r('app.media.bg_preset_1'))
+          Scroll(this.scrollController) {
+            Stack() {
+              if (this.breadcrumb.length > 0 && this.breadcrumb[0].image) {
+                Image(this.breadcrumb[0].image)
+                  .width('100%')
+                  .height(IMAGE_SCROLL_HEIGHT)
+                  .objectFit(ImageFit.Cover)
+                  .borderRadius(12)
+              } else {
+                Image($r('app.media.bg_preset_1'))
+                  .width('100%')
+                  .height(IMAGE_SCROLL_HEIGHT)
+                  .objectFit(ImageFit.Cover)
+                  .borderRadius(12)
+              }
+
+              ForEach(this.spaces, (section: Space, index: number) => {
+                Column({ space: 4 }) {
+                  Circle()
+                    .width(28)
+                    .height(28)
+                    .fill(section.markerColor)
+                    .strokeWidth(4)
+                    .stroke('#66000000')
+                  Text(section.name)
+                    .fontSize(12)
+                    .fontColor(Color.White)
+                    .padding({ left: 8, right: 8, top: 3, bottom: 3 })
+                    .backgroundColor('#99000000')
+                    .borderRadius(6)
+                    .maxLines(1)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                }
+                .position({ x: `${section.markerX * 100}%`, y: `${section.markerY * 100}%` })
+                .markAnchor({ x: '50%', y: '50%' })
+                .onClick(() => {
+                  this.onSpaceTap(section);
+                })
+              }, (section: Space, index: number) => section.id.toString())
+            }
             .width('100%')
-            .height(260)
-            .objectFit(ImageFit.Cover)
-            .borderRadius(12)
-            .onClick((event: ClickEvent) => {
-              this.setPendingMarker(event);
-            })
-
-          ForEach(this.spaces, (section: Space, index: number) => {
-            Column({ space: 4 }) {
-              Circle()
-                .width(28)
-                .height(28)
-                .fill(section.markerColor)
-                .strokeWidth(4)
-                .stroke('#66000000')
-              Text(section.name)
-                .fontSize(12)
-                .fontColor(Color.White)
-                .padding({ left: 8, right: 8, top: 3, bottom: 3 })
-                .backgroundColor('#99000000')
-                .borderRadius(6)
-                .maxLines(1)
-                .textOverflow({ overflow: TextOverflow.Ellipsis })
-            }
-            .position({ x: `${section.markerX * 100}%`, y: `${section.markerY * 100}%` })
-            .markAnchor({ x: '50%', y: '50%' })
-            .onClick(() => {
-              this.onSpaceTap(section);
-            })
-          }, (section: Space, index: number) => section.id.toString())
-
-          if (this.hasPendingMarker()) {
-            Button() {
-              Text('+')
-                .fontSize(28)
-                .fontColor('#111')
-            }
-            .width(54)
-            .height(54)
-            .borderRadius(27)
-            .backgroundColor(Color.White)
-            .shadow({ radius: 8, color: '#33000000', offsetY: 4 })
-            .position({ x: `${this.pendingMarkerX * 100}%`, y: `${this.pendingMarkerY * 100}%` })
-            .markAnchor({ x: '50%', y: '50%' })
-            .onClick(() => {
-              this.showAddDialog = true;
-            })
+            .height(IMAGE_SCROLL_HEIGHT)
           }
+          .width('100%')
+          .height(IMAGE_PANEL_HEIGHT)
+          .scrollBar(BarState.Off)
+
+          Button() {
+            Text('🔍')
+              .fontSize(18)
+          }
+          .width(32)
+          .height(32)
+          .type(ButtonType.Circle)
+          .backgroundColor('#66000000')
+          .fontColor(Color.White)
+          .position({ x: 8, y: 8 })
+          .onClick(() => {
+            this.showFullscreenImage = true;
+          })
         }
         .width('100%')
-        .height(260)
+        .height(IMAGE_PANEL_HEIGHT)
 
         Row() {
           Text('位置')
@@ -548,7 +603,10 @@ export struct SpacePage {
           .borderRadius(18)
           .height(36)
           .onClick(() => {
-            this.openAddItemPage();
+            this.loadUnassignedItems();
+            this.showSectionItemSheet = false;
+            this.sectionItemSheetKey++;
+            this.showSectionItemSheet = true;
           })
       }
       .width('100%')
@@ -673,14 +731,6 @@ export struct SpacePage {
   @Builder
   addSpaceSheet() {
     Column() {
-      Text('添加空间')
-        .fontSize(20)
-        .fontWeight(FontWeight.Bold)
-        .fontColor('#1A1A1A')
-        .width('100%')
-        .textAlign(TextAlign.Start)
-        .margin({ bottom: 20 })
-
       Scroll() {
         Column({ space: 20 }) {
           Column({ space: 6 }) {
@@ -769,6 +819,181 @@ export struct SpacePage {
     .height('100%')
   }
 
+  @Builder
+  addItemToSectionSheet() {
+    Column() {
+      Scroll() {
+        if (this.unassignedItems.length === 0) {
+          Column() {
+            EmptyState({ icon: '📦', title: '没有未分配物品', subtitle: '点击下方按钮添加新物品' })
+          }
+          .width('100%')
+          .height('100%')
+        } else {
+          List({ space: 8 }) {
+            ForEach(this.unassignedItems, (item: Item, idx: number) => {
+              ListItem() {
+                Row() {
+                  Column({ space: 4 }) {
+                    Text(item.name)
+                      .fontSize(15)
+                      .fontColor('#333')
+                      .fontWeight(FontWeight.Medium)
+                    Text(item.category)
+                      .fontSize(12)
+                      .fontColor('#007AFF')
+                      .padding({ left: 6, right: 6, top: 2, bottom: 2 })
+                      .backgroundColor('#EBF5FF')
+                      .borderRadius(4)
+                  }
+                  .alignItems(HorizontalAlign.Start)
+                  .layoutWeight(1)
+                  Button('添加')
+                    .type(ButtonType.Normal)
+                    .fontColor(Color.White)
+                    .backgroundColor('#007AFF')
+                    .borderRadius(14)
+                    .height(28)
+                    .fontSize(12)
+                    .padding({ left: 12, right: 12 })
+                    .onClick(() => {
+                      this.assignItemToSection(item.id);
+                    })
+                }
+                .width('100%')
+                .padding(12)
+                .backgroundColor(Color.White)
+                .borderRadius(8)
+              }
+              .margin({ left: 16, right: 16 })
+            }, (item: Item, idx: number) => item.id.toString())
+          }
+          .width('100%')
+          .divider({ strokeWidth: 0 })
+          .scrollBar(BarState.Off)
+        }
+      }
+      .layoutWeight(1)
+      .width('100%')
+
+      Button() {
+        Text('+ 添加新物品')
+          .fontSize(15)
+          .fontColor(Color.White)
+          .fontWeight(FontWeight.Medium)
+      }
+      .width('100%')
+      .height(44)
+      .backgroundColor('#007AFF')
+      .borderRadius(22)
+      .margin({ top: 12, bottom: 8 })
+      .onClick(() => {
+        this.showSectionItemSheet = false;
+        this.openAddItemPage();
+      })
+    }
+    .padding({ left: 24, right: 24, top: 8, bottom: 24 })
+    .width('100%')
+    .height('100%')
+  }
+
+  @Builder
+  fullscreenImagePreview() {
+    Stack() {
+      Column()
+        .width('100%')
+        .height('100%')
+        .backgroundColor('#FF000000')
+
+      if (this.breadcrumb.length > 0 && this.breadcrumb[0].image) {
+        Image(this.breadcrumb[0].image)
+          .width('100%')
+          .height('100%')
+          .objectFit(ImageFit.Contain)
+          .onAreaChange((oldValue: Area, newValue: Area) => {
+            this.fsImageWidth = Number(newValue.width);
+            this.fsImageHeight = Number(newValue.height);
+          })
+          .onClick((event: ClickEvent) => {
+            this.setPendingMarkerFullscreen(event);
+          })
+      } else {
+        Image($r('app.media.bg_preset_1'))
+          .width('100%')
+          .height('100%')
+          .objectFit(ImageFit.Contain)
+          .onAreaChange((oldValue: Area, newValue: Area) => {
+            this.fsImageWidth = Number(newValue.width);
+            this.fsImageHeight = Number(newValue.height);
+          })
+          .onClick((event: ClickEvent) => {
+            this.setPendingMarkerFullscreen(event);
+          })
+      }
+
+      ForEach(this.spaces, (section: Space, index: number) => {
+        Column({ space: 4 }) {
+          Circle()
+            .width(28)
+            .height(28)
+            .fill(section.markerColor)
+            .strokeWidth(4)
+            .stroke('#66000000')
+          Text(section.name)
+            .fontSize(12)
+            .fontColor(Color.White)
+            .padding({ left: 8, right: 8, top: 3, bottom: 3 })
+            .backgroundColor('#99000000')
+            .borderRadius(6)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        }
+        .position({ x: `${section.markerX * 100}%`, y: `${section.markerY * 100}%` })
+        .markAnchor({ x: '50%', y: '50%' })
+        .onClick(() => {
+          this.onSpaceTap(section);
+        })
+      }, (section: Space, index: number) => section.id.toString())
+
+      if (this.hasPendingMarker()) {
+        Button() {
+          Text('+')
+            .fontSize(16)
+            .fontColor('#111')
+        }
+        .width(28)
+        .height(28)
+        .borderRadius(14)
+        .backgroundColor(Color.White)
+        .shadow({ radius: 4, color: '#33000000', offsetY: 2 })
+        .position({ x: `${this.pendingMarkerX * 100}%`, y: `${this.pendingMarkerY * 100}%` })
+        .markAnchor({ x: '50%', y: '50%' })
+        .onClick(() => {
+          this.showFullscreenImage = false;
+          this.showAddDialog = true;
+        })
+      }
+
+      Button() {
+        Text('✕')
+          .fontSize(20)
+          .fontColor(Color.White)
+      }
+      .width(40)
+      .height(40)
+      .type(ButtonType.Circle)
+      .backgroundColor('#66000000')
+      .position({ x: '100%', y: 0 })
+      .markAnchor({ x: '100%', y: 0 })
+      .offset({ x: -12, y: 48 })
+      .onClick(() => {
+        this.showFullscreenImage = false;
+      })
+    }
+    .width('100%')
+    .height('100%')
+  }
+
   build() {
     Stack() {
       Column() {
@@ -785,6 +1010,15 @@ export struct SpacePage {
       }
       .width('100%')
       .height('100%')
+      .bindSheet(this.showSectionItemSheet, this.addItemToSectionSheet, {
+        height: '75%',
+        dragBar: true,
+        showClose: true,
+        title: { title: '添加物品到分区' },
+        onDisappear: () => {
+          this.showSectionItemSheet = false;
+        },
+      })
 
       if (this.breadcrumb.length === 0) {
         Button() {
@@ -811,12 +1045,16 @@ export struct SpacePage {
       if (this.showAddDialog) {
         this.AddDialog()
       }
+
+      if (this.showFullscreenImage) {
+        this.fullscreenImagePreview()
+      }
     }
     .width('100%')
     .height('100%')
     .backgroundColor('#F5F5F5')
     .bindSheet(this.showAddSheet, this.addSpaceSheet, {
-      height: '75%',
+      height: '50%',
       dragBar: true,
       showClose: true,
       title: { title: '添加空间' },

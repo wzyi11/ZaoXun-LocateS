@@ -117,6 +117,29 @@ export class ItemRepository {
     return items;
   }
 
+  async getUnassigned(): Promise<Item[]> {
+    const store = this.db.getStore();
+    const predicates = new relationalStore.RdbPredicates(ITEM_TABLE_NAME);
+    predicates.equalTo('spaceId', 0);
+    predicates.orderByDesc('createTime');
+    const resultSet = await store.query(predicates, ['id', 'name', 'category', 'spaceId', 'image', 'purchaseDate', 'note', 'createTime']);
+    const items: Item[] = [];
+    while (resultSet.goToNextRow()) {
+      items.push({
+        id: resultSet.getLong(resultSet.getColumnIndex('id')),
+        name: resultSet.getString(resultSet.getColumnIndex('name')),
+        category: resultSet.getString(resultSet.getColumnIndex('category')),
+        spaceId: resultSet.getLong(resultSet.getColumnIndex('spaceId')),
+        image: resultSet.getString(resultSet.getColumnIndex('image')),
+        purchaseDate: resultSet.getString(resultSet.getColumnIndex('purchaseDate')),
+        note: resultSet.getString(resultSet.getColumnIndex('note')),
+        createTime: resultSet.getString(resultSet.getColumnIndex('createTime')),
+      });
+    }
+    resultSet.close();
+    return items;
+  }
+
   async update(item: Item): Promise<number> {
     const store = this.db.getStore();
     const valueBucket: relationalStore.ValuesBucket = {
