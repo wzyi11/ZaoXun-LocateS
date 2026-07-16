@@ -403,7 +403,7 @@ export struct SpacePage {
       .height(20)
     }
   }
-  
+
   @Builder
   BreadcrumbBar() {
     if (this.breadcrumb.length > 0) {
