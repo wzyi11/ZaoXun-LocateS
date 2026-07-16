@@ -36,6 +36,7 @@ export class Database {
       await this.store.executeSql(EVENT_CREATE_SQL);
       await this.store.executeSql(EVENT_ITEM_CREATE_SQL);
       await this.store.executeSql(CATEGORY_CREATE_SQL);
+      await this.ensureSpaceColumns();
       console.info('Database initialized successfully');
     } catch (err) {
       let e = err as BusinessError;
@@ -48,5 +49,33 @@ export class Database {
       throw new Error('Database not initialized. Call init() first.');
     }
     return this.store;
+  }
+
+  private async ensureSpaceColumns(): Promise<void> {
+    if (!this.store) {
+      return;
+    }
+
+    await this.addColumnIfMissing("ALTER TABLE space ADD COLUMN image TEXT DEFAULT ''");
+    await this.addColumnIfMissing("ALTER TABLE space ADD COLUMN markerX REAL DEFAULT 0.5");
+    await this.addColumnIfMissing("ALTER TABLE space ADD COLUMN markerY REAL DEFAULT 0.5");
+    await this.addColumnIfMissing("ALTER TABLE space ADD COLUMN markerColor TEXT DEFAULT '#5B8DEF'");
+  }
+
+  private async addColumnIfMissing(sql: string): Promise<void> {
+    if (!this.store) {
+      return;
+    }
+
+    try {
+      await this.store.executeSql(sql);
+    } catch (err) {
+      const e = err as BusinessError;
+      const message: string = e.message ? e.message.toLowerCase() : '';
+      if (message.includes('duplicate') || message.includes('exists')) {
+        return;
+      }
+      console.error(`Database migration failed: ${e.code}, ${e.message}`);
+    }
   }
 }

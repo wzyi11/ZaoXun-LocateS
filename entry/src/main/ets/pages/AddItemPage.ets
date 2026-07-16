@@ -5,6 +5,10 @@ import { PageBackground } from '../components/PageBackground';
 
 const CATEGORIES: string[] = ['衣物', '书籍', '数码', '厨房', '文件', '其他'];
 
+interface AddItemParams {
+  spaceId?: number;
+}
+
 @Entry
 @Component
 export struct AddItemPage {
@@ -12,7 +16,15 @@ export struct AddItemPage {
   @State category: string = '其他';
   @State purchaseDate: string = '';
   @State note: string = '';
+  @State targetSpaceId: number = 0;
   private repo: ItemRepository = new ItemRepository();
+
+  aboutToAppear(): void {
+    const params = router.getParams() as AddItemParams;
+    if (params && params.spaceId !== undefined) {
+      this.targetSpaceId = Number(params.spaceId);
+    }
+  }
 
   build() {
     Stack() { PageBackground()
@@ -122,7 +134,7 @@ export struct AddItemPage {
     const itemInput: ItemInput = {
       name: this.name.trim(),
       category: this.category,
-      spaceId: 0,
+      spaceId: this.targetSpaceId,
       image: '',
       purchaseDate: this.purchaseDate,
       note: this.note,
@@ -130,6 +142,7 @@ export struct AddItemPage {
     };
     await this.repo.insert(itemInput);
     AppStorage.setOrCreate('itemRefreshToken', Date.now());
+    AppStorage.setOrCreate('spaceRefreshToken', Date.now());
     router.back();
   }
 }
