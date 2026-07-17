@@ -16,6 +16,7 @@ struct Index {
   @State currentBottomNav: number = 0;
   @State currentTabIndex: number = 0;
   @State isFabActive: boolean = false;
+  @State test1 :boolean = false;
   @StorageLink('statusBarHeight') statusBarHeight: number = 36;
   @StorageLink('naviIndicatorHeight') naviIndicatorHeight: number = 0;
 
@@ -75,7 +76,9 @@ struct Index {
         Column() {
           Row({ space: 8 }) {
             this.buildQuickAction('📦', '物品', () => {
+
               this.isFabActive = false;
+              this.test1 = true;
               router.pushUrl({ url: 'pages/AddItemPage' });
             })
             this.buildQuickAction('🏠', '空间', () => {
@@ -97,7 +100,7 @@ struct Index {
         }
         .width('100%')
         .alignItems(HorizontalAlign.Center)
-        .position({ bottom: 92 + this.naviIndicatorHeight })
+        .position({ bottom: 92 + 20 })
       }
 
       // ====== miniBar 点击关闭覆盖层 ======
