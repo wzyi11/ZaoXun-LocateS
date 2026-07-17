@@ -23,10 +23,18 @@ export struct EventPage {
     this.loadEvents();
   }
 
+  onPageShow(): void {
+    this.loadEvents();
+  }
+
   onRefreshToken(): void {
     if (this.eventRefreshToken > 0) {
       this.loadEvents();
     }
+  }
+
+  getEventListKey(item: EventListItem): string {
+    return `${item.event.id}_${item.event.status}_${item.prepared}_${item.total}`;
   }
 
   async loadEvents(): Promise<void> {
@@ -106,7 +114,7 @@ export struct EventPage {
                   })
                     .margin({ left: 16, right: 16 })
                 }
-              }, (item: EventListItem, index: number) => item.event.id.toString())
+              }, (item: EventListItem, index: number) => this.getEventListKey(item))
             }
 
             if (this.completedEvents.length > 0) {
@@ -135,7 +143,7 @@ export struct EventPage {
                   })
                     .margin({ left: 16, right: 16 })
                 }
-              }, (item: EventListItem, index: number) => item.event.id.toString())
+              }, (item: EventListItem, index: number) => this.getEventListKey(item))
             }
           }
           .width('100%')

@@ -1,4 +1,5 @@
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from '@ohos/hypium';
+import { SPACE_CREATE_SQL } from '../main/ets/model/SpaceModel';
 
 export default function localUnitTest() {
   describe('localUnitTest', () => {
@@ -28,6 +29,13 @@ export default function localUnitTest() {
       // Defines a variety of assertion methods, which are used to declare expected boolean conditions.
       expect(a).assertContain(b);
       expect(a).assertEqual(a);
+    });
+
+    it('spaceSchemaContainsMarkerFields', 0, () => {
+      expect(SPACE_CREATE_SQL).assertContain('image TEXT');
+      expect(SPACE_CREATE_SQL).assertContain('markerX REAL');
+      expect(SPACE_CREATE_SQL).assertContain('markerY REAL');
+      expect(SPACE_CREATE_SQL).assertContain('markerColor TEXT');
     });
   });
 }

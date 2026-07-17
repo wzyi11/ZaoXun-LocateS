@@ -2,6 +2,7 @@ import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.Ab
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { Database } from '../data/Database';
+import { BackgroundStore } from '../data/BackgroundStore';
 
 const DOMAIN = 0x0000;
 
@@ -29,6 +30,9 @@ export default class EntryAbility extends UIAbility {
     } catch (err) {
       hilog.error(DOMAIN, 'testTag', 'Failed to init database. Cause: %{public}s', JSON.stringify(err));
     }
+
+    // 初始化背景配置
+    BackgroundStore.init(this.context);
 
     // Configure immersive window for blur effects
     windowStage.getMainWindow().then((mainWindow) => {

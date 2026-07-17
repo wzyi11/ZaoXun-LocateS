@@ -3,6 +3,7 @@ import { router } from '@kit.ArkUI';
 import { ItemPage } from './ItemPage';
 import { SpacePage } from './SpacePage';
 import { EventPage } from './EventPage';
+import { PageBackground } from '../components/PageBackground';
 
 @Entry
 @Component
@@ -11,6 +12,7 @@ struct Index {
   @State currentBottomNav: number = 0;
   // 顶部选项，3个
   @State currentTabIndex: number = 0;
+  private tabRefreshSeq: number = 0;
 
   onPageShow(): void {
     this.currentBottomNav = 0;
@@ -18,7 +20,9 @@ struct Index {
   }
 
   build() {
-    Column() {
+    Stack() {
+      PageBackground()
+      Column() {
       Row() {
         this.buildTopTab('📦 物品', 0)
         this.buildTopTab('🏠 空间', 1)
@@ -27,7 +31,7 @@ struct Index {
       .width('100%')
       .height(48)
       .padding({ left: 12, right: 12 })
-      .backgroundColor(Color.White)
+      // .backgroundColor(Color.White)
 
       Stack() {
         if (this.currentBottomNav === 0) {
@@ -59,7 +63,9 @@ struct Index {
     .width('100%')
     .height('100%')
     .padding({ top: 36 })
-    .backgroundColor('#F5F5F5')
+    }
+    .width('100%')
+    .height('100%')
   }
 
   @Builder
@@ -114,7 +120,8 @@ struct Index {
   }
 
   refreshCurrentTab(): void {
-    const token: number = Date.now();
+    this.tabRefreshSeq++;
+    const token: number = this.tabRefreshSeq;
     if (this.currentTabIndex === 0) {
       AppStorage.setOrCreate('itemRefreshToken', token);
     } else if (this.currentTabIndex === 1) {

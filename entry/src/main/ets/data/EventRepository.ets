@@ -95,6 +95,28 @@ export class EventRepository {
     return await store.update(valueBucket, predicates);
   }
 
+  async deleteEventItems(eventId: number): Promise<number> {
+    const store = this.db.getStore();
+    const predicates = new relationalStore.RdbPredicates(EVENT_ITEM_TABLE_NAME);
+    predicates.equalTo('eventId', eventId);
+    return await store.delete(predicates);
+  }
+
+  async deleteEventItemsByItemId(itemId: number): Promise<number> {
+    const store = this.db.getStore();
+    const predicates = new relationalStore.RdbPredicates(EVENT_ITEM_TABLE_NAME);
+    predicates.equalTo('itemId', itemId);
+    return await store.delete(predicates);
+  }
+
+  async delete(eventId: number): Promise<number> {
+    const store = this.db.getStore();
+    await this.deleteEventItems(eventId);
+    const predicates = new relationalStore.RdbPredicates(EVENT_TABLE_NAME);
+    predicates.equalTo('id', eventId);
+    return await store.delete(predicates);
+  }
+
   async complete(eventId: number): Promise<number> {
     const store = this.db.getStore();
     const valueBucket: relationalStore.ValuesBucket = {

@@ -4,6 +4,7 @@ import { Item } from '../model/ItemModel';
 import { EventRepository } from '../data/EventRepository';
 import { ItemRepository } from '../data/ItemRepository';
 import { EmptyState } from '../components/EmptyState';
+import { PageBackground } from '../components/PageBackground';
 
 @Entry
 @Component
@@ -71,7 +72,8 @@ export struct CreateEventPage {
   }
 
   build() {
-    Column() {
+    Stack() { PageBackground()
+      Column() {
       Row() {
         Button('取消')
           .type(ButtonType.Normal)
@@ -205,6 +207,8 @@ export struct CreateEventPage {
     .width('100%')
     .height('100%')
     .padding({ top: 36 })
-    .backgroundColor('#F5F5F5')
+    }
+    .width('100%')
+    .height('100%')
   }
 }

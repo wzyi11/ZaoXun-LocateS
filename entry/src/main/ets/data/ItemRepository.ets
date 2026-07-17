@@ -72,6 +72,32 @@ export class ItemRepository {
     return await store.delete(predicates);
   }
 
+  async updateCategory(oldCategory: string, newCategory: string): Promise<number> {
+    const store = this.db.getStore();
+    const valueBucket: relationalStore.ValuesBucket = {
+      'category': newCategory,
+    };
+    const predicates = new relationalStore.RdbPredicates(ITEM_TABLE_NAME);
+    predicates.equalTo('category', oldCategory);
+    return await store.update(valueBucket, predicates);
+  }
+
+  async clearSpaceId(spaceId: number): Promise<number> {
+    const store = this.db.getStore();
+    const valueBucket: relationalStore.ValuesBucket = {
+      'spaceId': 0,
+    };
+    const predicates = new relationalStore.RdbPredicates(ITEM_TABLE_NAME);
+    predicates.equalTo('spaceId', spaceId);
+    return await store.update(valueBucket, predicates);
+  }
+
+  async clearSpaceIds(spaceIds: number[]): Promise<void> {
+    for (let i = 0; i < spaceIds.length; i++) {
+      await this.clearSpaceId(spaceIds[i]);
+    }
+  }
+
   async getById(id: number): Promise<Item | null> {
     const store = this.db.getStore();
     const predicates = new relationalStore.RdbPredicates(ITEM_TABLE_NAME);
@@ -98,6 +124,29 @@ export class ItemRepository {
     const store = this.db.getStore();
     const predicates = new relationalStore.RdbPredicates(ITEM_TABLE_NAME);
     predicates.equalTo('spaceId', spaceId);
+    predicates.orderByDesc('createTime');
+    const resultSet = await store.query(predicates, ['id', 'name', 'category', 'spaceId', 'image', 'purchaseDate', 'note', 'createTime']);
+    const items: Item[] = [];
+    while (resultSet.goToNextRow()) {
+      items.push({
+        id: resultSet.getLong(resultSet.getColumnIndex('id')),
+        name: resultSet.getString(resultSet.getColumnIndex('name')),
+        category: resultSet.getString(resultSet.getColumnIndex('category')),
+        spaceId: resultSet.getLong(resultSet.getColumnIndex('spaceId')),
+        image: resultSet.getString(resultSet.getColumnIndex('image')),
+        purchaseDate: resultSet.getString(resultSet.getColumnIndex('purchaseDate')),
+        note: resultSet.getString(resultSet.getColumnIndex('note')),
+        createTime: resultSet.getString(resultSet.getColumnIndex('createTime')),
+      });
+    }
+    resultSet.close();
+    return items;
+  }
+
+  async getUnassigned(): Promise<Item[]> {
+    const store = this.db.getStore();
+    const predicates = new relationalStore.RdbPredicates(ITEM_TABLE_NAME);
+    predicates.equalTo('spaceId', 0);
     predicates.orderByDesc('createTime');
     const resultSet = await store.query(predicates, ['id', 'name', 'category', 'spaceId', 'image', 'purchaseDate', 'note', 'createTime']);
     const items: Item[] = [];

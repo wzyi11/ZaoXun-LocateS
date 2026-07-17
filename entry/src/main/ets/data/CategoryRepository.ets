@@ -2,6 +2,9 @@ import { relationalStore } from '@kit.ArkData';
 import { Category, CategoryInput, CATEGORY_TABLE_NAME } from '../model/CategoryModel';
 import { Database } from './Database';
 
+export const DEFAULT_CATEGORY_NAME: string = '其他';
+export const DEFAULT_CATEGORY_NAMES: string[] = ['衣物', '书籍', '数码', '厨房', '文件', DEFAULT_CATEGORY_NAME];
+
 export class CategoryRepository {
   private db: Database = Database.getInstance();
 
@@ -27,6 +30,35 @@ export class CategoryRepository {
     }
     resultSet.close();
     return categories;
+  }
+
+  async ensureDefaults(): Promise<Category[]> {
+    let categories: Category[] = await this.getAll();
+    if (categories.length > 0) {
+      return categories;
+    }
+
+    for (let i = 0; i < DEFAULT_CATEGORY_NAMES.length; i++) {
+      await this.insert({ name: DEFAULT_CATEGORY_NAMES[i] });
+    }
+    categories = await this.getAll();
+    return categories;
+  }
+
+  async getByName(name: string): Promise<Category | null> {
+    const store = this.db.getStore();
+    const predicates = new relationalStore.RdbPredicates(CATEGORY_TABLE_NAME);
+    predicates.equalTo('name', name);
+    const resultSet = await store.query(predicates, ['id', 'name']);
+    let category: Category | null = null;
+    if (resultSet.goToNextRow()) {
+      category = {
+        id: resultSet.getLong(resultSet.getColumnIndex('id')),
+        name: resultSet.getString(resultSet.getColumnIndex('name')),
+      };
+    }
+    resultSet.close();
+    return category;
   }
 
   async delete(id: number): Promise<number> {

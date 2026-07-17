@@ -1,20 +1,51 @@
 import { router } from '@kit.ArkUI';
 import { Item, ItemInput } from '../model/ItemModel';
+import { Category } from '../model/CategoryModel';
 import { ItemRepository } from '../data/ItemRepository';
+import { CategoryRepository, DEFAULT_CATEGORY_NAME } from '../data/CategoryRepository';
+import { PageBackground } from '../components/PageBackground';
 
-const CATEGORIES: string[] = ['衣物', '书籍', '数码', '厨房', '文件', '其他'];
+interface AddItemParams {
+  spaceId?: number;
+}
 
 @Entry
 @Component
 export struct AddItemPage {
   @State name: string = '';
-  @State category: string = '其他';
+  @State category: string = DEFAULT_CATEGORY_NAME;
+  @State categories: string[] = [];
   @State purchaseDate: string = '';
   @State note: string = '';
+  @State targetSpaceId: number = 0;
   private repo: ItemRepository = new ItemRepository();
+  private categoryRepo: CategoryRepository = new CategoryRepository();
+
+  aboutToAppear(): void {
+    const params = router.getParams() as AddItemParams;
+    if (params && params.spaceId !== undefined) {
+      this.targetSpaceId = Number(params.spaceId);
+    }
+    this.loadCategories();
+  }
+
+  async loadCategories(): Promise<void> {
+    const categories: Category[] = await this.categoryRepo.ensureDefaults();
+    const names: string[] = categories.map((category: Category) => category.name);
+    const otherIdx: number = names.indexOf(DEFAULT_CATEGORY_NAME);
+    if (otherIdx >= 0) {
+      names.splice(otherIdx, 1);
+      names.push(DEFAULT_CATEGORY_NAME);
+    }
+    this.categories = names;
+    if (this.categories.indexOf(this.category) === -1) {
+      this.category = DEFAULT_CATEGORY_NAME;
+    }
+  }
 
   build() {
-    Column() {
+    Stack() { PageBackground()
+      Column() {
       Row() {
         Button('取消')
           .type(ButtonType.Normal)
@@ -38,7 +69,7 @@ export struct AddItemPage {
       }
       .width('100%')
       .padding(16)
-      .backgroundColor(Color.White)
+      // .backgroundColor(Color.White)
 
       Column({ space: 16 }) {
         Column({ space: 6 }) {
@@ -60,7 +91,7 @@ export struct AddItemPage {
             .fontColor('#999')
             .padding({ left: 2 })
           Flex({ wrap: FlexWrap.Wrap }) {
-            ForEach(CATEGORIES, (cat: string, index: number) => {
+            ForEach(this.categories, (cat: string, index: number) => {
               Text(cat)
                 .fontSize(13)
                 .fontColor(cat === this.category ? '#fff' : '#666')
@@ -110,7 +141,7 @@ export struct AddItemPage {
     .width('100%')
     .height('100%')
     .padding({ top: 36 })
-    .backgroundColor('#F5F5F5')
+    }
   }
 
   async save(): Promise<void> {
@@ -121,7 +152,7 @@ export struct AddItemPage {
     const itemInput: ItemInput = {
       name: this.name.trim(),
       category: this.category,
-      spaceId: 0,
+      spaceId: this.targetSpaceId,
       image: '',
       purchaseDate: this.purchaseDate,
       note: this.note,
@@ -129,6 +160,7 @@ export struct AddItemPage {
     };
     await this.repo.insert(itemInput);
     AppStorage.setOrCreate('itemRefreshToken', Date.now());
+    AppStorage.setOrCreate('spaceRefreshToken', Date.now());
     router.back();
   }
 }

@@ -3,7 +3,6 @@ export struct CategoryGrid {
   @Prop categories: string[] = [];
   @Prop selected: string = '全部';
   onSelect: (category: string) => void = (category: string) => {};
-  onAddCategory?: () => void;
 
   build() {
     Scroll() {
@@ -20,23 +19,6 @@ export struct CategoryGrid {
               this.onSelect(category);
             })
         }, (category: string, index: number) => category)
-
-        Button(){
-          Text('+')
-            .fontSize(12)
-            .fontColor(Color.White)
-            .fontWeight(FontWeight.Bold)
-        }
-        .width(28)
-        .height(22)
-        .backgroundColor('#007AFF')
-        .borderRadius(14)
-        .margin({ right: 8 })
-        .onClick(()=>{
-          if (this.onAddCategory) {
-            this.onAddCategory();
-          }
-        })
       }
       .padding({ left: 16, right: 16, top: 4, bottom: 8 })
     }
