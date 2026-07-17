@@ -44,10 +44,10 @@ struct Index {
             this.buildTopTab('🎒 事件', 2)
           }
           .width('100%')
-          .height(48)
+          .height(30)
           .padding({ left: 12, right: 12 })
         }
-        .padding({ top: this.statusBarHeight })
+        .padding({ top: 40 })
         .width('100%')
 
         // 内容区
@@ -141,7 +141,7 @@ struct Index {
       .width('100%')
       .height(68)
       .padding({ left: 20, right: 20, top: 0, bottom: 0 })
-      .margin({ left: 16, right: 16, bottom: 12 + this.naviIndicatorHeight })
+      .margin({ left: 16, right: 16, bottom: 12 + 20 })
       .backgroundBlurStyle(BlurStyle.Thin, { colorMode: ThemeColorMode.SYSTEM })
       .backgroundColor('#F0F5F5F7')
       .borderRadius(34)
@@ -156,7 +156,7 @@ struct Index {
   buildTopTab(label: string, index: number) {
     Column({ space: 4 }) {
       Text(label)
-        .fontSize(15)
+        .fontSize(16)
         .fontColor(this.currentTabIndex === index ? '#007AFF' : '#666666')
         .fontWeight(this.currentTabIndex === index ? FontWeight.Medium : FontWeight.Normal)
       if (this.currentTabIndex === index) {
