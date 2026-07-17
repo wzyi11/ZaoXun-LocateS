@@ -3,6 +3,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { Database } from '../data/Database';
 import { BackgroundStore } from '../data/BackgroundStore';
+import { seedDataIfEmpty } from '../data/SeedData';
 
 const DOMAIN = 0x0000;
 
@@ -27,6 +28,8 @@ export default class EntryAbility extends UIAbility {
     // 初始化数据库（await确保表创建完成后再加载页面）
     try {
       await Database.getInstance().init(this.context);
+      // 首次启动时插入种子数据
+      await seedDataIfEmpty();
     } catch (err) {
       hilog.error(DOMAIN, 'testTag', 'Failed to init database. Cause: %{public}s', JSON.stringify(err));
     }
