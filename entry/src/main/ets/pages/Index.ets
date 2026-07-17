@@ -13,6 +13,11 @@ struct Index {
   // 顶部选项，3个
   @State currentTabIndex: number = 0;
 
+  private bottomTabs: BottomTabItem[] = [
+    { icon: $r('sys.symbol.house_fill'), label: '首页', index: 0 },
+    { icon: $r('sys.symbol.person_crop_circle_fill'), label: '我的', index: 1 },
+  ];
+
   onPageShow(): void {
     this.currentBottomNav = 0;
     this.refreshCurrentTab();
@@ -48,16 +53,18 @@ struct Index {
       .width('100%')
       .layoutWeight(1)
 
+      // HDS 风格浮动底部导航栏
       Row() {
-        this.buildBottomTab('🏠', '首页', 0)
-        this.buildBottomTab('👤', '我的', 1)
+        this.buildBottomTabItem(this.bottomTabs[0])
+        this.buildBottomTabItem(this.bottomTabs[1])
       }
       .width('100%')
-      .height(56)
+      .height(64)
+      .padding({ left: 16, right: 16, top: 0, bottom: 0 })
       .backgroundBlurStyle(BlurStyle.Thin, {
         colorMode: ThemeColorMode.SYSTEM
       })
-      .backgroundColor('#E8F0F0F0')
+      .backgroundColor('#E8F5F5F7')
     }
     .width('100%')
     .height('100%')
@@ -93,21 +100,21 @@ struct Index {
   }
 
   @Builder
-  buildBottomTab(icon: string, label: string, index: number) {
-    Button() {
-      Column({ space: 2 }) {
-        Text(icon)
-          .fontSize(24)
-        Text(label)
-          .fontSize(11)
-          .fontColor(this.currentBottomNav === index ? '#007AFF' : '#999')
-      }
-      .alignItems(HorizontalAlign.Center)
+  buildBottomTabItem(tab: BottomTabItem) {
+    Column({ space: 2 }) {
+      SymbolGlyph(tab.icon)
+        .fontSize(22)
+        .fontColor(this.currentBottomNav === tab.index ? ['#007AFF'] : ['#999999'])
+      Text(tab.label)
+        .fontSize(10)
+        .fontColor(this.currentBottomNav === tab.index ? '#007AFF' : '#999999')
     }
-    .type(ButtonType.Normal)
-    .backgroundColor(Color.Transparent)
+    .alignItems(HorizontalAlign.Center)
+    .justifyContent(FlexAlign.Center)
+    .layoutWeight(1)
+    .height('100%')
     .onClick(() => {
-      if (index === 0) {
+      if (tab.index === 0) {
         this.currentBottomNav = 0;
         this.refreshCurrentTab();
       } else {
@@ -115,7 +122,6 @@ struct Index {
         router.pushUrl({ url: 'pages/ProfilePage' });
       }
     })
-    .layoutWeight(1)
   }
 
   refreshCurrentTab(): void {
@@ -128,4 +134,10 @@ struct Index {
       AppStorage.setOrCreate('eventRefreshToken', token);
     }
   }
+}
+
+interface BottomTabItem {
+  icon: Resource;
+  label: ResourceStr;
+  index: number;
 }
