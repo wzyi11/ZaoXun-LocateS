@@ -173,9 +173,27 @@ export struct EventDetailPage {
       }),
       autoCancel: true,
       customStyle: true,
+      maskColor: '#66000000',
       cornerRadius: 16,
     });
     this.deleteDialogController.open();
+  }
+
+  @Builder
+  DeleteEventButton() {
+    Button() {
+      Text('删除事件')
+        .fontSize(16)
+        .fontColor(Color.White)
+        .fontWeight(FontWeight.Medium)
+    }
+    .width('100%')
+    .height(48)
+    .backgroundColor('#FF3B30')
+    .borderRadius(8)
+    .onClick(() => {
+      this.openDeleteEventDialog();
+    })
   }
 
   getStatusText(): string {
@@ -284,39 +302,37 @@ export struct EventDetailPage {
           .type(ButtonType.Normal)
           .backgroundColor(Color.Transparent)
           .fontColor('#007AFF')
+          .width(112)
+          .align(Alignment.Start) // 内容靠左对齐
           .onClick(() => {
             router.back();
           })
-        Blank()
+
         Text('事件详情')
           .fontSize(17)
           .fontWeight(FontWeight.Medium)
-        Blank()
-        Button('分享')
-          .type(ButtonType.Normal)
-          .backgroundColor(Color.Transparent)
-          .fontColor('#007AFF')
-          .onClick(() => {
-            this.doShare();
-          })
-        if (this.event !== null) {
-          Button('删除')
+          .textAlign(TextAlign.Center)
+          .layoutWeight(1)
+        Row() {
+          Button('分享')
             .type(ButtonType.Normal)
             .backgroundColor(Color.Transparent)
-            .fontColor('#FF3B30')
+            .fontColor('#007AFF')
             .onClick(() => {
-              this.openDeleteEventDialog();
+              this.doShare();
             })
+          if (!this.isCompleted() && this.event !== null) {
+            Button('完成')
+              .type(ButtonType.Normal)
+              .backgroundColor(Color.Transparent)
+              .fontColor('#34C759')
+              .onClick(() => {
+                this.markComplete();
+              })
+          }
         }
-        if (!this.isCompleted() && this.event !== null) {
-          Button('完成')
-            .type(ButtonType.Normal)
-            .backgroundColor(Color.Transparent)
-            .fontColor('#34C759')
-            .onClick(() => {
-              this.markComplete();
-            })
-        }
+        .width(112)
+        .justifyContent(FlexAlign.End)
       }
       .width('100%')
       .padding(16)
@@ -477,10 +493,18 @@ export struct EventDetailPage {
                   })
                 }
               }, (detail: EventItemDetail, index: number) => `${detail.eventItemId}_${detail.isPrepared ? 'p' : 'u'}`)
+              ListItem() {
+                Column() {
+                  this.DeleteEventButton()
+                }
+                .margin({ top: 12 })
+              }
             }
             .width('100%')
             .layoutWeight(1)
             .divider({ strokeWidth: 0 })
+          } else {
+            this.DeleteEventButton()
           }
         }
         .padding(16)

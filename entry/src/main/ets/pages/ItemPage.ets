@@ -214,6 +214,11 @@ export struct ItemPage {
     if (this.categories.indexOf(name) === -1) {
       this.categoryRepo.insert({ name }).then(() => {
         this.loadCategories();
+        if (this.showCategoryManageSheet) {
+          this.categoryRepo.getAll().then((categories: Category[]) => {
+            this.managedCategories = categories;
+          });
+        }
       });
     }
   }
@@ -234,6 +239,7 @@ export struct ItemPage {
       }),
       autoCancel: true,
       customStyle: true,
+      maskColor: '#66000000',
       cornerRadius: 16,
     });
     this.deleteCategoryDialogController.open();
@@ -403,7 +409,7 @@ export struct ItemPage {
     Column() {
       Scroll() {
         if (this.managedCategories.length === 0) {
-          EmptyState({ icon: '🏷', title: '还没有分类', subtitle: '点击分类栏的加号添加分类' })
+          EmptyState({ icon: '🏷', title: '还没有分类', subtitle: '点击下方按钮添加分类' })
         } else {
           Column({ space: 8 }) {
             ForEach(this.managedCategories, (category: Category, index: number) => {
@@ -442,6 +448,21 @@ export struct ItemPage {
       }
       .layoutWeight(1)
       .width('100%')
+
+      Button() {
+        Text('添加分类')
+          .fontSize(16)
+          .fontColor(Color.White)
+          .fontWeight(FontWeight.Medium)
+      }
+      .width('100%')
+      .height(44)
+      .backgroundColor('#007AFF')
+      .borderRadius(22)
+      .margin({ top: 12, bottom: 8 })
+      .onClick(() => {
+        this.onAddCategoryTap();
+      })
     }
     .padding({ left: 24, right: 24, top: 8, bottom: 24 })
     .width('100%')
@@ -479,9 +500,6 @@ export struct ItemPage {
             selected: this.selectedCategory,
             onSelect: (category: string) => {
               this.onCategorySelect(category);
-            },
-            onAddCategory: () => {
-              this.onAddCategoryTap();
             }
           })
             .layoutWeight(1)

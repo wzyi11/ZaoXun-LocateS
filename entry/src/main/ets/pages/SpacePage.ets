@@ -90,6 +90,13 @@ export struct SpacePage {
     return this.breadcrumb[this.breadcrumb.length - 1].name;
   }
 
+  getCurrentSpace(): Space | null {
+    if (this.breadcrumb.length === 0) {
+      return null;
+    }
+    return this.breadcrumb[this.breadcrumb.length - 1];
+  }
+
   async loadSpaces(): Promise<void> {
     this.loading = true;
     try {
@@ -362,6 +369,7 @@ export struct SpacePage {
       }),
       autoCancel: true,
       customStyle: true,
+      maskColor: '#66000000',
       cornerRadius: 16,
     });
     this.deleteSpaceDialogController.open();
@@ -446,6 +454,20 @@ export struct SpacePage {
           .padding({ left: 0, right: 8 })
           .onClick(() => { this.goBackOneLevel() })
           .width(72)
+        Blank()
+        Button('删除')
+          .type(ButtonType.Normal)
+          .backgroundColor(Color.Transparent)
+          .fontColor('#FF3B30')
+          .fontSize(15)
+          .padding({ left: 8, right: 0 })
+          .onClick(() => {
+            const current: Space | null = this.getCurrentSpace();
+            if (current !== null) {
+              this.openDeleteSpaceDialog(current);
+            }
+          })
+          .width(72)
       }
       .width('100%')
       .height(48)
@@ -514,18 +536,6 @@ export struct SpacePage {
                 .fontColor('#333')
                 .fontWeight(FontWeight.Medium)
                 .layoutWeight(1)
-              Button('删除')
-                .type(ButtonType.Normal)
-                .fontColor(Color.White)
-                .backgroundColor('#FF3B30')
-                .borderRadius(14)
-                .height(28)
-                .fontSize(12)
-                .padding({ left: 12, right: 12 })
-                .margin({ right: 8 })
-                .onClick(() => {
-                  this.openDeleteSpaceDialog(space);
-                })
               Text('>')
                 .fontSize(18)
                 .fontColor('#CCC')
@@ -651,18 +661,6 @@ export struct SpacePage {
                   .fontColor('#333')
                   .fontWeight(FontWeight.Medium)
                   .layoutWeight(1)
-                Button('删除')
-                  .type(ButtonType.Normal)
-                  .fontColor(Color.White)
-                  .backgroundColor('#FF3B30')
-                  .borderRadius(14)
-                  .height(28)
-                  .fontSize(12)
-                  .padding({ left: 12, right: 12 })
-                  .margin({ right: 8 })
-                  .onClick(() => {
-                    this.openDeleteSpaceDialog(section);
-                  })
                 Text('>')
                   .fontSize(18)
                   .fontColor('#CCC')

@@ -75,6 +75,7 @@ export struct ItemDetailPage {
       }),
       autoCancel: true,
       customStyle: true,
+      maskColor: '#66000000',
       cornerRadius: 16,
     });
     this.deleteDialogController.open();
