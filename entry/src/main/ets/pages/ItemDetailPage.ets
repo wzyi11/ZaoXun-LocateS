@@ -4,13 +4,11 @@ import { Space } from '../model/SpaceModel';
 import { Category } from '../model/CategoryModel';
 import { ItemRepository } from '../data/ItemRepository';
 import { SpaceRepository } from '../data/SpaceRepository';
-import { CategoryRepository } from '../data/CategoryRepository';
+import { CategoryRepository, DEFAULT_CATEGORY_NAME } from '../data/CategoryRepository';
 import { EventRepository } from '../data/EventRepository';
 import { PageBackground } from '../components/PageBackground';
 import { EmptyState } from '../components/EmptyState';
 import { ConfirmDeleteDialog } from '../components/ConfirmDeleteDialog';
-
-const DEFAULT_CATEGORIES: string[] = ['衣物', '书籍', '数码', '厨房', '文件', '其他'];
 
 @Entry
 @Component
@@ -158,8 +156,13 @@ export struct ItemDetailPage {
       return;
     }
 
-    const savedCategories: Category[] = await this.categoryRepo.getAll();
-    const names: string[] = savedCategories.length > 0 ? savedCategories.map((cat: Category) => cat.name) : DEFAULT_CATEGORIES;
+    const savedCategories: Category[] = await this.categoryRepo.ensureDefaults();
+    const names: string[] = savedCategories.map((cat: Category) => cat.name);
+    const otherIdx: number = names.indexOf(DEFAULT_CATEGORY_NAME);
+    if (otherIdx >= 0) {
+      names.splice(otherIdx, 1);
+      names.push(DEFAULT_CATEGORY_NAME);
+    }
     if (names.indexOf(this.item.category) === -1) {
       this.categories = names.concat([this.item.category]);
     } else {

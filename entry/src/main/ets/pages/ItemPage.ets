@@ -3,7 +3,7 @@ import { Item, ItemInput } from '../model/ItemModel';
 import { Space } from '../model/SpaceModel';
 import { Category } from '../model/CategoryModel';
 import { ItemRepository } from '../data/ItemRepository';
-import { CategoryRepository } from '../data/CategoryRepository';
+import { CategoryRepository, DEFAULT_CATEGORY_NAME } from '../data/CategoryRepository';
 import { SpaceRepository } from '../data/SpaceRepository';
 import { EmptyState } from '../components/EmptyState';
 import { ItemCard } from '../components/ItemCard';
@@ -95,7 +95,7 @@ export struct ItemPage {
   @State showAddItemSheet: boolean = false;
   @State sheetKey: number = 0;
   @State newItemName: string = '';
-  @State newItemCategory: string = '其他';
+  @State newItemCategory: string = DEFAULT_CATEGORY_NAME;
   @State newItemDate: string = '';
   @State newItemNote: string = '';
 
@@ -111,17 +111,14 @@ export struct ItemPage {
   }
 
   async loadCategories(): Promise<void> {
-    const DEFAULT_CATEGORIES: string[] = ['全部', '衣物', '书籍', '数码', '厨房', '文件', '其他'];
-    let cats = await this.categoryRepo.getAll();
-    if (cats.length === 0) {
-      for (const name of DEFAULT_CATEGORIES) {
-        if (name !== '全部') {
-          await this.categoryRepo.insert({ name });
-        }
-      }
-      cats = await this.categoryRepo.getAll();
+    const cats: Category[] = await this.categoryRepo.ensureDefaults();
+    const names: string[] = cats.map(c => c.name);
+    const otherIdx: number = names.indexOf(DEFAULT_CATEGORY_NAME);
+    if (otherIdx >= 0) {
+      names.splice(otherIdx, 1);
+      names.push(DEFAULT_CATEGORY_NAME);
     }
-    this.categories = ['全部', ...cats.map(c => c.name)];
+    this.categories = ['全部', ...names];
   }
 
   onPageShow(): void {
@@ -219,12 +216,20 @@ export struct ItemPage {
             this.managedCategories = categories;
           });
         }
+        AppStorage.setOrCreate('itemRefreshToken', Date.now());
       });
     }
   }
 
   async openCategoryManageSheet(): Promise<void> {
-    this.managedCategories = await this.categoryRepo.getAll();
+    const allCats: Category[] = await this.categoryRepo.getAll();
+    const catOtherIdx: number = allCats.findIndex((cat: Category) => cat.name === DEFAULT_CATEGORY_NAME);
+    if (catOtherIdx >= 0) {
+      const otherCat: Category = allCats[catOtherIdx];
+      allCats.splice(catOtherIdx, 1);
+      allCats.push(otherCat);
+    }
+    this.managedCategories = allCats;
     this.showCategoryManageSheet = true;
   }
 
@@ -232,7 +237,7 @@ export struct ItemPage {
     this.deleteCategoryDialogController = new CustomDialogController({
       builder: ConfirmDeleteDialog({
         title: '删除分类',
-        message: `确认删除“${category.name}”？该分类下的物品会改为“其他”。`,
+        message: `确认删除“${category.name}”？该分类下的物品会改为“${DEFAULT_CATEGORY_NAME}”。`,
         onConfirm: () => {
           this.deleteCategory(category);
         }
@@ -246,23 +251,30 @@ export struct ItemPage {
   }
 
   async deleteCategory(category: Category): Promise<void> {
-    if (category.name === '其他') {
+    if (category.name === DEFAULT_CATEGORY_NAME) {
       return;
     }
-    await this.repo.updateCategory(category.name, '其他');
+    await this.repo.updateCategory(category.name, DEFAULT_CATEGORY_NAME);
     await this.categoryRepo.delete(category.id);
     if (this.selectedCategory === category.name) {
       this.selectedCategory = '全部';
     }
     await this.loadCategories();
     await this.loadItems();
-    this.managedCategories = await this.categoryRepo.getAll();
+    const refreshCats: Category[] = await this.categoryRepo.getAll();
+    const refreshOtherIdx: number = refreshCats.findIndex((cat: Category) => cat.name === DEFAULT_CATEGORY_NAME);
+    if (refreshOtherIdx >= 0) {
+      const otherCat: Category = refreshCats[refreshOtherIdx];
+      refreshCats.splice(refreshOtherIdx, 1);
+      refreshCats.push(otherCat);
+    }
+    this.managedCategories = refreshCats;
     AppStorage.setOrCreate('itemRefreshToken', Date.now());
   }
 
   resetNewItemForm(): void {
     this.newItemName = '';
-    this.newItemCategory = '其他';
+    this.newItemCategory = DEFAULT_CATEGORY_NAME;
     this.newItemDate = '';
     this.newItemNote = '';
   }
@@ -419,19 +431,17 @@ export struct ItemPage {
                   .fontColor('#333')
                   .fontWeight(FontWeight.Medium)
                   .layoutWeight(1)
-                if (category.name === '其他') {
+                if (category.name === DEFAULT_CATEGORY_NAME) {
                   Text('默认')
                     .fontSize(12)
                     .fontColor('#999')
                 } else {
                   Button('删除')
                     .type(ButtonType.Normal)
-                    .fontColor(Color.White)
-                    .backgroundColor('#FF3B30')
-                    .borderRadius(14)
-                    .height(28)
-                    .fontSize(12)
-                    .padding({ left: 12, right: 12 })
+                    .backgroundColor(Color.Transparent)
+                    .fontColor('#FF3B30')
+                    .fontSize(14)
+                    .padding({ left: 8, right: 8 })
                     .onClick(() => {
                       this.openDeleteCategoryDialog(category);
                     })

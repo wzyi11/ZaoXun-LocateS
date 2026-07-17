@@ -1,9 +1,9 @@
 import { router } from '@kit.ArkUI';
 import { Item, ItemInput } from '../model/ItemModel';
+import { Category } from '../model/CategoryModel';
 import { ItemRepository } from '../data/ItemRepository';
+import { CategoryRepository, DEFAULT_CATEGORY_NAME } from '../data/CategoryRepository';
 import { PageBackground } from '../components/PageBackground';
-
-const CATEGORIES: string[] = ['衣物', '书籍', '数码', '厨房', '文件', '其他'];
 
 interface AddItemParams {
   spaceId?: number;
@@ -13,16 +13,33 @@ interface AddItemParams {
 @Component
 export struct AddItemPage {
   @State name: string = '';
-  @State category: string = '其他';
+  @State category: string = DEFAULT_CATEGORY_NAME;
+  @State categories: string[] = [];
   @State purchaseDate: string = '';
   @State note: string = '';
   @State targetSpaceId: number = 0;
   private repo: ItemRepository = new ItemRepository();
+  private categoryRepo: CategoryRepository = new CategoryRepository();
 
   aboutToAppear(): void {
     const params = router.getParams() as AddItemParams;
     if (params && params.spaceId !== undefined) {
       this.targetSpaceId = Number(params.spaceId);
+    }
+    this.loadCategories();
+  }
+
+  async loadCategories(): Promise<void> {
+    const categories: Category[] = await this.categoryRepo.ensureDefaults();
+    const names: string[] = categories.map((category: Category) => category.name);
+    const otherIdx: number = names.indexOf(DEFAULT_CATEGORY_NAME);
+    if (otherIdx >= 0) {
+      names.splice(otherIdx, 1);
+      names.push(DEFAULT_CATEGORY_NAME);
+    }
+    this.categories = names;
+    if (this.categories.indexOf(this.category) === -1) {
+      this.category = DEFAULT_CATEGORY_NAME;
     }
   }
 
@@ -74,7 +91,7 @@ export struct AddItemPage {
             .fontColor('#999')
             .padding({ left: 2 })
           Flex({ wrap: FlexWrap.Wrap }) {
-            ForEach(CATEGORIES, (cat: string, index: number) => {
+            ForEach(this.categories, (cat: string, index: number) => {
               Text(cat)
                 .fontSize(13)
                 .fontColor(cat === this.category ? '#fff' : '#666')

@@ -1,16 +1,16 @@
 import { router } from '@kit.ArkUI';
 import { Item } from '../model/ItemModel';
 import { Event } from '../model/EventModel';
+import { Category } from '../model/CategoryModel';
 import { ItemRepository } from '../data/ItemRepository';
 import { EventRepository } from '../data/EventRepository';
+import { CategoryRepository, DEFAULT_CATEGORY_NAME } from '../data/CategoryRepository';
 import { PageBackground } from '../components/PageBackground';
 
 interface CategoryCount {
   name: string;
   count: number;
 }
-
-const CATEGORY_NAMES: string[] = ['衣物', '书籍', '数码', '厨房', '文件', '其他'];
 
 @Entry
 @Component
@@ -25,6 +25,7 @@ struct ProfilePage {
   @StorageLink('eventRefreshToken') @Watch('onProfileRefresh') eventRefreshToken: number = 0;
   private itemRepo: ItemRepository = new ItemRepository();
   private eventRepo: EventRepository = new EventRepository();
+  private categoryRepo: CategoryRepository = new CategoryRepository();
 
   aboutToAppear(): void {
     this.loadStats();
@@ -43,12 +44,13 @@ struct ProfilePage {
     try {
     const items: Item[] = await this.itemRepo.getAll();
     const events: Event[] = await this.eventRepo.getAll();
+    const categories: Category[] = await this.categoryRepo.ensureDefaults();
 
     this.totalItems = items.length;
 
     const counts: CategoryCount[] = [];
-    for (let i = 0; i < CATEGORY_NAMES.length; i++) {
-      const catName: string = CATEGORY_NAMES[i];
+    for (let i = 0; i < categories.length; i++) {
+      const catName: string = categories[i].name;
       let cnt: number = 0;
       for (let j = 0; j < items.length; j++) {
         if (items[j].category === catName) {
@@ -59,6 +61,12 @@ struct ProfilePage {
       counts.push(cc);
     }
     this.categoryCounts = counts;
+    const otherIdx: number = this.categoryCounts.findIndex((cc: CategoryCount) => cc.name === DEFAULT_CATEGORY_NAME);
+    if (otherIdx >= 0) {
+      const other: CategoryCount = this.categoryCounts[otherIdx];
+      this.categoryCounts.splice(otherIdx, 1);
+      this.categoryCounts.push(other);
+    }
 
     let activeCnt: number = 0;
     let completedCnt: number = 0;

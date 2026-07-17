@@ -3,6 +3,7 @@ import { Space } from '../model/SpaceModel';
 import { Item } from '../model/ItemModel';
 import { SpaceRepository } from '../data/SpaceRepository';
 import { ItemRepository } from '../data/ItemRepository';
+import { EventRepository } from '../data/EventRepository';
 import { EmptyState } from '../components/EmptyState';
 import { ConfirmDeleteDialog } from '../components/ConfirmDeleteDialog';
 import { camera, cameraPicker } from '@kit.CameraKit';
@@ -39,8 +40,10 @@ export struct SpacePage {
   @StorageLink('itemRefreshToken') @Watch('onItemRefreshToken') itemRefreshToken: number = 0;
   private spaceRepo: SpaceRepository = new SpaceRepository();
   private itemRepo: ItemRepository = new ItemRepository();
+  private eventRepo: EventRepository = new EventRepository();
   private scrollController: Scroller = new Scroller();
   private deleteSpaceDialogController: CustomDialogController | null = null;
+  private deleteItemDialogController: CustomDialogController | null = null;
 
   aboutToAppear(): void {
     this.loadSpaces();
@@ -407,6 +410,34 @@ export struct SpacePage {
     AppStorage.setOrCreate('spaceRefreshToken', Date.now());
   }
 
+  openDeleteItemDialog(item: Item): void {
+    this.deleteItemDialogController = new CustomDialogController({
+      builder: ConfirmDeleteDialog({
+        title: '删除物品',
+        message: `确认删除“${item.name}”？删除后不可恢复。`,
+        onConfirm: () => {
+          this.deleteSectionItem(item);
+        }
+      }),
+      autoCancel: true,
+      customStyle: true,
+      maskColor: '#66000000',
+      cornerRadius: 16,
+    });
+    this.deleteItemDialogController.open();
+  }
+
+  async deleteSectionItem(item: Item): Promise<void> {
+    await this.eventRepo.deleteEventItemsByItemId(item.id);
+    await this.itemRepo.delete(item.id);
+    if (this.isSectionPage()) {
+      await this.loadItems(this.getParentId());
+    }
+    AppStorage.setOrCreate('itemRefreshToken', Date.now());
+    AppStorage.setOrCreate('spaceRefreshToken', Date.now());
+    AppStorage.setOrCreate('eventRefreshToken', Date.now());
+  }
+
   // @Builder
   // NavigationHeader() {
   //   Row() {
@@ -737,6 +768,15 @@ export struct SpacePage {
                 }
                 .alignItems(HorizontalAlign.Start)
                 .layoutWeight(1)
+                Button('删除')
+                  .type(ButtonType.Normal)
+                  .backgroundColor(Color.Transparent)
+                  .fontColor('#FF3B30')
+                  .fontSize(14)
+                  .padding({ left: 8, right: 8 })
+                  .onClick(() => {
+                    this.openDeleteItemDialog(item);
+                  })
               }
               .width('100%')
               .padding(12)
