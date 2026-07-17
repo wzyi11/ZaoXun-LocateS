@@ -4,6 +4,10 @@ import { window } from '@kit.ArkUI';
 import { Database } from '../data/Database';
 import { BackgroundStore } from '../data/BackgroundStore';
 import { seedDataIfEmpty } from '../data/SeedData';
+import {
+  BACKGROUND_TYPE_GRADIENT,
+  BACKGROUND_TYPE_NONE,
+} from '../model/BackgroundConfig';
 
 const DOMAIN = 0x0000;
 
@@ -36,6 +40,11 @@ export default class EntryAbility extends UIAbility {
 
     // 初始化背景配置
     BackgroundStore.init(this.context);
+    // 如果未设置背景，默认用渐变
+    if (AppStorage.get<string>('bgType') === BACKGROUND_TYPE_NONE) {
+      AppStorage.setOrCreate('bgType', BACKGROUND_TYPE_GRADIENT);
+      AppStorage.setOrCreate('bgValue', 'twilight');
+    }
 
     // Configure immersive window for blur effects
     windowStage.getMainWindow().then((mainWindow) => {
