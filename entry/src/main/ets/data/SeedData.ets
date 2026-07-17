@@ -5,8 +5,14 @@ import { Space } from '../model/SpaceModel';
 
 const TAG = '[SeedData]';
 
+interface SeedItem {
+  name: string;
+  category: string;
+  spaceId: number;
+}
+
 // 预设分类
-const CATEGORIES = ['衣物', '书籍', '数码', '厨房', '文件', '其他'];
+const CATEGORIES: string[] = ['衣物', '书籍', '数码', '厨房', '文件', '其他'];
 
 function now(): string {
   const d = new Date();
@@ -14,8 +20,7 @@ function now(): string {
 }
 
 // 预设示例物品
-const PRESET_ITEMS: Array<{ name: string; category: string; spaceId: number }> = [
-  // 衣物
+const PRESET_ITEMS: SeedItem[] = [
   { name: '白色短袖T恤', category: '衣物', spaceId: 0 },
   { name: '蓝色牛仔裤', category: '衣物', spaceId: 0 },
   { name: '黑色运动鞋', category: '衣物', spaceId: 0 },
