@@ -49,6 +49,16 @@ export default class EntryAbility extends UIAbility {
     // Configure immersive window for blur effects
     windowStage.getMainWindow().then((mainWindow) => {
       mainWindow.setWindowLayoutFullScreen(true);
+      // 获取底部导航条高度
+      try {
+        const naviArea = mainWindow.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR);
+        AppStorage.setOrCreate('naviIndicatorHeight', naviArea.bottomRect.height);
+      } catch (err) { /* ignore */ }
+      // 获取顶部状态栏高度
+      try {
+        const sysArea = mainWindow.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM);
+        AppStorage.setOrCreate('statusBarHeight', sysArea.topRect.height);
+      } catch (err) { /* ignore */ }
     }).catch((err: Error) => {
       hilog.error(DOMAIN, 'testTag', 'Failed to set immersive window. Cause: %{public}s', JSON.stringify(err));
     });

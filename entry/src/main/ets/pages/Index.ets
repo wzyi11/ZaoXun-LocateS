@@ -16,6 +16,8 @@ struct Index {
   @State currentBottomNav: number = 0;
   @State currentTabIndex: number = 0;
   @State isFabActive: boolean = false;
+  @StorageLink('statusBarHeight') statusBarHeight: number = 36;
+  @StorageLink('naviIndicatorHeight') naviIndicatorHeight: number = 0;
 
   private bottomTabs: BottomTabItem[] = [
     { icon: $r('sys.symbol.house_fill'), label: '首页', index: 0 },
@@ -34,15 +36,19 @@ struct Index {
 
       // ====== 主内容 ======
       Column() {
-        // 顶部 Tab
-        Row() {
-          this.buildTopTab('📦 物品', 0)
-          this.buildTopTab('🏠 空间', 1)
-          this.buildTopTab('🎒 事件', 2)
+        // 顶部安全区 + Tab
+        Column() {
+          Row() {
+            this.buildTopTab('📦 物品', 0)
+            this.buildTopTab('🏠 空间', 1)
+            this.buildTopTab('🎒 事件', 2)
+          }
+          .width('100%')
+          .height(48)
+          .padding({ left: 12, right: 12 })
         }
+        .padding({ top: this.statusBarHeight })
         .width('100%')
-        .height(48)
-        .padding({ left: 12, right: 12 })
 
         // 内容区
         Stack() {
@@ -91,7 +97,7 @@ struct Index {
         }
         .width('100%')
         .alignItems(HorizontalAlign.Center)
-        .position({ bottom: 100 })
+        .position({ bottom: 92 + this.naviIndicatorHeight })
       }
 
       // ====== miniBar 点击关闭覆盖层 ======
@@ -135,7 +141,7 @@ struct Index {
       .width('100%')
       .height(68)
       .padding({ left: 20, right: 20, top: 0, bottom: 0 })
-      .margin({ left: 16, right: 16, bottom: 12 })
+      .margin({ left: 16, right: 16, bottom: 12 + this.naviIndicatorHeight })
       .backgroundBlurStyle(BlurStyle.Thin, { colorMode: ThemeColorMode.SYSTEM })
       .backgroundColor('#F0F5F5F7')
       .borderRadius(34)
