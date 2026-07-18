@@ -4,7 +4,6 @@ import { SpaceRepository } from '../data/SpaceRepository';
 import { ItemRepository } from '../data/ItemRepository';
 import { EmptyState } from '../components/EmptyState';
 
-@Entry
 @Component
 export struct SpacePage {
   @State spaces: Space[] = [];
