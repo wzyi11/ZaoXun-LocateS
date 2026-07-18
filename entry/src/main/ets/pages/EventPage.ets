@@ -10,7 +10,6 @@ interface EventListItem {
   total: number;
 }
 
-@Entry
 @Component
 export struct EventPage {
   @State activeEvents: EventListItem[] = [];
