@@ -3,6 +3,7 @@ import { Event, EventItem } from '../model/EventModel';
 import { EventRepository } from '../data/EventRepository';
 import { EventCard } from '../components/EventCard';
 import { EmptyState } from '../components/EmptyState';
+import { PageBackground } from '../components/PageBackground';
 
 interface EventListItem {
   event: Event;
@@ -60,6 +61,7 @@ export struct EventPage {
 
   build() {
     Stack() {
+      PageBackground()
       Column() {
         if (this.loading) {
           Column() {
@@ -146,6 +148,7 @@ export struct EventPage {
       }
       .width('100%')
       .height('100%')
+      .padding({ top: 60 })
 
       Button() {
         Text('+')
