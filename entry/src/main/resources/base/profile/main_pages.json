@@ -1,9 +1,6 @@
 {
   "src": [
     "pages/Index",
-    "pages/SpacePage",
-    "pages/EventPage",
-    "pages/ProfilePage",
     "pages/AddItemPage",
     "pages/ItemDetailPage",
     "pages/CreateEventPage",
