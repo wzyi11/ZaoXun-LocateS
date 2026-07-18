@@ -79,7 +79,7 @@ struct DebugPage {
         barBottomMargin: $r('sys.float.padding_level8'),
         systemMaterialEffect: {
           materialType: hdsMaterial.MaterialType.IMMERSIVE,
-          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+          materialLevel: hdsMaterial.MaterialLevel.GENTLE
         },
         miniBar: {
           miniBarBuilder: () => this.miniBarBuilder(),

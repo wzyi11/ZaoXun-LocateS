@@ -328,24 +328,24 @@ export struct SpacePage {
       .height('100%')
       .padding({ top: 60 })
 
-      if (!this.isShowingItems()) {
-        Button() {
-          Text('+')
-            .fontSize(28)
-            .fontColor(Color.White)
-        }
-        .width(56)
-        .height(56)
-        .borderRadius(28)
-        .backgroundColor('#007AFF')
-        .position({ x: '100%', y: '100%' })
-        .markAnchor({ x: '100%', y: '100%' })
-        .offset({ x: -24, y: -24 })
-        .shadow({ radius: 8, color: '#33007AFF', offsetY: 4 })
-        .onClick(() => {
-          this.showAddDialog = true;
-        })
-      }
+      // if (!this.isShowingItems()) {
+      //   Button() {
+      //     Text('+')
+      //       .fontSize(28)
+      //       .fontColor(Color.White)
+      //   }
+      //   .width(56)
+      //   .height(56)
+      //   .borderRadius(28)
+      //   .backgroundColor('#007AFF')
+      //   .position({ x: '100%', y: '100%' })
+      //   .markAnchor({ x: '100%', y: '100%' })
+      //   .offset({ x: -24, y: -24 })
+      //   .shadow({ radius: 8, color: '#33007AFF', offsetY: 4 })
+      //   .onClick(() => {
+      //     this.showAddDialog = true;
+      //   })
+      // }
 
       if (this.showAddDialog) {
         Stack() {
