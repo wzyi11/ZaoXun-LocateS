@@ -12,7 +12,6 @@ interface CategoryCount {
 
 const CATEGORY_NAMES: string[] = ['衣物', '书籍', '数码', '厨房', '文件', '其他'];
 
-@Entry
 @Component
 struct ProfilePage {
   @State totalItems: number = 0;

@@ -2,6 +2,7 @@ import { router } from '@kit.ArkUI';
 import { ItemPage } from './ItemPage';
 import { SpacePage } from './SpacePage';
 import { EventPage } from './EventPage';
+import { ProfilePage } from './ProfilePage';
 import { PageBackground } from '../components/PageBackground';
 
 interface BottomTabItem {
@@ -68,7 +69,7 @@ struct Index {
               EventPage()
             }
           } else {
-            Blank()
+            ProfilePage()
           }
         }
         .width('100%')
@@ -203,7 +204,6 @@ struct Index {
         this.refreshCurrentTab();
       } else {
         this.currentBottomNav = 1;
-        router.pushUrl({ url: 'pages/ProfilePage' });
       }
     })
   }
