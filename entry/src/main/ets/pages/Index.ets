@@ -43,6 +43,12 @@ struct Index {
             this.buildTopTab('📦 物品', 0)
             this.buildTopTab('🏠 空间', 1)
             this.buildTopTab('🎒 事件', 2)
+            Blank()
+            Text('🔧')
+              .fontSize(16)
+              .onClick(() => {
+                router.pushUrl({ url: 'pages/DebugPage' });
+              })
           }
           .width('100%')
           .height(30)

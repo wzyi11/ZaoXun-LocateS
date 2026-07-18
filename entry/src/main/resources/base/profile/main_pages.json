@@ -8,6 +8,7 @@
     "pages/ItemDetailPage",
     "pages/CreateEventPage",
     "pages/EventDetailPage",
-    "pages/BackgroundSettingsPage"
+    "pages/BackgroundSettingsPage",
+    "pages/DebugPage"
   ]
 }
