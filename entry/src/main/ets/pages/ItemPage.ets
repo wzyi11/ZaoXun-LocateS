@@ -1,4 +1,5 @@
 import { router } from '@kit.ArkUI';
+import { PageBackground } from '../components/PageBackground';
 import { Item, ItemInput } from '../model/ItemModel';
 import { ItemRepository } from '../data/ItemRepository';
 import { CategoryRepository } from '../data/CategoryRepository';
@@ -306,6 +307,7 @@ export struct ItemPage {
   }
   build() {
     Stack() {
+      PageBackground()
       Column() {
 
         // 搜索框
