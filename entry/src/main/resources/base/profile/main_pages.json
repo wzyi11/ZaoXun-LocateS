@@ -1,13 +1,11 @@
 {
   "src": [
     "pages/Index",
-    "pages/SpacePage",
-    "pages/EventPage",
-    "pages/ProfilePage",
     "pages/AddItemPage",
     "pages/ItemDetailPage",
     "pages/CreateEventPage",
     "pages/EventDetailPage",
-    "pages/BackgroundSettingsPage"
+    "pages/BackgroundSettingsPage",
+    "pages/DebugPage"
   ]
 }

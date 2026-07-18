@@ -3,6 +3,7 @@ import { Event, EventItem } from '../model/EventModel';
 import { EventRepository } from '../data/EventRepository';
 import { EventCard } from '../components/EventCard';
 import { EmptyState } from '../components/EmptyState';
+import { PageBackground } from '../components/PageBackground';
 
 interface EventListItem {
   event: Event;
@@ -10,7 +11,6 @@ interface EventListItem {
   total: number;
 }
 
-@Entry
 @Component
 export struct EventPage {
   @State activeEvents: EventListItem[] = [];
@@ -69,6 +69,7 @@ export struct EventPage {
 
   build() {
     Stack() {
+      PageBackground()
       Column() {
         if (this.loading) {
           Column() {
@@ -82,7 +83,7 @@ export struct EventPage {
           .justifyContent(FlexAlign.Center)
         } else if (this.activeEvents.length === 0 && this.completedEvents.length === 0) {
           Column() {
-            EmptyState({ icon: '🎒', title: '还没有事件', subtitle: '点击右下角按钮创建第一个事件' })
+            EmptyState({ icon: '🎒', title: '还没有事件', subtitle: '点击底部加号创建第一个事件' })
           }
           .width('100%')
           .layoutWeight(1)
@@ -155,23 +156,6 @@ export struct EventPage {
       }
       .width('100%')
       .height('100%')
-
-      Button() {
-        Text('+')
-          .fontSize(28)
-          .fontColor(Color.White)
-      }
-      .width(56)
-      .height(56)
-      .borderRadius(28)
-      .backgroundColor('#007AFF')
-      .position({ x: '100%', y: '100%' })
-      .markAnchor({ x: '100%', y: '100%' })
-      .offset({ x: -24, y: -24 })
-      .shadow({ radius: 8, color: '#33007AFF', offsetY: 4 })
-      .onClick(() => {
-        router.pushUrl({ url: 'pages/CreateEventPage' });
-      })
     }
     .width('100%')
     .height('100%')

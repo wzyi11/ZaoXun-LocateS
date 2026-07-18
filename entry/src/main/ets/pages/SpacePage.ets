@@ -5,6 +5,7 @@ import { SpaceRepository } from '../data/SpaceRepository';
 import { ItemRepository } from '../data/ItemRepository';
 import { EventRepository } from '../data/EventRepository';
 import { EmptyState } from '../components/EmptyState';
+import { PageBackground } from '../components/PageBackground';
 import { ConfirmDeleteDialog } from '../components/ConfirmDeleteDialog';
 import { camera, cameraPicker } from '@kit.CameraKit';
 import { picker, fileIo as fs, fileUri } from '@kit.CoreFileKit';
@@ -15,7 +16,6 @@ const IMAGE_PANEL_WIDTH: number = 360;
 const IMAGE_PANEL_HEIGHT: number = 260;
 const IMAGE_SCROLL_HEIGHT: number = 520;
 
-@Entry
 @Component
 export struct SpacePage {
   @State spaces: Space[] = [];
@@ -38,6 +38,7 @@ export struct SpacePage {
   @State pendingMarkerY: number = -1;
   @StorageLink('spaceRefreshToken') @Watch('onSpaceRefreshToken') spaceRefreshToken: number = 0;
   @StorageLink('itemRefreshToken') @Watch('onItemRefreshToken') itemRefreshToken: number = 0;
+  @StorageLink('quickAddSpace') @Watch('onQuickAddSpace') quickAddSpace: number = 0;
   private spaceRepo: SpaceRepository = new SpaceRepository();
   private itemRepo: ItemRepository = new ItemRepository();
   private eventRepo: EventRepository = new EventRepository();
@@ -65,6 +66,16 @@ export struct SpacePage {
       return;
     }
     await this.loadItems(this.getParentId());
+  }
+
+  onQuickAddSpace(): void {
+    if (this.quickAddSpace <= 0) {
+      return;
+    }
+    this.resetSheetForm();
+    this.showAddSheet = false;
+    this.sheetKey++;
+    this.showAddSheet = true;
   }
 
   getParentId(): number {
@@ -549,7 +560,7 @@ export struct SpacePage {
         EmptyState({
           icon: this.getIconForLevel(1),
           title: '还没有空间',
-          subtitle: '点击右下角按钮添加空间'
+          subtitle: '点击底部加号添加空间'
         })
       }
       .width('100%')
@@ -1134,6 +1145,7 @@ export struct SpacePage {
 
   build() {
     Stack() {
+      PageBackground()
       Column() {
         this.NavigationHeader()
         this.BreadcrumbBar()
@@ -1157,28 +1169,6 @@ export struct SpacePage {
           this.showSectionItemSheet = false;
         },
       })
-
-      if (this.breadcrumb.length === 0) {
-        Button() {
-          Text('+')
-            .fontSize(28)
-            .fontColor(Color.White)
-        }
-        .width(56)
-        .height(56)
-        .borderRadius(28)
-        .backgroundColor('#007AFF')
-        .position({ x: '100%', y: '100%' })
-        .markAnchor({ x: '100%', y: '100%' })
-        .offset({ x: -24, y: -24 })
-        .shadow({ radius: 8, color: '#33007AFF', offsetY: 4 })
-        .onClick(() => {
-          this.resetSheetForm();
-          this.showAddSheet = false;
-          this.sheetKey++;
-          this.showAddSheet = true;
-        })
-      }
 
       if (this.showAddDialog) {
         this.AddDialog()

@@ -12,9 +12,8 @@ interface CategoryCount {
   count: number;
 }
 
-@Entry
 @Component
-struct ProfilePage {
+export struct ProfilePage {
   @State totalItems: number = 0;
   @State categoryCounts: CategoryCount[] = [];
   @State activeEventCount: number = 0;

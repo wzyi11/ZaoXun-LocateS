@@ -1,4 +1,5 @@
 import { router } from '@kit.ArkUI';
+import { PageBackground } from '../components/PageBackground';
 import { Item, ItemInput } from '../model/ItemModel';
 import { Space } from '../model/SpaceModel';
 import { Category } from '../model/CategoryModel';
@@ -481,6 +482,7 @@ export struct ItemPage {
 
   build() {
     Stack() {
+      PageBackground()
       Column() {
         // 搜索框
         Row() {
@@ -542,7 +544,7 @@ export struct ItemPage {
         } else if (this.filteredItems.length === 0) {
           Column() {
             if (this.items.length === 0) {
-              EmptyState({ icon: '📦', title: '还没有物品', subtitle: '点击右下角按钮添加第一个物品' })
+              EmptyState({ icon: '📦', title: '还没有物品', subtitle: '点击底部加号添加第一个物品' })
             } else {
               EmptyState({ icon: '🔍', title: '没有找到匹配的物品', subtitle: '试试调整筛选条件' })
             }
@@ -585,26 +587,6 @@ export struct ItemPage {
         },
       })
 
-      // 右下角添加物品按钮
-      Button() {
-        Text('+')
-          .fontSize(28)
-          .fontColor(Color.White)
-      }
-      .width(56)
-      .height(56)
-      .borderRadius(28)
-      .backgroundColor('#007AFF')
-      .position({ x: '100%', y: '100%' })
-      .markAnchor({ x: '100%', y: '100%' })
-      .offset({ x: -24, y: -24 })
-      .shadow({ radius: 8, color: '#33007AFF', offsetY: 4 })
-      .onClick(() => {
-        this.resetNewItemForm();
-        this.showAddItemSheet = false;
-        this.sheetKey++;
-        this.showAddItemSheet = true;
-      })
     }
     .width('100%')
     .height('100%')

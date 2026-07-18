@@ -3,6 +3,12 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { Database } from '../data/Database';
 import { BackgroundStore } from '../data/BackgroundStore';
+import { seedDataIfEmpty } from '../data/SeedData';
+import {
+  BACKGROUND_TYPE_GRADIENT,
+  BACKGROUND_TYPE_NONE,
+} from '../model/BackgroundConfig';
+import { ENABLE_DEV_MODE } from '../model/DevMode';
 
 const DOMAIN = 0x0000;
 
@@ -27,16 +33,34 @@ export default class EntryAbility extends UIAbility {
     // 初始化数据库（await确保表创建完成后再加载页面）
     try {
       await Database.getInstance().init(this.context);
+      if (ENABLE_DEV_MODE) {
+        await seedDataIfEmpty();
+      }
     } catch (err) {
       hilog.error(DOMAIN, 'testTag', 'Failed to init database. Cause: %{public}s', JSON.stringify(err));
     }
 
     // 初始化背景配置
     BackgroundStore.init(this.context);
+    // 如果未设置背景，默认用渐变
+    if (AppStorage.get<string>('bgType') === BACKGROUND_TYPE_NONE) {
+      AppStorage.setOrCreate('bgType', BACKGROUND_TYPE_GRADIENT);
+      AppStorage.setOrCreate('bgValue', 'twilight');
+    }
 
     // Configure immersive window for blur effects
     windowStage.getMainWindow().then((mainWindow) => {
       mainWindow.setWindowLayoutFullScreen(true);
+      // 获取底部导航条高度
+      try {
+        const naviArea = mainWindow.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR);
+        AppStorage.setOrCreate('naviIndicatorHeight', naviArea.bottomRect.height);
+      } catch (err) { /* ignore */ }
+      // 获取顶部状态栏高度
+      try {
+        const sysArea = mainWindow.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM);
+        AppStorage.setOrCreate('statusBarHeight', sysArea.topRect.height);
+      } catch (err) { /* ignore */ }
     }).catch((err: Error) => {
       hilog.error(DOMAIN, 'testTag', 'Failed to set immersive window. Cause: %{public}s', JSON.stringify(err));
     });
