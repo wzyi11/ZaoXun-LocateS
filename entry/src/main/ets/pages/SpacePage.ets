@@ -3,6 +3,7 @@ import { Item } from '../model/ItemModel';
 import { SpaceRepository } from '../data/SpaceRepository';
 import { ItemRepository } from '../data/ItemRepository';
 import { EmptyState } from '../components/EmptyState';
+import { PageBackground } from '../components/PageBackground';
 
 @Component
 export struct SpacePage {
@@ -167,6 +168,7 @@ export struct SpacePage {
 
   build() {
     Stack() {
+      PageBackground()
       Column() {
         Row() {
           if (this.breadcrumb.length > 0) {
@@ -324,6 +326,7 @@ export struct SpacePage {
       }
       .width('100%')
       .height('100%')
+      .padding({ top: 60 })
 
       if (!this.isShowingItems()) {
         Button() {

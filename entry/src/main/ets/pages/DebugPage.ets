@@ -90,25 +90,28 @@ struct DebugPage {
       })
     }
     .hideBackButton(true)
-    .titleBar({
-      content: {
-        title: {
-          mainTitle: 'Debug',
-        },
-      },
-      style: {
-        scrollEffectOpts: {
-          enableScrollEffect: true,
-          scrollEffectType: ScrollEffectType.GRADIENT_BLUR,
-        },
-        systemMaterialEffect: {
-          materialType: hdsMaterial.MaterialType.ADAPTIVE,
-          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE,
-        },
-      },
-      avoidLayoutSafeArea: true,
-      enableComponentSafeArea: false
-    })
+    // .dynamicHideTitleBar({
+    //   hideTitleArea:true
+    // })
+    // .titleBar({
+    //   content: {
+    //     title: {
+    //       mainTitle: 'Debug',
+    //     },
+    //   },
+    //   style: {
+    //     scrollEffectOpts: {
+    //       enableScrollEffect: true,
+    //       scrollEffectType: ScrollEffectType.GRADIENT_BLUR,
+    //     },
+    //     systemMaterialEffect: {
+    //       materialType: hdsMaterial.MaterialType.ADAPTIVE,
+    //       materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE,
+    //     },
+    //   },
+    //   avoidLayoutSafeArea: true,
+    //   enableComponentSafeArea: false
+    // })
     .ignoreLayoutSafeArea([LayoutSafeAreaType.SYSTEM], [LayoutSafeAreaEdge.TOP, LayoutSafeAreaEdge.BOTTOM])
   }
 }
