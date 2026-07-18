@@ -1,4 +1,3 @@
-import { AppStorageV2 } from '@kit.ArkUI';
 import {
   HdsBarStyle,
   hdsMaterial,
@@ -7,22 +6,23 @@ import {
   HdsTabsController,
   ScrollEffectType,
 } from '@kit.UIDesignKit';
-import  {PageKeyEnum, PAGE_SCROLLER_MAP, TabsBarModel} from '../model/ToolsBarModel';
-
+import { PageKeyEnum, TabsBarModel } from '../model/ToolsBarModel';
+import { ItemPage } from './ItemPage';
+import { SpacePage } from './SpacePage';
+import { EventPage } from './EventPage';
+import { ProfilePage } from './ProfilePage';
 
 @Entry
 @ComponentV2
 struct DebugPage {
-
   @Local isMiniBar: boolean = true;
   private controller: HdsTabsController = new HdsTabsController();
   private tabsBar: BottomTabBarStyle[] = TabsBarModel.getTabBarByPage(PageKeyEnum.ADAPTIVE_TAB) ?? [];
 
-
   @Builder
-  miniBarBuilder(){
-    Row(){
-      Column(){
+  miniBarBuilder() {
+    Row() {
+      Column() {
         Text('A')
           .width('100%')
           .height('100%')
@@ -53,32 +53,21 @@ struct DebugPage {
     }
   }
 
-
-
   build() {
-    HdsNavDestination(){
-      HdsTabs({controller : this.controller}){
-
-
-        // Repeat(this.tabsBar)
-        //   .each((repeatItem: RepeatItem<BottomTabBarStyle>) => {
-        //     TabContent() {
-        //       WaterFlowView({ currentTabIndex: repeatItem.index, pageKey: PageKeyEnum.ADAPTIVE_TAB })
-        //     }
-        //     .tabBar(repeatItem.item)
-        //   })
-        // TabContent(){
-        //   Text('lvelvelve')
-        //     .fontSize(30)
-        //     .height('100%')
-        //     .width('100%')
-        // }
-        // .tabBar()
-
+    HdsNavDestination() {
+      HdsTabs({ controller: this.controller }) {
         Repeat(this.tabsBar)
           .each((repeatItem: RepeatItem<BottomTabBarStyle>) => {
             TabContent() {
-              Text('111')
+              if (repeatItem.index === 0) {
+                ItemPage()
+              } else if (repeatItem.index === 1) {
+                SpacePage()
+              } else if (repeatItem.index === 2) {
+                EventPage()
+              } else {
+                ProfilePage()
+              }
             }
             .tabBar(repeatItem.item)
           })
@@ -87,9 +76,7 @@ struct DebugPage {
       .vertical(false)
       .barPosition(BarPosition.End)
       .barFloatingStyle({
-        // barBottomMargin: this.globalInfoModel.naviIndicatorHeight > 0 ? this.globalInfoModel.naviIndicatorHeight :
-        //   $r('sys.float.padding_level8'),
-        barBottomMargin:20,
+        barBottomMargin: $r('sys.float.padding_level8'),
         systemMaterialEffect: {
           materialType: hdsMaterial.MaterialType.IMMERSIVE,
           materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
@@ -104,11 +91,9 @@ struct DebugPage {
     }
     .hideBackButton(true)
     .titleBar({
-
       content: {
         title: {
-          // mainTitle: this.currentSample?.title ?? '',
-          mainTitle: '111',
+          mainTitle: 'Debug',
         },
       },
       style: {
@@ -124,11 +109,6 @@ struct DebugPage {
       avoidLayoutSafeArea: true,
       enableComponentSafeArea: false
     })
-    // .bindToScrollable(PAGE_SCROLLER_MAP.get(PageKeyEnum.ADAPTIVE_TAB) ?? [])
     .ignoreLayoutSafeArea([LayoutSafeAreaType.SYSTEM], [LayoutSafeAreaEdge.TOP, LayoutSafeAreaEdge.BOTTOM])
-    // Column() {
-    // }
-    // .width('100%')
-    // .height('100%')
   }
 }
