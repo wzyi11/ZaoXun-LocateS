@@ -6,6 +6,7 @@
     "pages/CreateEventPage",
     "pages/EventDetailPage",
     "pages/BackgroundSettingsPage",
-    "pages/DebugPage"
+    "pages/DebugPage",
+    "pages/SpaceImagePreviewPage"
   ]
 }

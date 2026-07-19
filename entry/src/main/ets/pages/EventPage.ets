@@ -1,6 +1,8 @@
 import { router } from '@kit.ArkUI';
-import { Event, EventItem } from '../model/EventModel';
+import { Event, EventInput, EventItem } from '../model/EventModel';
+import { Item } from '../model/ItemModel';
 import { EventRepository } from '../data/EventRepository';
+import { ItemRepository } from '../data/ItemRepository';
 import { EventCard } from '../components/EventCard';
 import { EmptyState } from '../components/EmptyState';
 import { PageBackground } from '../components/PageBackground';
@@ -16,8 +18,18 @@ export struct EventPage {
   @State activeEvents: EventListItem[] = [];
   @State completedEvents: EventListItem[] = [];
   @State loading: boolean = true;
+  @State showAddEventSheet: boolean = false;
+  @State eventSheetKey: number = 0;
+  @State newEventTitle: string = '';
+  @State newEventDate: string = '';
+  @State newEventNote: string = '';
+  @State eventItems: Item[] = [];
+  @State selectedItemIds: number[] = [];
+  @State eventItemsLoading: boolean = true;
   @StorageLink('eventRefreshToken') @Watch('onRefreshToken') eventRefreshToken: number = 0;
+  @StorageLink('quickAddEvent') @Watch('onQuickAddEvent') quickAddEvent: number = 0;
   private repo: EventRepository = new EventRepository();
+  private itemRepo: ItemRepository = new ItemRepository();
 
   aboutToAppear(): void {
     this.loadEvents();
@@ -31,6 +43,79 @@ export struct EventPage {
     if (this.eventRefreshToken > 0) {
       this.loadEvents();
     }
+  }
+
+  onQuickAddEvent(): void {
+    if (this.quickAddEvent <= 0) {
+      return;
+    }
+    this.openAddEventSheet();
+  }
+
+  openAddEventSheet(): void {
+    this.resetNewEventForm();
+    this.showAddEventSheet = false;
+    this.eventSheetKey++;
+    this.showAddEventSheet = true;
+    this.loadEventItems();
+  }
+
+  resetNewEventForm(): void {
+    this.newEventTitle = '';
+    this.newEventDate = '';
+    this.newEventNote = '';
+    this.selectedItemIds = [];
+  }
+
+  async loadEventItems(): Promise<void> {
+    this.eventItemsLoading = true;
+    this.eventItems = await this.itemRepo.getAll();
+    this.eventItemsLoading = false;
+  }
+
+  isSelected(id: number): boolean {
+    for (let i = 0; i < this.selectedItemIds.length; i++) {
+      if (this.selectedItemIds[i] === id) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  toggleSelect(id: number): void {
+    if (this.isSelected(id)) {
+      const newArr: number[] = [];
+      for (let i = 0; i < this.selectedItemIds.length; i++) {
+        if (this.selectedItemIds[i] !== id) {
+          newArr.push(this.selectedItemIds[i]);
+        }
+      }
+      this.selectedItemIds = newArr;
+    } else {
+      this.selectedItemIds = [...this.selectedItemIds, id];
+    }
+  }
+
+  async saveNewEvent(): Promise<void> {
+    if (this.newEventTitle.trim() === '') {
+      return;
+    }
+    const createTime: string = new Date().toISOString();
+    const eventInput: EventInput = {
+      title: this.newEventTitle.trim(),
+      date: this.newEventDate,
+      note: this.newEventNote,
+      status: 0,
+      createTime: createTime,
+    };
+    const eventId: number = await this.repo.insert(eventInput);
+    for (let i = 0; i < this.selectedItemIds.length; i++) {
+      await this.repo.linkItem(eventId, this.selectedItemIds[i]);
+    }
+    AppStorage.setOrCreate('eventRefreshToken', Date.now());
+    this.resetNewEventForm();
+    this.showAddEventSheet = false;
+    this.loadEvents();
   }
 
   getEventListKey(item: EventListItem): string {
@@ -65,6 +150,147 @@ export struct EventPage {
     this.activeEvents = active;
     this.completedEvents = completed;
     this.loading = false;
+  }
+
+  @Builder
+  addEventSheet() {
+    Column() {
+      Text('添加事件')
+        .fontSize(20)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#1A1A1A')
+        .width('100%')
+        .textAlign(TextAlign.Start)
+        .margin({ bottom: 20 })
+
+      Scroll() {
+        Column({ space: 20 }) {
+          Column({ space: 6 }) {
+            Text('事件名称')
+              .fontSize(14)
+              .fontColor('#666')
+            TextInput({ text: this.newEventTitle, placeholder: '输入事件名称' })
+              .height(44)
+              .backgroundColor('#F5F5F5')
+              .borderRadius(10)
+              .padding({ left: 14 })
+              .onChange((value: string) => {
+                this.newEventTitle = value;
+              })
+          }
+          .width('100%')
+          .alignItems(HorizontalAlign.Start)
+
+          Column({ space: 6 }) {
+            Text('日期')
+              .fontSize(14)
+              .fontColor('#666')
+            TextInput({ text: this.newEventDate, placeholder: 'YYYY-MM-DD' })
+              .height(44)
+              .backgroundColor('#F5F5F5')
+              .borderRadius(10)
+              .padding({ left: 14 })
+              .onChange((value: string) => {
+                this.newEventDate = value;
+              })
+          }
+          .width('100%')
+          .alignItems(HorizontalAlign.Start)
+
+          Column({ space: 6 }) {
+            Text('备注')
+              .fontSize(14)
+              .fontColor('#666')
+            TextInput({ text: this.newEventNote, placeholder: '事件备注（选填）' })
+              .height(44)
+              .backgroundColor('#F5F5F5')
+              .borderRadius(10)
+              .padding({ left: 14 })
+              .onChange((value: string) => {
+                this.newEventNote = value;
+              })
+          }
+          .width('100%')
+          .alignItems(HorizontalAlign.Start)
+
+          Column({ space: 8 }) {
+            Text('关联物品')
+              .fontSize(14)
+              .fontColor('#666')
+            if (this.eventItemsLoading) {
+              LoadingProgress()
+                .width(32)
+                .height(32)
+                .color('#007AFF')
+            } else if (this.eventItems.length === 0) {
+              EmptyState({ icon: '📦', title: '还没有物品', subtitle: '可以先添加物品后再关联' })
+            } else {
+              Column({ space: 8 }) {
+                ForEach(this.eventItems, (item: Item, index: number) => {
+                  Row({ space: 8 }) {
+                    Text(this.isSelected(item.id) ? '☑' : '☐')
+                      .fontSize(20)
+                      .fontColor(this.isSelected(item.id) ? '#007AFF' : '#CCC')
+                    Column({ space: 2 }) {
+                      Text(item.name)
+                        .fontSize(14)
+                        .fontColor('#333')
+                        .maxLines(1)
+                        .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      if (item.category !== '') {
+                        Text(item.category)
+                          .fontSize(11)
+                          .fontColor('#999')
+                      }
+                    }
+                    .alignItems(HorizontalAlign.Start)
+                    .layoutWeight(1)
+                  }
+                  .width('100%')
+                  .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+                  .backgroundColor(this.isSelected(item.id) ? '#F0F7FF' : Color.White)
+                  .borderRadius(8)
+                  .onClick(() => {
+                    this.toggleSelect(item.id);
+                  })
+                }, (item: Item, index: number) => item.id.toString())
+              }
+              .width('100%')
+            }
+          }
+          .width('100%')
+          .alignItems(HorizontalAlign.Start)
+        }
+        .width('100%')
+      }
+      .layoutWeight(1)
+      .width('100%')
+
+      Text(`已选择 ${this.selectedItemIds.length} 个物品`)
+        .fontSize(12)
+        .fontColor('#999')
+        .width('100%')
+        .margin({ top: 10 })
+
+      Button() {
+        Text('保存')
+          .fontSize(16)
+          .fontColor(Color.White)
+          .fontWeight(FontWeight.Medium)
+      }
+      .width('100%')
+      .height(48)
+      .backgroundColor(this.newEventTitle.trim() ? '#007AFF' : '#B0D4FF')
+      .borderRadius(24)
+      .margin({ top: 12, bottom: 8 })
+      .enabled(this.newEventTitle.trim().length > 0)
+      .onClick(() => {
+        this.saveNewEvent();
+      })
+    }
+    .padding({ left: 24, right: 24, top: 8, bottom: 24 })
+    .width('100%')
+    .height('100%')
   }
 
   build() {
@@ -162,5 +388,14 @@ export struct EventPage {
     }
     .width('100%')
     .height('100%')
+    .bindSheet(this.showAddEventSheet, this.addEventSheet, {
+      height: '75%',
+      dragBar: true,
+      showClose: true,
+      title: { title: '添加事件' },
+      onDisappear: () => {
+        this.showAddEventSheet = false;
+      },
+    })
   }
 }

@@ -1,4 +1,3 @@
-import { router } from '@kit.ArkUI';
 import {
   HdsBarStyle,
   hdsMaterial,
@@ -20,6 +19,7 @@ struct Index {
   @State isMiniBar: boolean = true;
   @StorageLink('statusBarHeight') statusBarHeight: number = 36;
   @StorageLink('naviIndicatorHeight') naviIndicatorHeight: number = 0;
+  @StorageLink('quickSwitchTab') @Watch('onQuickSwitchTab') quickSwitchTab: number = -1;
   private tabRefreshSeq: number = 0;
   private controller: HdsTabsController = new HdsTabsController();
   private tabsBar: BottomTabBarStyle[] = TabsBarModel.getTabBarByPage(PageKeyEnum.ADAPTIVE_TAB) ?? [];
@@ -44,23 +44,30 @@ struct Index {
         .justifyContent(FlexAlign.Center)
         .alignItems(HorizontalAlign.Center)
       } else {
-        Row({ space: 10 }) {
-          this.buildMiniAddAction('item', () => {
-            router.pushUrl({ url: 'pages/AddItemPage' });
+        Row() {
+          this.buildMiniAddAction('📦', () => {
+            this.controller.changeIndex(0);
+            this.currentTabIndex = 0;
+            this.refreshCurrentTab();
+            AppStorage.setOrCreate('quickAddItemSpaceId', 0);
+            AppStorage.setOrCreate('quickAddItem', Date.now());
           })
-          this.buildMiniAddAction('space', () => {
+          this.buildMiniAddAction('🏠', () => {
             this.controller.changeIndex(1);
             this.currentTabIndex = 1;
             this.refreshCurrentTab();
             AppStorage.setOrCreate('quickAddSpace', Date.now());
           })
-          this.buildMiniAddAction('event', () => {
-            router.pushUrl({ url: 'pages/CreateEventPage' });
+          this.buildMiniAddAction('🗓', () => {
+            this.controller.changeIndex(2);
+            this.currentTabIndex = 2;
+            this.refreshCurrentTab();
+            AppStorage.setOrCreate('quickAddEvent', Date.now());
           })
         }
-        .width('100%')
+        .width(196)
         .height('100%')
-        .justifyContent(FlexAlign.Center)
+        .justifyContent(FlexAlign.SpaceBetween)
         .alignItems(VerticalAlign.Center)
       }
     }
@@ -123,16 +130,30 @@ struct Index {
   }
 
   @Builder
-  buildMiniAddAction(label: string, onClick: () => void) {
-    Button(label)
+  buildMiniAddAction(icon: string, onClick: () => void) {
+    Button() {
+      Text(icon)
+        .fontSize(22)
+        .textAlign(TextAlign.Center)
+    }
     .type(ButtonType.Normal)
-    .fontSize(13)
-    .fontColor('#007AFF')
     .backgroundColor(Color.White)
-    .borderRadius(16)
-    .height(32)
-    .padding({ left: 14, right: 14 })
+    .borderRadius(20)
+    .width(40)
+    .height(40)
     .onClick(onClick)
+  }
+
+  onQuickSwitchTab(): void {
+    const targetIndex: number = this.quickSwitchTab > 3
+      ? this.quickSwitchTab - Math.floor(this.quickSwitchTab / 10) * 10
+      : this.quickSwitchTab;
+    if (targetIndex < 0 || targetIndex > 3) {
+      return;
+    }
+    this.controller.changeIndex(targetIndex);
+    this.currentTabIndex = targetIndex;
+    this.refreshCurrentTab();
   }
 
   refreshCurrentTab(): void {

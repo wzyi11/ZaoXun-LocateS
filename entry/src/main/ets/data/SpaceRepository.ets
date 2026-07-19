@@ -102,4 +102,14 @@ export class SpaceRepository {
     predicates.equalTo('parentId', parentId);
     return await store.delete(predicates);
   }
+
+  async updateImage(id: number, image: string): Promise<number> {
+    const store = this.db.getStore();
+    const valueBucket: relationalStore.ValuesBucket = {
+      'image': image,
+    };
+    const predicates = new relationalStore.RdbPredicates(SPACE_TABLE_NAME);
+    predicates.equalTo('id', id);
+    return await store.update(valueBucket, predicates);
+  }
 }

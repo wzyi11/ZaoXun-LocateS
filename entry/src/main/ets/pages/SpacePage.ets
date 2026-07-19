@@ -39,15 +39,21 @@ export struct SpacePage {
   @StorageLink('spaceRefreshToken') @Watch('onSpaceRefreshToken') spaceRefreshToken: number = 0;
   @StorageLink('itemRefreshToken') @Watch('onItemRefreshToken') itemRefreshToken: number = 0;
   @StorageLink('quickAddSpace') @Watch('onQuickAddSpace') quickAddSpace: number = 0;
+  @StorageLink('spacePreviewTargetSectionId') @Watch('onSpacePreviewTargetSection') spacePreviewTargetSectionId: number = 0;
   private spaceRepo: SpaceRepository = new SpaceRepository();
   private itemRepo: ItemRepository = new ItemRepository();
   private eventRepo: EventRepository = new EventRepository();
   private scrollController: Scroller = new Scroller();
   private deleteSpaceDialogController: CustomDialogController | null = null;
   private deleteItemDialogController: CustomDialogController | null = null;
+  private replaceImageDialogController: CustomDialogController | null = null;
 
   aboutToAppear(): void {
     this.loadSpaces();
+  }
+
+  onPageShow(): void {
+    this.onSpacePreviewTargetSection();
   }
 
   async onSpaceRefreshToken(): Promise<void> {
@@ -66,6 +72,25 @@ export struct SpacePage {
       return;
     }
     await this.loadItems(this.getParentId());
+  }
+
+  async onSpacePreviewTargetSection(): Promise<void> {
+    if (this.spacePreviewTargetSectionId <= 0) {
+      return;
+    }
+    const sectionId: number = this.spacePreviewTargetSectionId;
+    AppStorage.setOrCreate('spacePreviewTargetSectionId', 0);
+    const section: Space | null = await this.spaceRepo.getById(sectionId);
+    if (!section) {
+      return;
+    }
+    if (this.breadcrumb.length === 0 || this.breadcrumb[0].id !== section.parentId) {
+      const root: Space | null = await this.spaceRepo.getById(section.parentId);
+      this.breadcrumb = root ? [root] : [];
+    } else {
+      this.breadcrumb = this.breadcrumb.slice(0, 1);
+    }
+    await this.onSpaceTap(section);
   }
 
   onQuickAddSpace(): void {
@@ -200,6 +225,18 @@ export struct SpacePage {
     this.pendingMarkerY = -1;
   }
 
+  openFullscreenImagePreview(): void {
+    if (this.breadcrumb.length === 0) {
+      return;
+    }
+    AppStorage.setOrCreate('currentPreviewSpaceId', this.breadcrumb[0].id);
+    router.pushUrl({ url: 'pages/SpaceImagePreviewPage' });
+  }
+
+  closeFullscreenImagePreview(): void {
+    this.showFullscreenImage = false;
+  }
+
   async addSpace(): Promise<void> {
     const name: string = this.newSpaceName.trim();
     if (name === '') {
@@ -286,7 +323,7 @@ export struct SpacePage {
     this.selectedImageName = '';
   }
 
-  async copyImageToAppDir(srcUri: string): Promise<void> {
+  async copyImageToAppDir(srcUri: string): Promise<string> {
     try {
       const context = getContext(this) as common.UIAbilityContext;
       const fileName = `space_${Date.now()}.jpg`;
@@ -301,8 +338,10 @@ export struct SpacePage {
       fs.closeSync(destFile);
       this.selectedImageURI = `file://${destPath}`;
       this.selectedImageName = fileName;
+      return this.selectedImageURI;
     } catch (err) {
       console.error(`copyImageToAppDir failed: ${JSON.stringify(err)}`);
+      return '';
     }
   }
 
@@ -342,6 +381,78 @@ export struct SpacePage {
     } catch (err) {
       console.error(`pickFromAlbum failed: ${JSON.stringify(err)}`);
     }
+  }
+
+  openReplaceImageDialog(): void {
+    const current: Space | null = this.breadcrumb.length > 0 ? this.breadcrumb[0] : null;
+    if (!current) {
+      return;
+    }
+    this.replaceImageDialogController = new CustomDialogController({
+      builder: ConfirmDeleteDialog({
+        title: '确认替换图片',
+        message: '是否确认替换图片？这将使您原本保存的分区和物品失效，原分区会被删除，相关物品会变为未分配。',
+        onConfirm: () => {
+          this.pickReplacementFromAlbum();
+        }
+      }),
+      autoCancel: true,
+      customStyle: true,
+      maskColor: '#66000000',
+      cornerRadius: 16,
+    });
+    this.replaceImageDialogController.open();
+  }
+
+  async pickReplacementFromAlbum(): Promise<void> {
+    const current: Space | null = this.breadcrumb.length > 0 ? this.breadcrumb[0] : null;
+    if (!current) {
+      return;
+    }
+    try {
+      const options = new picker.PhotoSelectOptions();
+      options.MIMEType = picker.PhotoViewMIMETypes.IMAGE_TYPE;
+      options.maxSelectNumber = 1;
+      const photoPicker = new picker.PhotoViewPicker();
+      const result = await photoPicker.select(options);
+      if (result.photoUris.length > 0) {
+        const imageUri: string = await this.copyImageToAppDir(result.photoUris[0]);
+        if (imageUri.length > 0) {
+          await this.replaceCurrentSpaceImage(current, imageUri);
+        }
+      }
+    } catch (err) {
+      console.error(`pickReplacementFromAlbum failed: ${JSON.stringify(err)}`);
+    }
+  }
+
+  async replaceCurrentSpaceImage(current: Space, imageUri: string): Promise<void> {
+    const sections: Space[] = await this.spaceRepo.getByParent(current.id);
+    const affectedSpaceIds: number[] = [];
+    for (let i = 0; i < sections.length; i++) {
+      affectedSpaceIds.push(sections[i].id);
+    }
+    await this.itemRepo.clearSpaceIds(affectedSpaceIds);
+    await this.spaceRepo.deleteByParent(current.id);
+    await this.spaceRepo.updateImage(current.id, imageUri);
+
+    const updated: Space = {
+      id: current.id,
+      name: current.name,
+      parentId: current.parentId,
+      level: current.level,
+      icon: current.icon,
+      image: imageUri,
+      markerX: current.markerX,
+      markerY: current.markerY,
+      markerColor: current.markerColor,
+    };
+    this.breadcrumb = [updated];
+    this.spaces = [];
+    this.items = [];
+    this.clearPendingMarker();
+    AppStorage.setOrCreate('itemRefreshToken', Date.now());
+    AppStorage.setOrCreate('spaceRefreshToken', Date.now());
   }
 
   async loadUnassignedItems(): Promise<void> {
@@ -647,23 +758,28 @@ export struct SpacePage {
             }
             .width('100%')
             .height(IMAGE_SCROLL_HEIGHT)
+            .gesture(TapGesture({ count: 2 })
+              .onAction(() => {
+                this.openFullscreenImagePreview();
+              }))
           }
           .width('100%')
           .height(IMAGE_PANEL_HEIGHT)
           .scrollBar(BarState.Off)
 
           Button() {
-            Text('🔍')
+            Text('⚙')
               .fontSize(18)
+              .fontColor(Color.White)
           }
-          .width(32)
-          .height(32)
+          .width(36)
+          .height(36)
           .type(ButtonType.Circle)
           .backgroundColor('#66000000')
           .fontColor(Color.White)
           .position({ x: 8, y: 8 })
           .onClick(() => {
-            this.showFullscreenImage = true;
+            this.openReplaceImageDialog();
           })
         }
         .width('100%')
@@ -1038,7 +1154,9 @@ export struct SpacePage {
       .margin({ top: 12, bottom: 8 })
       .onClick(() => {
         this.showSectionItemSheet = false;
-        this.openAddItemPage();
+        AppStorage.setOrCreate('quickAddItemSpaceId', this.getParentId());
+        AppStorage.setOrCreate('quickSwitchTab', Date.now() * 10);
+        AppStorage.setOrCreate('quickAddItem', Date.now());
       })
     }
     .padding({ left: 24, right: 24, top: 8, bottom: 24 })
@@ -1049,36 +1167,55 @@ export struct SpacePage {
   @Builder
   fullscreenImagePreview() {
     Stack() {
-      Column()
-        .width('100%')
-        .height('100%')
-        .backgroundColor('#FF000000')
-
       if (this.breadcrumb.length > 0 && this.breadcrumb[0].image) {
         Image(this.breadcrumb[0].image)
           .width('100%')
           .height('100%')
-          .objectFit(ImageFit.Contain)
-          .onAreaChange((oldValue: Area, newValue: Area) => {
-            this.fsImageWidth = Number(newValue.width);
-            this.fsImageHeight = Number(newValue.height);
-          })
-          .onClick((event: ClickEvent) => {
-            this.setPendingMarkerFullscreen(event);
-          })
+          .objectFit(ImageFit.Cover)
+          .blur(24)
       } else {
         Image($r('app.media.bg_preset_1'))
           .width('100%')
           .height('100%')
-          .objectFit(ImageFit.Contain)
-          .onAreaChange((oldValue: Area, newValue: Area) => {
-            this.fsImageWidth = Number(newValue.width);
-            this.fsImageHeight = Number(newValue.height);
-          })
-          .onClick((event: ClickEvent) => {
-            this.setPendingMarkerFullscreen(event);
-          })
+          .objectFit(ImageFit.Cover)
+          .blur(24)
       }
+
+      Column() {
+        Row()
+          .width('100%')
+          .height(60)
+          .backgroundColor('#33000000')
+
+        if (this.breadcrumb.length > 0 && this.breadcrumb[0].image) {
+          Image(this.breadcrumb[0].image)
+            .width('100%')
+            .layoutWeight(1)
+            .objectFit(ImageFit.Contain)
+            .onAreaChange((oldValue: Area, newValue: Area) => {
+              this.fsImageWidth = Number(newValue.width);
+              this.fsImageHeight = Number(newValue.height);
+            })
+            .onClick((event: ClickEvent) => {
+              this.setPendingMarkerFullscreen(event);
+            })
+        } else {
+          Image($r('app.media.bg_preset_1'))
+            .width('100%')
+            .layoutWeight(1)
+            .objectFit(ImageFit.Contain)
+            .onAreaChange((oldValue: Area, newValue: Area) => {
+              this.fsImageWidth = Number(newValue.width);
+              this.fsImageHeight = Number(newValue.height);
+            })
+            .onClick((event: ClickEvent) => {
+              this.setPendingMarkerFullscreen(event);
+            })
+        }
+      }
+      .width('100%')
+      .height('100%')
+      .backgroundColor('#99000000')
 
       ForEach(this.spaces, (section: Space, index: number) => {
         Column({ space: 4 }) {
@@ -1118,7 +1255,7 @@ export struct SpacePage {
         .position({ x: `${this.pendingMarkerX * 100}%`, y: `${this.pendingMarkerY * 100}%` })
         .markAnchor({ x: '50%', y: '50%' })
         .onClick(() => {
-          this.showFullscreenImage = false;
+          this.closeFullscreenImagePreview();
           this.showAddDialog = true;
         })
       }
@@ -1132,15 +1269,14 @@ export struct SpacePage {
       .height(40)
       .type(ButtonType.Circle)
       .backgroundColor('#66000000')
-      .position({ x: '100%', y: 0 })
-      .markAnchor({ x: '100%', y: 0 })
-      .offset({ x: -12, y: 48 })
+      .position({ x: 16, y: 12 })
       .onClick(() => {
-        this.showFullscreenImage = false;
+        this.closeFullscreenImagePreview();
       })
     }
     .width('100%')
     .height('100%')
+    .zIndex(1000)
   }
 
   build() {
@@ -1177,9 +1313,6 @@ export struct SpacePage {
         this.AddDialog()
       }
 
-      if (this.showFullscreenImage) {
-        this.fullscreenImagePreview()
-      }
     }
     .width('100%')
     .height('100%')

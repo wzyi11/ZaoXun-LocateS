@@ -86,6 +86,8 @@ export struct ItemPage {
   @State showCategoryManageSheet: boolean = false;
   @State managedCategories: Category[] = [];
   @StorageLink('itemRefreshToken') @Watch('onRefreshToken') itemRefreshToken: number = 0;
+  @StorageLink('quickAddItem') @Watch('onQuickAddItem') quickAddItem: number = 0;
+  @StorageLink('quickAddItemSpaceId') quickAddItemSpaceId: number = 0;
   private repo: ItemRepository = new ItemRepository();
   private categoryRepo: CategoryRepository = new CategoryRepository();
   private spaceRepo: SpaceRepository = new SpaceRepository();
@@ -130,6 +132,16 @@ export struct ItemPage {
     if (this.itemRefreshToken > 0) {
       this.loadItems();
     }
+  }
+
+  onQuickAddItem(): void {
+    if (this.quickAddItem <= 0) {
+      return;
+    }
+    this.resetNewItemForm();
+    this.showAddItemSheet = false;
+    this.sheetKey++;
+    this.showAddItemSheet = true;
   }
 
   async loadItems(): Promise<void> {
@@ -288,7 +300,7 @@ export struct ItemPage {
     const itemInput: ItemInput = {
       name: this.newItemName.trim(),
       category: this.newItemCategory,
-      spaceId: 0,
+      spaceId: this.quickAddItemSpaceId > 0 ? this.quickAddItemSpaceId : 0,
       image: '',
       purchaseDate: this.newItemDate,
       note: this.newItemNote,
@@ -296,6 +308,8 @@ export struct ItemPage {
     };
     await this.repo.insert(itemInput);
     AppStorage.setOrCreate('itemRefreshToken', Date.now());
+    AppStorage.setOrCreate('spaceRefreshToken', Date.now());
+    AppStorage.setOrCreate('quickAddItemSpaceId', 0);
     this.resetNewItemForm();
     this.showAddItemSheet = false;
     this.loadItems();
@@ -598,6 +612,7 @@ export struct ItemPage {
       title: { title: '添加物品' },
       onDisappear: () => {
         this.showAddItemSheet = false;
+        AppStorage.setOrCreate('quickAddItemSpaceId', 0);
       },
     })
   }
