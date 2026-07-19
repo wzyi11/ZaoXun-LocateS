@@ -1147,6 +1147,9 @@ export struct SpacePage {
     Stack() {
       PageBackground()
       Column() {
+        Row()
+          .width('100%')
+          .height(60)
         this.NavigationHeader()
         this.BreadcrumbBar()
 

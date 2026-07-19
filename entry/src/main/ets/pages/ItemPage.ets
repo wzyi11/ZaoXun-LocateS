@@ -503,7 +503,7 @@ export struct ItemPage {
         }
         .backgroundColor('#d5F5F5')
         .borderRadius(15)
-        .margin({left: 16, right: 16, top: 12, bottom: 4 })
+        .margin({left: 16, right: 16, top: 62, bottom: 4 })
 
         // 分类标签栏
         Row({ space: 8 }) {

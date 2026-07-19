@@ -71,6 +71,9 @@ export struct EventPage {
     Stack() {
       PageBackground()
       Column() {
+        Row()
+          .width('100%')
+          .height(60)
         if (this.loading) {
           Column() {
             LoadingProgress()

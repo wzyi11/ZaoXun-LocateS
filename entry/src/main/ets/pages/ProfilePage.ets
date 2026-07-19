@@ -96,26 +96,26 @@ export struct ProfilePage {
       PageBackground()
       Column() {
       Row() {
-        Button('返回')
-          .type(ButtonType.Normal)
-          .backgroundColor(Color.Transparent)
-          .fontColor('#007AFF')
-          .onClick(() => {
-            router.back();
-          })
-        Blank()
+        // Button('返回')
+        //   .type(ButtonType.Normal)
+        //   .backgroundColor(Color.Transparent)
+        //   .fontColor('#007AFF')
+        //   .onClick(() => {
+        //     router.back();
+        //   })
+        // Blank()
         Text('我的')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
-        Blank()
-        Button('返回')
-          .type(ButtonType.Normal)
-          .backgroundColor(Color.Transparent)
-          .fontColor(Color.Transparent)
+        // Blank()
+        // Button('返回')
+        //   .type(ButtonType.Normal)
+        //   .backgroundColor(Color.Transparent)
+        //   .fontColor(Color.Transparent)
       }
       .width('100%')
       .padding({ left: 16, right: 16, top: 12, bottom: 12 })
-      .backgroundColor(Color.White)
+      //.backgroundColor(Color.White)
 
       if (this.loading) {
         Column() {
