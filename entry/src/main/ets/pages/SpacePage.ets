@@ -10,6 +10,7 @@ import { ConfirmDeleteDialog } from '../components/ConfirmDeleteDialog';
 import { camera, cameraPicker } from '@kit.CameraKit';
 import { picker, fileIo as fs, fileUri } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';
+import { centerImageOffset, clampImageOffset, normalizeImagePoint } from '../model/ImageDragModel';
 
 const SECTION_COLORS: string[] = ['#5B8DEF', '#7ED957', '#F59A2A', '#B06CFF', '#F45B69'];
 const IMAGE_PANEL_WIDTH: number = 360;
@@ -36,6 +37,16 @@ export struct SpacePage {
   @State newSpaceName: string = '';
   @State pendingMarkerX: number = -1;
   @State pendingMarkerY: number = -1;
+  @State imageFullWidth: number = IMAGE_PANEL_WIDTH;
+  @State imagePanelWidth: number = IMAGE_PANEL_WIDTH;
+  @State imageOffsetX: number = 0;
+  @State imageOffsetY: number = 0;
+  @State dragStartOffsetX: number = 0;
+  @State dragStartOffsetY: number = 0;
+  @State touchStartWindowX: number = 0;
+  @State touchStartWindowY: number = 0;
+  @State isImageDragging: boolean = false;
+  @State hasCenteredImage: boolean = false;
   @StorageLink('spaceRefreshToken') @Watch('onSpaceRefreshToken') spaceRefreshToken: number = 0;
   @StorageLink('itemRefreshToken') @Watch('onItemRefreshToken') itemRefreshToken: number = 0;
   @StorageLink('quickAddSpace') @Watch('onQuickAddSpace') quickAddSpace: number = 0;
@@ -43,7 +54,7 @@ export struct SpacePage {
   private spaceRepo: SpaceRepository = new SpaceRepository();
   private itemRepo: ItemRepository = new ItemRepository();
   private eventRepo: EventRepository = new EventRepository();
-  private scrollController: Scroller = new Scroller();
+  private imageLongPressTimer: number = -1;
   private deleteSpaceDialogController: CustomDialogController | null = null;
   private deleteItemDialogController: CustomDialogController | null = null;
   private replaceImageDialogController: CustomDialogController | null = null;
@@ -163,6 +174,7 @@ export struct SpacePage {
     this.breadcrumb = this.breadcrumb.slice(0, this.breadcrumb.length - 1);
     this.items = [];
     this.clearPendingMarker();
+    this.hasCenteredImage = false;
     if (this.isSectionPage()) {
       await this.loadItems(this.getParentId());
     } else {
@@ -173,6 +185,7 @@ export struct SpacePage {
   async onSpaceTap(space: Space): Promise<void> {
     this.breadcrumb = this.breadcrumb.concat([space]);
     this.clearPendingMarker();
+    this.hasCenteredImage = false;
     if (this.isSectionPage()) {
       await this.loadItems(space.id);
     } else {
@@ -185,12 +198,14 @@ export struct SpacePage {
       this.breadcrumb = [];
       this.items = [];
       this.clearPendingMarker();
+      this.hasCenteredImage = false;
       await this.loadSpaces();
       return;
     }
 
     this.breadcrumb = this.breadcrumb.slice(0, index + 1);
     this.clearPendingMarker();
+    this.hasCenteredImage = false;
     if (this.isSectionPage()) {
       await this.loadItems(this.getParentId());
     } else {
@@ -202,11 +217,8 @@ export struct SpacePage {
   setPendingMarker(event: ClickEvent): void {
     const rawX: number = Number(event.x);
     const rawY: number = Number(event.y);
-    const scrollOffset = this.scrollController.currentOffset();
-    const offsetY: number = scrollOffset ? scrollOffset.yOffset : 0;
-    const adjustedY: number = rawY + offsetY;
-    const x: number = Math.max(0.06, Math.min(0.94, rawX / IMAGE_PANEL_WIDTH));
-    const y: number = Math.max(0.08, Math.min(0.92, adjustedY / IMAGE_SCROLL_HEIGHT));
+    const x: number = normalizeImagePoint(rawX, 0, this.imageFullWidth, 0.06, 0.94);
+    const y: number = normalizeImagePoint(rawY, 0, IMAGE_SCROLL_HEIGHT, 0.08, 0.92);
     this.pendingMarkerX = x;
     this.pendingMarkerY = y;
   }
@@ -223,6 +235,85 @@ export struct SpacePage {
   clearPendingMarker(): void {
     this.pendingMarkerX = -1;
     this.pendingMarkerY = -1;
+  }
+
+  centerSpaceImage(): void {
+    this.imageOffsetX = centerImageOffset(this.imagePanelWidth, this.imageFullWidth);
+    this.imageOffsetY = centerImageOffset(IMAGE_PANEL_HEIGHT, IMAGE_SCROLL_HEIGHT);
+    this.hasCenteredImage = true;
+  }
+
+  clampSpaceImageOffsets(): void {
+    this.imageOffsetX = clampImageOffset(this.imageOffsetX, this.imagePanelWidth, this.imageFullWidth);
+    this.imageOffsetY = clampImageOffset(this.imageOffsetY, IMAGE_PANEL_HEIGHT, IMAGE_SCROLL_HEIGHT);
+  }
+
+  recalcSpaceImagePosition(): void {
+    if (!this.hasCenteredImage) {
+      this.centerSpaceImage();
+    } else {
+      this.clampSpaceImageOffsets();
+    }
+  }
+
+  startSpaceImageDrag(): void {
+    this.dragStartOffsetX = this.imageOffsetX;
+    this.dragStartOffsetY = this.imageOffsetY;
+  }
+
+  updateSpaceImageDrag(event: GestureEvent): void {
+    this.imageOffsetX = clampImageOffset(
+      this.dragStartOffsetX + Number(event.offsetX),
+      this.imagePanelWidth,
+      this.imageFullWidth
+    );
+    this.imageOffsetY = clampImageOffset(
+      this.dragStartOffsetY + Number(event.offsetY),
+      IMAGE_PANEL_HEIGHT,
+      IMAGE_SCROLL_HEIGHT
+    );
+  }
+
+  clearImageLongPressTimer(): void {
+    if (this.imageLongPressTimer >= 0) {
+      clearTimeout(this.imageLongPressTimer);
+      this.imageLongPressTimer = -1;
+    }
+  }
+
+  onSpaceImageTouch(event: TouchEvent): void {
+    if (event.type === TouchType.Down && event.touches.length > 0) {
+      const touch: TouchObject = event.touches[0];
+      this.touchStartWindowX = touch.windowX;
+      this.touchStartWindowY = touch.windowY;
+      this.startSpaceImageDrag();
+      this.isImageDragging = false;
+      this.clearImageLongPressTimer();
+      this.imageLongPressTimer = setTimeout(() => {
+        this.isImageDragging = true;
+      }, 450);
+      return;
+    }
+
+    if (event.type === TouchType.Move && event.touches.length > 0 && this.isImageDragging) {
+      const touch: TouchObject = event.touches[0];
+      this.imageOffsetX = clampImageOffset(
+        this.dragStartOffsetX + touch.windowX - this.touchStartWindowX,
+        this.imagePanelWidth,
+        this.imageFullWidth
+      );
+      this.imageOffsetY = clampImageOffset(
+        this.dragStartOffsetY + touch.windowY - this.touchStartWindowY,
+        IMAGE_PANEL_HEIGHT,
+        IMAGE_SCROLL_HEIGHT
+      );
+      return;
+    }
+
+    if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+      this.clearImageLongPressTimer();
+      this.isImageDragging = false;
+    }
   }
 
   openFullscreenImagePreview(): void {
@@ -451,6 +542,7 @@ export struct SpacePage {
     this.spaces = [];
     this.items = [];
     this.clearPendingMarker();
+    this.hasCenteredImage = false;
     AppStorage.setOrCreate('itemRefreshToken', Date.now());
     AppStorage.setOrCreate('spaceRefreshToken', Date.now());
   }
@@ -718,57 +810,67 @@ export struct SpacePage {
   SpaceDetail() {
     Scroll() {
       Column({ space: 12 }) {
-        Stack() {
-          Scroll(this.scrollController) {
-            Stack() {
-              if (this.breadcrumb.length > 0 && this.breadcrumb[0].image) {
-                Image(this.breadcrumb[0].image)
-                  .width('100%')
-                  .height(IMAGE_SCROLL_HEIGHT)
-                  .objectFit(ImageFit.Cover)
-                  .borderRadius(12)
-              } else {
-                Image($r('app.media.bg_preset_1'))
-                  .width('100%')
-                  .height(IMAGE_SCROLL_HEIGHT)
-                  .objectFit(ImageFit.Cover)
-                  .borderRadius(12)
-              }
-
-              ForEach(this.spaces, (section: Space, index: number) => {
-                Column({ space: 4 }) {
-                  Circle()
-                    .width(28)
-                    .height(28)
-                    .fill(section.markerColor)
-                    .strokeWidth(4)
-                    .stroke('#66000000')
-                  Text(section.name)
-                    .fontSize(12)
-                    .fontColor(Color.White)
-                    .padding({ left: 8, right: 8, top: 3, bottom: 3 })
-                    .backgroundColor('#99000000')
-                    .borderRadius(6)
-                    .maxLines(1)
-                    .textOverflow({ overflow: TextOverflow.Ellipsis })
-                }
-                .position({ x: `${section.markerX * 100}%`, y: `${section.markerY * 100}%` })
-                .markAnchor({ x: '50%', y: '50%' })
-                .onClick(() => {
-                  this.onSpaceTap(section);
+        Stack({ alignContent: Alignment.TopStart }) {
+          Stack({ alignContent: Alignment.TopStart }) {
+            if (this.breadcrumb.length > 0 && this.breadcrumb[0].image) {
+              Image(this.breadcrumb[0].image)
+                .width(this.imageFullWidth)
+                .height(IMAGE_SCROLL_HEIGHT)
+                .objectFit(ImageFit.Cover)
+                .borderRadius(12)
+                .onComplete((event) => {
+                  if (event && event.width > 0 && event.height > 0) {
+                    const ratio: number = event.width / event.height;
+                    const nextWidth: number = Math.max(this.imagePanelWidth, IMAGE_SCROLL_HEIGHT * ratio);
+                    if (Math.abs(nextWidth - this.imageFullWidth) > 1) {
+                      this.imageFullWidth = nextWidth;
+                      this.hasCenteredImage = false;
+                      this.recalcSpaceImagePosition();
+                    }
+                  }
                 })
-              }, (section: Space, index: number) => section.id.toString())
+            } else {
+              Image($r('app.media.bg_preset_1'))
+                .width(this.imageFullWidth)
+                .height(IMAGE_SCROLL_HEIGHT)
+                .objectFit(ImageFit.Cover)
+                .borderRadius(12)
             }
-            .width('100%')
-            .height(IMAGE_SCROLL_HEIGHT)
-            .gesture(TapGesture({ count: 2 })
-              .onAction(() => {
-                this.openFullscreenImagePreview();
-              }))
+
+            ForEach(this.spaces, (section: Space, index: number) => {
+              Column({ space: 4 }) {
+                Circle()
+                  .width(28)
+                  .height(28)
+                  .fill(section.markerColor)
+                  .strokeWidth(4)
+                  .stroke('#66000000')
+                Text(section.name)
+                  .fontSize(12)
+                  .fontColor(Color.White)
+                  .padding({ left: 8, right: 8, top: 3, bottom: 3 })
+                  .backgroundColor('#99000000')
+                  .borderRadius(6)
+                  .maxLines(1)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+              }
+              .position({ x: `${section.markerX * 100}%`, y: `${section.markerY * 100}%` })
+              .markAnchor({ x: '50%', y: '50%' })
+              .onClick(() => {
+                this.onSpaceTap(section);
+              })
+            }, (section: Space, index: number) => section.id.toString())
           }
-          .width('100%')
-          .height(IMAGE_PANEL_HEIGHT)
-          .scrollBar(BarState.Off)
+          .width(this.imageFullWidth)
+          .height(IMAGE_SCROLL_HEIGHT)
+          .translate({ x: this.imageOffsetX, y: this.imageOffsetY })
+          .onTouch((event: TouchEvent) => {
+            this.onSpaceImageTouch(event);
+          })
+          .gesture(TapGesture({ count: 2 })
+            .onAction(() => {
+              this.openFullscreenImagePreview();
+            }))
 
           Button() {
             Text('⚙')
@@ -787,6 +889,21 @@ export struct SpacePage {
         }
         .width('100%')
         .height(IMAGE_PANEL_HEIGHT)
+        .clip(true)
+        .onAreaChange((oldValue: Area, newValue: Area) => {
+          const nextPanelWidth: number = Number(newValue.width);
+          if (nextPanelWidth <= 0) {
+            return;
+          }
+          if (Math.abs(nextPanelWidth - this.imagePanelWidth) > 1) {
+            this.imagePanelWidth = nextPanelWidth;
+            if (this.imageFullWidth < this.imagePanelWidth) {
+              this.imageFullWidth = this.imagePanelWidth;
+            }
+            this.hasCenteredImage = false;
+            this.recalcSpaceImagePosition();
+          }
+        })
 
         Row() {
           Text('位置')
@@ -845,6 +962,7 @@ export struct SpacePage {
     .width('100%')
     .layoutWeight(1)
     .scrollBar(BarState.Off)
+    .enabled(!this.isImageDragging)
   }
 
   @Builder

@@ -1,5 +1,6 @@
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from '@ohos/hypium';
 import { SPACE_CREATE_SQL } from '../main/ets/model/SpaceModel';
+import { centerImageOffset, clampImageOffset, normalizeImagePoint } from '../main/ets/model/ImageDragModel';
 
 export default function localUnitTest() {
   describe('localUnitTest', () => {
@@ -36,6 +37,17 @@ export default function localUnitTest() {
       expect(SPACE_CREATE_SQL).assertContain('markerX REAL');
       expect(SPACE_CREATE_SQL).assertContain('markerY REAL');
       expect(SPACE_CREATE_SQL).assertContain('markerColor TEXT');
+    });
+
+    it('imageDragMathCentersClampsAndNormalizes', 0, () => {
+      const centered: number = centerImageOffset(360, 720);
+      expect(centered).assertEqual(-180);
+
+      expect(clampImageOffset(80, 360, 720)).assertEqual(0);
+      expect(clampImageOffset(-420, 360, 720)).assertEqual(-360);
+
+      const markerX: number = normalizeImagePoint(180, -180, 720, 0.06, 0.94);
+      expect(markerX).assertEqual(0.5);
     });
   });
 }
