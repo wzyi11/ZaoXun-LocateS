@@ -500,24 +500,30 @@ export struct ItemPage {
       Column() {
         // 搜索框
         Row() {
-          TextInput({ text: this.searchKeyword, placeholder: '搜索物品名称...' })
-            .onChange((value: string) => {
-              this.onSearchChange(value);
-            })
-            .layoutWeight(1)
-            .backgroundColor('#d5F5F5')
-            .padding({ left: 12, right: 40 })
 
+          TextInput({ placeholder: '搜索物品名称' })
+            .backgroundColor(Color.Transparent)
+            .layoutWeight(1)
+            .height(44)
+            .fontSize(16)
           Text('🔍')
             .fontSize(20)
-            .padding({right: 10})
-            .onClick(() => {
-              this.applyFilters();
-            })
+            .width(30).height(30)
+            .margin({ left: 20 })
         }
-        .backgroundColor('#d5F5F5')
-        .borderRadius(15)
-        .margin({left: 16, right: 16, top: 62, bottom: 4 })
+        .width('90%')
+        .height(40)
+        .borderRadius(30)
+        .border({
+          width: 2,
+          color: '#43ffffff',
+          radius: 30,
+          style: BorderStyle.Solid
+        })
+        .margin({top: 62, bottom: 5})
+        .backgroundBlurStyle(BlurStyle.Thin,
+          { colorMode: ThemeColorMode.LIGHT, adaptiveColor: AdaptiveColor.DEFAULT, scale: 1.0 })
+
 
         // 分类标签栏
         Row({ space: 8 }) {
@@ -531,10 +537,12 @@ export struct ItemPage {
             .layoutWeight(1)
           Button('管理')
             .type(ButtonType.Normal)
-            .fontColor('#007AFF')
-            .backgroundColor('#EBF5FF')
+            .fontColor('#ce007aff')
+            .backgroundColor('#72d5edfd')
+            .backgroundBlurStyle(BlurStyle.Thick,
+              { colorMode: ThemeColorMode.LIGHT, adaptiveColor: AdaptiveColor.DEFAULT, scale: 1.0 })
             .borderRadius(14)
-            .height(28)
+            .height(24)
             .fontSize(12)
             .padding({ left: 10, right: 10 })
             .margin({ right: 12, bottom: 6 })

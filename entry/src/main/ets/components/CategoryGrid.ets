@@ -11,8 +11,15 @@ export struct CategoryGrid {
           Text(category)
             .fontSize(12)
             .fontColor(category === this.selected ? '#fff' : '#666')
-            .padding({ left: 10, right: 10, top: 5, bottom: 5 })
-            .backgroundColor(category === this.selected ? '#007AFF' : '#F0F0F0')
+            .padding({ left: 8, right: 8, top: 5, bottom: 5 })
+            .backgroundColor(category === this.selected ? '#007AFF' : '#59f0f0f0')
+            .border({
+              width: 1,
+              color: '#ffffffff',
+              radius: 14,
+              style: BorderStyle.Solid
+            })
+            .height(24)
             .borderRadius(14)
             .margin({ right: 8 })
             .onClick(() => {

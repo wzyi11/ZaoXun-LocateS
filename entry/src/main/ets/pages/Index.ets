@@ -4,6 +4,7 @@ import {
   HdsNavDestination,
   HdsTabs,
   HdsTabsController,
+  ScrollEffectType,
 } from '@kit.UIDesignKit';
 import { PageKeyEnum, TabsBarModel } from '../model/ToolsBarModel';
 import { ItemPage } from './ItemPage';
@@ -124,6 +125,27 @@ struct Index {
       }
       .hideBackButton(true)
       .ignoreLayoutSafeArea([LayoutSafeAreaType.SYSTEM], [LayoutSafeAreaEdge.TOP, LayoutSafeAreaEdge.BOTTOM])
+      .titleBar({
+
+        // content: {
+        //   title: {
+        //     // mainTitle: this.currentSample?.title ?? '',
+        //     mainTitle: '111',
+        //   },
+        // },
+        style: {
+          scrollEffectOpts: {
+            enableScrollEffect: true,
+            scrollEffectType: ScrollEffectType.GRADIENT_BLUR,
+          },
+          systemMaterialEffect: {
+            materialType: hdsMaterial.MaterialType.ADAPTIVE,
+            materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE,
+          },
+        },
+        avoidLayoutSafeArea: false,
+        enableComponentSafeArea: false
+      })
     }
     .width('100%')
     .height('100%')

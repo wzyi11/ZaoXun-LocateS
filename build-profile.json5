@@ -1,19 +1,6 @@
 {
   "app": {
     "signingConfigs": [
-      {
-        "name": "default",
-        "type": "HarmonyOS",
-        "material": {
-          "certpath": "C:\\Users\\xushe\\.ohos\\config\\default_666_UMNNIPp-WCPzJJi44m7I5KQCCkinSAuVenYiJmQkWwE=.cer",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001B38E43AF8D63FC0647B9AB47221D780C0BED97B182ED951ED76A62AA2CA4E2C682C553FE27B50CF",
-          "profile": "C:\\Users\\xushe\\.ohos\\config\\default_666_UMNNIPp-WCPzJJi44m7I5KQCCkinSAuVenYiJmQkWwE=.p7b",
-          "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\xushe\\.ohos\\config\\default_666_UMNNIPp-WCPzJJi44m7I5KQCCkinSAuVenYiJmQkWwE=.p12",
-          "storePassword": "0000001B9FBDC4839E02A3A361D83B6D8BF9A76462C7061496352F7E060C820579BB792E92EC562F533866"
-        }
-      }
     ],
     "products": [
       {
