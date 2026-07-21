@@ -343,6 +343,8 @@ export struct ProfilePage {
         .scrollBar(BarState.Off)
         .padding({ left: 16, right: 16, top: 12, bottom: 24 })
       }
+      Row() {}
+      .height(80)
     }
     .width('100%')
     .height('100%')

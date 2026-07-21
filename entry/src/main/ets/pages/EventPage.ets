@@ -375,12 +375,15 @@ export struct EventPage {
                 }
               }, (item: EventListItem, index: number) => this.getEventListKey(item))
             }
+            ListItem() {
+              Row(){}.height(80)
+            }
           }
           .width('100%')
           .layoutWeight(1)
           .divider({ strokeWidth: 0 })
           .scrollBar(BarState.Off)
-          .padding({ top: 4, bottom: 80 })
+          .padding({ top: 4 })
         }
       }
       .width('100%')

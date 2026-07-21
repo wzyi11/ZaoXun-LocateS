@@ -703,6 +703,9 @@ export struct SpacePage {
           }
           .margin({ left: 16, right: 16 })
         }, (space: Space, index: number) => space.id.toString())
+        ListItem() {
+          Row(){}.height(80)
+        }
       }
       .width('100%')
       .layoutWeight(1)
@@ -834,9 +837,10 @@ export struct SpacePage {
           }
           .width('100%')
         }
+        Row(){}.height(80)
       }
       .width('100%')
-      .padding({ left: 16, right: 16, top: 12, bottom: 88 })
+      .padding({ left: 16, right: 16, top: 12 })
     }
     .width('100%')
     .layoutWeight(1)
@@ -912,12 +916,15 @@ export struct SpacePage {
             }
             .margin({ left: 16, right: 16 })
           }, (item: Item, index: number) => item.id.toString())
+          ListItem() {
+            Row(){}.height(80)
+          }
         }
         .width('100%')
         .layoutWeight(1)
         .divider({ strokeWidth: 0 })
         .scrollBar(BarState.Off)
-        .padding({ top: 4, bottom: 80 })
+        .padding({ top: 4 })
       }
     }
     .width('100%')
