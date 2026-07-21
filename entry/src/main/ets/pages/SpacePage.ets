@@ -483,6 +483,7 @@ export struct SpacePage {
       builder: ConfirmDeleteDialog({
         title: '确认替换图片',
         message: '是否确认替换图片？这将使您原本保存的分区和物品失效，原分区会被删除，相关物品会变为未分配。',
+        confirmText: '确认替换',
         onConfirm: () => {
           this.pickReplacementFromAlbum();
         }

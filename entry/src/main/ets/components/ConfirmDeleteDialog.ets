@@ -3,6 +3,7 @@ export struct ConfirmDeleteDialog {
   controller: CustomDialogController;
   title: string = '确认删除';
   message: string = '';
+  confirmText: string = '确认删除';
   onConfirm: () => void = () => {};
 
   build() {
@@ -35,7 +36,7 @@ export struct ConfirmDeleteDialog {
               this.controller.close();
             })
 
-          Button('确认删除')
+          Button(this.confirmText)
             .width(112)
             .height(40)
             .backgroundColor('#FF3B30')
