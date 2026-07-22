@@ -138,13 +138,171 @@
 
 \secondheading{创意描述}
 
-一句话抽述关键创新点，不超过30字
-\vspace{2.0cm}
+空间影像标记定位物品，事件清单驱动智能收纳提醒
 
 \secondheading{设计稿}
 
+\blankline
+
+\thirdheading{一、系统架构}
+
+\vspace{0.5cm}
+
+\begin{center}
+\fbox{
+\begin{tabular}{|>{\centering\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{3.2cm}|>{\centering\arraybackslash}p{3.2cm}|}
+\hline
+\multicolumn{4}{|c|}{\zihao{5}\bfseries 枣寻（LocateS）系统架构} \\
+\hline
+\multicolumn{4}{|c|}{\zihao{5}\bfseries 页面层（Pages）} \\
+\hline
+首页（物品Tab） & 空间管理页 & 事件管理页 & 个人中心 \\
+添加物品页 & 物品详情页 & 事件详情页 & 背景设置页 \\
+\hline
+\multicolumn{4}{|c|}{\zihao{5}\bfseries 组件层（Components）} \\
+\hline
+\multicolumn{2}{|c|}{物品卡片 / 分类网格} & \multicolumn{2}{c|}{事件卡片 / 空状态} \\
+\hline
+\multicolumn{2}{|c|}{确认删除对话框} & \multicolumn{2}{c|}{页面背景（渐变/图片）} \\
+\hline
+\multicolumn{4}{|c|}{\zihao{5}\bfseries 数据层（Model + Repository + Database）} \\
+\hline
+\multicolumn{2}{|c|}{Item / Space / Event / Category 模型} & \multicolumn{2}{c|}{ItemRepo / SpaceRepo / EventRepo} \\
+\hline
+\multicolumn{4}{|c|}{Database 单例 — RelationalStore（5张表）} \\
+\hline
+\multicolumn{4}{|c|}{\zihao{5}\bfseries 平台层} \\
+\hline
+\multicolumn{4}{|c|}{HarmonyOS 6.1 (API 24) · ArkTS · ArkUI · HDS · systemShare · 服务卡片} \\
+\hline
+\end{tabular}
+}
+\end{center}
+
+\blankline
+\thirdheading{二、核心交互流程}
+
+\vspace{0.3cm}
+
+\begin{center}
+\fbox{
+\begin{tabular}{|>{\centering\arraybackslash}p{2.8cm}|>{\centering\arraybackslash}p{5.5cm}|>{\centering\arraybackslash}p{5.0cm}|}
+\hline
+\zihao{5}\bfseries 模块 & \zihao{5}\bfseries 用户操作 & \zihao{5}\bfseries 系统响应 \\
+\hline
+\multirow{4}{*}{物品管理} & 搜索/分类筛选物品 & 实时过滤物品列表 \\
+\cline{2-3}
+& 点击"+"添加物品（半模态面板） & 写入item表，通知列表刷新 \\
+\cline{2-3}
+& 点击物品进入详情页 & 展示全部字段，可修改分类/位置 \\
+\cline{2-3}
+& 管理分类（添加/删除） & 动态更新category表，级联更新物品 \\
+\hline
+\multirow{5}{*}{空间管理} & 创建空间（上传平面图/拍照） & 写入space表（level=1），存储图片 \\
+\cline{2-3}
+& 点击图片标记分区位置 & 记录markerX/Y坐标，生成彩色标记点 \\
+\cline{2-3}
+& 拖拽平移/双击全屏预览图片 & 实时计算偏移量，长按450ms启动拖拽 \\
+\cline{2-3}
+& 进入分区，添加未分配物品 & 更新item.spaceId，关联物品到分区 \\
+\cline{2-3}
+& 替换图片/删除空间 & 确认对话框 → 级联清理分区和物品关联 \\
+\hline
+\multirow{4}{*}{事件管理} & 创建事件 + 勾选关联物品 & 写入event表 + event\_item关联表 \\
+\cline{2-3}
+& 查看事件详情与清单进度 & 查询event\_item，计算prepared/total \\
+\cline{2-3}
+& 点击清单项切换准备状态 & 更新isPrepared字段，实时刷新进度条 \\
+\cline{2-3}
+& 分享事件/标记完成 & systemShare生成格式化文本分享 \\
+\hline
+\end{tabular}
+}
+\end{center}
+
+\blankline
+\thirdheading{三、页面截图示意}
+
+\begin{center}
+\fbox{
+\begin{tabular}{|>{\centering\arraybackslash}p{3.3cm}|>{\centering\arraybackslash}p{3.3cm}|>{\centering\arraybackslash}p{3.3cm}|>{\centering\arraybackslash}p{3.3cm}|}
+\hline
+\zihao{5}\bfseries 首页-物品列表 & \zihao{5}\bfseries 空间详情-标记点 & \zihao{5}\bfseries 事件详情-清单 & \zihao{5}\bfseries 个人中心-统计 \\
+\hline
+\multicolumn{4}{|c|}{\makecell[c]{
+{\zihao{5}（顶部搜索栏 + 分类横向滚动标签 + 物品卡片列表）} \\
+{\zihao{5}（空间平面图 + 彩色圆形标记点 + 分区列表）} \\
+{\zihao{5}（标题/日期/进度条 + 物品清单（✅/⬜可切换）+ 分享/完成按钮）} \\
+{\zihao{5}（物品总数 + 分类分布 + 事件统计 + 进行中提醒 + 背景设置入口）}
+}} \\
+\hline
+\end{tabular}
+}
+\end{center}
+
+\blankline
 
 \secondheading{介绍文档}
+
+\blankline
+
+\thirdheading{一、创意背景}
+
+随着消费升级与生活品质提升，个人物品数量和种类快速增长。问卷调查数据显示，\textbf{53.33\%}的受访者认为物品数量"较多"或"非常多"，\textbf{93.33\%}依赖记忆管理物品，而\textbf{80\%}曾遭遇"收拾后忘记物品位置"的困扰，\textbf{46.67\%}每周至少遇到一次找不到东西的情况。在事件场景方面，\textbf{86.67\%}的用户经常或偶尔"临近事情发生才想起准备物品"，\textbf{83.34\%}认为事件驱动的智能提醒"有价值"或"愿意尝试"。
+
+调研揭示了两个核心痛点：第一，用户缺乏直观的空间级物品定位手段，传统笔记或记忆方式效率低下；第二，物品管理与事件准备之间存在天然的关联需求，但市场上缺乏将两者有机结合的解决方案。"枣寻（LocateS）"正是针对这两大痛点而设计——以空间平面图可视化标记为核心，以事件清单为驱动，打造"所见即所得"的个人物品智能收纳管家。
+
+\thirdheading{二、核心功能设计}
+
+\textbf{1. 物品管理模块}
+
+支持按分类（衣物/书籍/数码/厨房/文件等）管理物品，提供名称搜索和分类筛选。用户可自定义分类体系，动态增删分类标签，删除分类时物品自动归入默认分类。物品支持分配空间位置，实时显示"卧室 → 上衣抽屉"等层级化位置信息。
+
+\textbf{2. 空间可视化标记（核心创新）}
+
+用户为每个房间上传平面图或实拍照片，在图片上点击放置彩色标记点创建"分区"（如"上衣抽屉"），将物品分配到具体分区。标记点以颜色区分，支持拖拽平移查看大图、双击全屏预览。系统通过\verb|markerX|/\verb|markerY|归一化坐标（0--1）记录标记位置，适配不同屏幕尺寸。这是对问卷中\textbf{76.67\%}用户希望"记录物品存放位置"、\textbf{46.67\%}希望"生成房间数字化地图"需求的直接响应。
+
+\textbf{3. 事件驱动清单}
+
+用户创建事件（如"暑假旅行"），勾选关联所需物品，系统自动生成准备清单。清单采用 ✅/⬜ 可切换的交互模式，已完成物品显示删除线，进度条实时反映完成度。支持一键分享至系统分享面板，生成格式化清单文本。该功能精准回应问卷中\textbf{70\%}用户希望"根据事件主动提醒相关物品"的需求。
+
+\textbf{4. 全局沉浸式体验}
+
+基于 HarmonyOS HDS 沉浸光感组件构建，底部悬浮页签配合毛玻璃材质，支持 6 种渐变色预设 + 4 种图片预设 + 自定义相册背景，用户可自由定制应用外观。
+
+\thirdheading{三、技术实现}
+
+应用基于 HarmonyOS 6.1 (API 24) + ArkTS 声明式 UI 开发，使用 HDS 组件库构建沉浸式交互，RelationalStore 作为本地数据库（5 张表：item、space、event、event\_item、category），通过 Database 单例 + Repository 模式实现数据层解耦。跨页面通信采用 AppStorage 全局状态总线 + @StorageLink/@Watch 装饰器实现实时刷新。集成系统相机拍照、相册选取、systemShare 分享、FormExtension 服务卡片等鸿蒙原生能力。
+
+\thirdheading{四、市场前景}
+
+当前个人物品管理市场处于蓝海阶段。问卷显示，83.34\%的用户对智能收纳产品持积极态度，76.67\%最看重"记录物品位置"，70\%需要"事件主动提醒"。产品面向学生宿舍（问卷中63.33\%）、合租青年、家庭用户等核心群体，未来可扩展 AI 拍照识别分类、多设备协同、智能收纳建议等功能，商业前景广阔。
+
+\vspace{1.0cm}
+
+\thirdheading{附：用户调研关键数据（n=30）}
+
+\begin{center}
+\begin{tabular}{|>{\centering\arraybackslash}p{5.2cm}|c|c|}
+\hline
+\zihao{5}\bfseries 调研维度 & \zihao{5}\bfseries 关键数据 & \zihao{5}\bfseries 对应功能 \\
+\hline
+依赖记忆管理物品 & 93.33\% & 物品管理系统 \\
+\hline
+收拾后忘记物品位置 & 80.00\% & 空间可视化标记 \\
+\hline
+每周至少找一次东西 & 46.67\% & 分类搜索+空间定位 \\
+\hline
+临近事件才想起准备 & 86.67\% & 事件驱动清单 \\
+\hline
+希望记录物品存放位置 & 76.67\% & 空间影像标记 \\
+\hline
+希望事件主动提醒 & 70.00\% & 事件清单提醒 \\
+\hline
+希望生成数字化地图 & 46.67\% & 空间图片+标记点 \\
+\hline
+\end{tabular}
+\end{center}
 
 
 % \clearpage
