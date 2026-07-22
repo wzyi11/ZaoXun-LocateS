@@ -1,0 +1,200 @@
+\documentclass[UTF8,zihao=5,twoside]{ctexart}
+\usepackage[a4paper,top=2.5cm,bottom=2.5cm,left=3cm,right=3cm,headsep=1.5cm,footskip=1.5cm,bindingoffset=0cm]{geometry}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{ragged2e}
+\usepackage{calc}
+
+\setCJKmainfont[AutoFakeBold=2.5]{SimSun}
+\setmainfont{Times New Roman}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyfoot[C]{\zihao{5}中国高校计算机大赛-人工智能创意赛（鸿蒙赛道）组委会编\hspace{2.0em}2026.06}
+\fancyfoot[RO,LE]{\zihao{5}\thepage}
+
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0pt}
+\setstretch{1.0}
+\renewcommand{\arraystretch}{1.35}
+\setlength{\tabcolsep}{2.5pt}
+
+\newcommand{\blankline}{\vspace{\baselineskip}\par}
+\newcommand{\centertitle}[2]{{\centering\zihao{#1}\bfseries #2\par}}
+\newcommand{\maintitle}[1]{{\centering\zihao{2}\bfseries #1\par}}
+\newcommand{\authorline}[1]{{\centering\zihao{3}\bfseries #1\par}}
+\newcommand{\firstheading}[1]{{\noindent\zihao{3}\bfseries #1\par}}
+\newcommand{\secondheading}[1]{{\noindent\zihao{4}\bfseries #1\par}}
+\newcommand{\thirdheading}[1]{{\noindent\zihao{-4}\bfseries #1\par}}
+\newcommand{\fourthheading}[1]{{\noindent\zihao{5}\bfseries #1\par}}
+\newcommand{\centerlinez}[2]{{\centering\zihao{#1}#2\par}}
+\newcommand{\leftlinez}[2]{{\noindent\zihao{#1}#2\par}}
+\newcommand{\rightlinez}[2]{{\raggedleft\zihao{#1}#2\par}}
+\newcommand{\tblcell}[1]{\makecell[c]{#1}}
+\newcommand{\tbllcell}[1]{\makecell[l]{#1}}
+
+\begin{document}
+
+\thispagestyle{fancy}
+\maintitle{2026中国高校计算机大赛—人工智能创意赛}
+\blankline
+\maintitle{鸿蒙赛道作品说明文档（初赛）}
+
+\vspace{3.7cm}
+
+\centerlinez{4}{参赛学校：\underline{\makebox[7.8cm][c]{西安交通大学}}}
+\centerlinez{4}{团队名称：\underline{\makebox[7.8cm][c]{枣La}}}
+\centerlinez{4}{作品名称：\underline{\makebox[7.8cm][c]{《枣寻（LocateS）》}}}
+\centerlinez{4}{赛题方向：\underline{\makebox[7.8cm][c]{应用创新}}}
+\blankline
+\centerlinez{4}{联系人（队长）：\underline{\makebox[6.5cm][c]{伍洲宜}}}
+\centerlinez{4}{联系电话（队长）：\underline{\makebox[6.3cm][c]{18165717179}}}
+
+
+\vspace{4.9cm}
+
+\centertitle{3}{作品说明文档（初赛）}
+\centertitle{3}{包含但不限于以下内容：}
+\blankline
+
+\begin{enumerate}
+  \itemsep0pt
+  \item 参赛团队信息表
+  \item 作品原创性声明
+  \item 创意描述（30字以内）
+  \item 设计稿/技术方案
+  \item 介绍文档（800字以内）
+\end{enumerate}
+
+\vfill
+\clearpage
+
+\centertitle{3}{2026中国高校计算机大赛—人工智能创意赛}
+\centertitle{3}{参赛团队信息表}
+
+\begingroup
+\scriptsize
+\centering
+\begin{longtable}{|>{\centering\arraybackslash}p{1.2cm}|*{12}{>{\centering\arraybackslash}p{0.86cm}|}}
+\hline
+作品名称 & \multicolumn{12}{c|}{《枣寻（LocateS）》} \\
+\hline
+团队名称 & \multicolumn{12}{c|}{枣La} \\
+\hline
+参赛学校 & \multicolumn{12}{c|}{西安交通大学} \\
+\hline
+\makecell{参赛\\赛题方向} & \multicolumn{12}{p{9.6cm}|}{（$\surd$）应用创新 （\,）Agent创新  （）用户体验创新 （）操作系统智能创新}\\ %\quad *请在所选赛题方向括号内打钩，示例：（$\surd$）应用创新} \\
+\hline
+\multicolumn{13}{|c|}{团队队员基本信息（可跨校、跨专业组队）} \\
+\hline
+姓名 & 学校全称 & \multicolumn{2}{c|}{院（系）全称} & \multicolumn{2}{c|}{专业全称} & 年级 & 毕业时间 & \multicolumn{2}{c|}{联系电话} & \multicolumn{2}{c|}{邮箱} & 团队分工 \\
+\hline
+伍洲宜 & 西安交通大学 & \multicolumn{2}{c|}{软件学院} & \multicolumn{2}{c|}{软件工程} & 大二 & 2028.6 & \multicolumn{2}{c|}{18165717179} & \multicolumn{2}{c|}{2805776721@qq.com} & 队长 \\ 
+\hline
+徐沈茁 & 西安交通大学 & \multicolumn{2}{c|}{机械工程学院} & \multicolumn{2}{c|}{智能制造工程} & 大一 & 2029.6 & \multicolumn{2}{c|}{13588493487} & \multicolumn{2}{c|}{xushenzhuo@stu.xjtu.edu.cn} & 队员 \\
+
+\hline
+\multicolumn{13}{|c|}{团队指导教师信息（指导老师须与队长同校）} \\
+\hline
+姓名 & \multicolumn{2}{c|}{院（系）全称} & \multicolumn{2}{c|}{职称} & \multicolumn{3}{c|}{研究方向} & \multicolumn{2}{c|}{联系电话} & \multicolumn{3}{c|}{联系邮箱} \\
+\hline
+陈** & \multicolumn{2}{c|}{信息科学技术学院} & \multicolumn{2}{c|}{教授} & \multicolumn{3}{c|}{深度学习、自然语言处理} & \multicolumn{2}{c|}{139****310} & \multicolumn{3}{c|}{32***@qq.com} \\
+\hline
+\multicolumn{13}{|c|}{团队成员优势描述} \\
+\hline
+\multicolumn{13}{|p{12.0cm}|}{\parbox[t][4.2em][t]{10.8cm}{可列举描述团队\\（1）成员个人或集体重要学术成果或项目经历；\\（2）各成员的擅长领域、分工和互补情况}} \\
+\hline
+\end{longtable}
+\endgroup
+
+% \vspace{0.2cm}
+
+\newpage
+\centertitle{3}{\underline{\hspace{1.5em}《 请填写作品名称 》\hspace{1.5em}} 作品原创性声明}
+\blankline
+
+\leftlinez{5}{郑重声明：承诺本参赛队伍报名信息真实有效；呈交的参赛作品相关资料以及所完成的作品实物等相关成果，是本团队独立进行研究工作所取得的成果，除文中已经注明引用的内容外，本作品说明文档不包含任何其他个人或集体已经发表或撰写过的作品成果，不侵犯任何第三方的知识产权或其他权利。本声明的法律结果由本参赛队承担。}
+\blankline\blankline
+\leftlinez{5}{参赛队员签名（团队全部成员）：}
+\blankline\blankline\blankline
+\rightlinez{5}{日期：\hspace{2em}年\hspace{2em}月\hspace{2em}日}
+\blankline\blankline
+\leftlinez{5}{指导老师审核签名：}
+\blankline\blankline\blankline
+\rightlinez{5}{日期：\hspace{2em}年\hspace{2em}月\hspace{2em}日}
+\blankline\blankline
+\leftlinez{5}{（注：本页签名可以打印纸质文件后签名，提供扫描件；或者使用电子签名。不论哪种方式，需保证页面内容完整、字迹清晰，请与本项目创意书作为同一文档提交，否则项目创意书提交可能无效。）}
+
+\clearpage
+
+\maintitle{作品说明文档}
+\blankline
+
+\secondheading{创意描述}
+
+一句话抽述关键创新点，不超过30字
+\vspace{2.0cm}
+
+\secondheading{设计稿}
+
+
+\secondheading{介绍文档}
+
+
+% \clearpage
+
+% \firstheading{二、格式及其他要求}
+
+% （一）字体：宋体
+
+% （二）字号
+
+% 1、标题：二号，粗体
+
+% 2、作者：三号，粗体
+
+% 3、一级标题：三号，粗体
+
+% \hspace{2em}二级标题：四号，粗体
+
+% \hspace{2em}三级标题：小四号，粗体
+
+% \hspace{2em}四级标题：五号，粗体
+
+% 4、正文：五号
+
+% （三）行距：单倍行距
+
+% （四）页面设置
+
+% 1、页边距：上：2.5厘米\hspace{1em}下：2.5厘米
+
+% \hspace{4em}左：3厘米\hspace{2em}右：3厘米\hspace{1em}装订线：0厘米
+
+% 2、页眉：1.5厘米
+
+% \hspace{2em}页脚：1.5厘米
+
+% 3、纸型：A4，纵向
+
+% （五）插入页码
+
+% \hspace{2em}位置：页面底端
+
+% \hspace{2em}对齐方式：外侧
+
+% （六）其他
+
+% 1、PDF格式提交，命名格式为 01-作品说明文档+参赛队伍名称
+
+% 2、文档中若包含插图、表格请按序编号并命名
+
+% 3、主体内容不超过20页（参考资料及附录不计入总页数）
+
+\end{document}
