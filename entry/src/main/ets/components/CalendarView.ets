@@ -1,8 +1,12 @@
-interface DayInfo {
+export interface DayInfo {
   day: number;
   isCurrentMonth: boolean;
   isToday: boolean;
   hasEvents: boolean;
+}
+
+export function buildCalendarDayKey(dayInfo: DayInfo): string {
+  return `${dayInfo.day}-${dayInfo.isCurrentMonth}-${dayInfo.isToday}-${dayInfo.hasEvents}`;
 }
 
 @Component
@@ -138,7 +142,7 @@ export struct CalendarView {
                   .fontColor(this.getDayColor(dayInfo))
                   .fontWeight(dayInfo.isToday ? FontWeight.Bold : FontWeight.Normal)
                   .textAlign(TextAlign.Center)
-                  .height(dayInfo.hasEvents && this.selectedDay === dayInfo.day ? 20 : 30)
+                  .height(dayInfo.hasEvents && this.selectedDay === dayInfo.day ? 20 : 26)
                   .width(34)
 
                 if (dayInfo.hasEvents && this.selectedDay === dayInfo.day) {
@@ -148,36 +152,37 @@ export struct CalendarView {
                     .height(5)
                     .lineHeight(5)
                   Text('•')
-                    .fontSize(12)
+                    .fontSize(14)
                     .fontColor('#FFFFFF')
-                    .height(7)
-                    .lineHeight(7)
+                    .height(8)
+                    .lineHeight(8)
                 }
               }
               .width(34)
-              .height(34)
+              .height(dayInfo.hasEvents && this.selectedDay !== dayInfo.day ? 30 : 34)
               .justifyContent(FlexAlign.Center)
               .alignItems(HorizontalAlign.Center)
               .backgroundColor(this.getDayBg(dayInfo))
-              .borderRadius(17)
+              .borderRadius(dayInfo.hasEvents && this.selectedDay !== dayInfo.day ? 15 : 17)
               .borderWidth(dayInfo.isToday && this.selectedDay !== dayInfo.day ? 1.5 : 0)
               .borderColor('#007AFF')
               .borderStyle(BorderStyle.Solid)
 
               if (dayInfo.hasEvents && this.selectedDay !== dayInfo.day) {
                 Text('•')
-                  .fontSize(6)
+                  .fontSize(12)
                   .fontColor('#007AFF')
-                  .lineHeight(6)
+                  .height(9)
+                  .lineHeight(9)
               } else {
                 Text('')
-                  .fontSize(6)
-                  .lineHeight(6)
+                  .fontSize(9)
+                  .lineHeight(9)
               }
             }
             .width('100%')
             .alignItems(HorizontalAlign.Center)
-            .height(34)
+            .height(42)
           }
           .onClick(() => {
             if (dayInfo.isCurrentMonth) {
@@ -185,14 +190,14 @@ export struct CalendarView {
               this.onDateClick?.(dayInfo.day);
             }
           })
-        }, (dayInfo: DayInfo, index: number) => `${dayInfo.day}-${dayInfo.isCurrentMonth}-${dayInfo.isToday}`)
+        }, (dayInfo: DayInfo, index: number) => buildCalendarDayKey(dayInfo))
       }
       .columnsTemplate('1fr 1fr 1fr 1fr 1fr 1fr 1fr')
       .rowsTemplate('1fr 1fr 1fr 1fr 1fr 1fr')
       .rowsGap(0)
       .columnsGap(0)
       .width('100%')
-      .height(220)
+      .height(250)
     }
     .width('100%')
     .padding(6)

@@ -53,6 +53,8 @@ export struct CalendarPageView {
   async loadEvents(): Promise<void> {
     this.loading = true;
     const svc: CalendarService = CalendarService.getInstance();
+    this.localEvents = await this.repo.getAll();
+    this.recalcEventDays();
 
     let retries: number = 0;
     while (!svc.ready && retries < 20) {
@@ -61,6 +63,9 @@ export struct CalendarPageView {
     }
 
     if (!svc.ready) {
+      const today: number = new Date().getDate();
+      this.selectedDay = today;
+      this.filterSchedules();
       this.loading = false;
       return;
     }

@@ -1,5 +1,6 @@
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from '@ohos/hypium';
 import { SPACE_CREATE_SQL } from '../main/ets/model/SpaceModel';
+import { buildCalendarDayKey } from '../main/ets/components/CalendarView';
 import {
   buildEventImportKey,
   combineEventDateAndTime,
@@ -109,6 +110,23 @@ export default function localUnitTest() {
       const combined: Date = combineEventDateAndTime(selectedDate, selectedTime);
 
       expect(formatEventDateTime(combined)).assertEqual('2026-07-24 09:08');
+    });
+
+    it('calendarDayKeyChangesWhenEventMarkerChanges', 0, () => {
+      const plainKey: string = buildCalendarDayKey({
+        day: 24,
+        isCurrentMonth: true,
+        isToday: true,
+        hasEvents: false,
+      });
+      const eventKey: string = buildCalendarDayKey({
+        day: 24,
+        isCurrentMonth: true,
+        isToday: true,
+        hasEvents: true,
+      });
+
+      expect(plainKey === eventKey).assertFalse();
     });
   });
 }
