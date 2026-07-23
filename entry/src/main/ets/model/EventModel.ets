@@ -5,6 +5,7 @@ export interface Event {
   note: string;
   status: number;        // 0=进行中 1=已完成
   createTime: string;
+  completeTime: string;
   calendarEventId: number | null;  // CalendarKit 事件 ID
 }
 
@@ -14,6 +15,7 @@ export interface EventInput {
   note: string;
   status: number;
   createTime: string;
+  completeTime?: string;
   calendarEventId?: number | null;
 }
 
@@ -34,6 +36,7 @@ export const EVENT_CREATE_SQL = `
     note TEXT DEFAULT '',
     status INTEGER DEFAULT 0,
     createTime TEXT NOT NULL,
+    completeTime TEXT DEFAULT '',
     calendarEventId INTEGER DEFAULT NULL
   )
 `;
@@ -57,18 +60,38 @@ export function formatEventDate(date: Date): string {
   return `${year}-${padDatePart(month)}-${padDatePart(day)}`;
 }
 
+export function formatEventDateTime(date: Date): string {
+  const hour: number = date.getHours();
+  const minute: number = date.getMinutes();
+  return `${formatEventDate(date)} ${padDatePart(hour)}:${padDatePart(minute)}`;
+}
+
 export function parseEventDateStartTime(date: string): number {
-  const parts: string[] = date.split('-');
-  if (parts.length !== 3) {
+  const normalized: string = date.trim();
+  const dateAndTime: string[] = normalized.split(' ');
+  const dateParts: string[] = dateAndTime[0].split('-');
+  if (dateParts.length !== 3) {
     return NaN;
   }
-  const year: number = Number(parts[0]);
-  const month: number = Number(parts[1]);
-  const day: number = Number(parts[2]);
+  const year: number = Number(dateParts[0]);
+  const month: number = Number(dateParts[1]);
+  const day: number = Number(dateParts[2]);
   if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
     return NaN;
   }
-  return new Date(year, month - 1, day, 0, 0, 0, 0).getTime();
+  let hour: number = 0;
+  let minute: number = 0;
+  if (dateAndTime.length > 1 && dateAndTime[1] !== '') {
+    const timeParts: string[] = dateAndTime[1].split(':');
+    if (timeParts.length >= 2) {
+      hour = Number(timeParts[0]);
+      minute = Number(timeParts[1]);
+      if (!Number.isFinite(hour) || !Number.isFinite(minute)) {
+        return NaN;
+      }
+    }
+  }
+  return new Date(year, month - 1, day, hour, minute, 0, 0).getTime();
 }
 
 export function isEventDateWithinNextDays(startTime: number, baseDate: Date, days: number): boolean {
@@ -83,4 +106,45 @@ export function isEventDateWithinNextDays(startTime: number, baseDate: Date, day
   ).getTime();
   const endExclusive: number = baseStart + (days + 1) * 24 * 60 * 60 * 1000;
   return startTime >= baseStart && startTime < endExclusive;
+}
+
+export function isCalendarEventAllDay(isAllDay: boolean | undefined, startTime: number, endTime: number): boolean {
+  if (isAllDay === true) {
+    return true;
+  }
+  const start: Date = new Date(startTime);
+  const end: Date = new Date(endTime);
+  const startsAtDayStart: boolean = start.getHours() === 0 && start.getMinutes() === 0;
+  const endsAtDayEnd: boolean =
+    (end.getHours() === 0 && end.getMinutes() === 0 && endTime - startTime >= 24 * 60 * 60 * 1000) ||
+    (end.getHours() === 23 && end.getMinutes() >= 59);
+  return startsAtDayStart && endsAtDayEnd;
+}
+
+export function isSystemCalendarEventSkippable(
+  title: string,
+  isAllDay: boolean | undefined,
+  startTime: number,
+  endTime: number
+): boolean {
+  if (isCalendarEventAllDay(isAllDay, startTime, endTime)) {
+    return true;
+  }
+  const festivalWords: string[] = [
+    '节气', '春节', '元宵', '清明', '端午', '七夕', '中秋', '重阳', '除夕',
+    '建军节', '国庆', '劳动节', '儿童节', '教师节', '大暑', '小暑', '立春',
+    '雨水', '惊蛰', '春分', '谷雨', '立夏', '小满', '芒种', '夏至', '立秋',
+    '处暑', '白露', '秋分', '寒露', '霜降', '立冬', '小雪', '大雪', '冬至',
+    '小寒', '大寒', '初伏', '中伏', '末伏',
+  ];
+  for (let i = 0; i < festivalWords.length; i++) {
+    if (title.indexOf(festivalWords[i]) >= 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function buildEventImportKey(title: string, startTime: number): string {
+  return `${title.trim()}|${formatEventDateTime(new Date(startTime))}`;
 }

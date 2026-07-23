@@ -2,7 +2,7 @@ import { router } from '@kit.ArkUI';
 import { systemShare } from '@kit.ShareKit';
 import { uniformTypeDescriptor as utd } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
-import { Event, EventItem } from '../model/EventModel';
+import { Event, EventItem, formatEventDateTime, parseEventDateStartTime } from '../model/EventModel';
 import { Item } from '../model/ItemModel';
 import { EventRepository } from '../data/EventRepository';
 import { ItemRepository } from '../data/ItemRepository';
@@ -32,6 +32,11 @@ export struct EventDetailPage {
   @State editItems: Item[] = [];
   @State editSelectedItemIds: number[] = [];
   @State editItemsLoading: boolean = true;
+  @State editItemSearchKeyword: string = '';
+  @State showEditDateSheet: boolean = false;
+  @State editSelectedDate: Date = new Date();
+  @State editSelectedTime: Date = new Date();
+  @State editEventDate: string = '';
   private eventRepo: EventRepository = new EventRepository();
   private itemRepo: ItemRepository = new ItemRepository();
   private deleteDialogController: CustomDialogController | null = null;
@@ -149,6 +154,7 @@ export struct EventDetailPage {
       'note': this.event.note,
       'status': 1,
       'createTime': this.event.createTime,
+      'completeTime': new Date().toISOString(),
       'calendarEventId': this.event.calendarEventId,
     };
     this.event = updatedEvent;
@@ -193,6 +199,7 @@ export struct EventDetailPage {
     }
     this.showEditItemsSheet = true;
     this.editItemsLoading = true;
+    this.editItemSearchKeyword = '';
     const selectedIds: number[] = [];
     for (let i = 0; i < this.checklist.length; i++) {
       selectedIds.push(this.checklist[i].itemId);
@@ -200,6 +207,14 @@ export struct EventDetailPage {
     this.editSelectedItemIds = selectedIds;
     this.editItems = await this.itemRepo.getAll();
     this.editItemsLoading = false;
+  }
+
+  matchesEditItemSearch(item: Item): boolean {
+    const keyword: string = this.editItemSearchKeyword.trim().toLowerCase();
+    if (keyword === '') {
+      return true;
+    }
+    return item.name.toLowerCase().includes(keyword) || item.category.toLowerCase().includes(keyword);
   }
 
   async saveEditedItems(): Promise<void> {
@@ -221,6 +236,41 @@ export struct EventDetailPage {
     }
 
     this.showEditItemsSheet = false;
+    await this.loadData(this.event.id, false);
+    AppStorage.setOrCreate('eventRefreshToken', Date.now());
+  }
+
+  openEditDateSheet(): void {
+    if (this.event === null) {
+      return;
+    }
+    const startTime: number = parseEventDateStartTime(this.event.date);
+    const selected: Date = Number.isNaN(startTime) ? new Date() : new Date(startTime);
+    this.editSelectedDate = selected;
+    this.editSelectedTime = selected;
+    this.editEventDate = formatEventDateTime(selected);
+    this.showEditDateSheet = true;
+  }
+
+  updateEditEventDate(): void {
+    const selected: Date = new Date(
+      this.editSelectedDate.getFullYear(),
+      this.editSelectedDate.getMonth(),
+      this.editSelectedDate.getDate(),
+      this.editSelectedTime.getHours(),
+      this.editSelectedTime.getMinutes(),
+      0,
+      0
+    );
+    this.editEventDate = formatEventDateTime(selected);
+  }
+
+  async saveEditedDate(): Promise<void> {
+    if (this.event === null || this.editEventDate === '') {
+      return;
+    }
+    await this.eventRepo.updateEventDate(this.event.id, this.editEventDate);
+    this.showEditDateSheet = false;
     await this.loadData(this.event.id, false);
     AppStorage.setOrCreate('eventRefreshToken', Date.now());
   }
@@ -288,33 +338,61 @@ export struct EventDetailPage {
               .textAlign(TextAlign.Center)
               .padding({ top: 40 })
           } else {
-            ForEach(this.editItems, (item: Item, index: number) => {
-              Row({ space: 8 }) {
-                Text(this.isEditSelected(item.id) ? '☑' : '☐')
-                  .fontSize(20)
-                  .fontColor(this.isEditSelected(item.id) ? '#007AFF' : '#CCC')
-                Column({ space: 2 }) {
-                  Text(item.name)
-                    .fontSize(14)
-                    .fontColor('#333')
-                    .maxLines(1)
-                    .textOverflow({ overflow: TextOverflow.Ellipsis })
-                  if (item.category !== '') {
-                    Text(item.category)
-                      .fontSize(11)
-                      .fontColor('#999')
-                  }
-                }
-                .alignItems(HorizontalAlign.Start)
+            Row() {
+              TextInput({ placeholder: '搜索物品名称', text: this.editItemSearchKeyword })
+                .backgroundColor(Color.Transparent)
                 .layoutWeight(1)
+                .height(40)
+                .fontSize(14)
+                .onChange((value: string) => {
+                  this.editItemSearchKeyword = value;
+                })
+              Text('🔍')
+                .fontSize(18)
+                .width(28)
+                .height(28)
+            }
+            .width('100%')
+            .height(40)
+            .borderRadius(30)
+            .border({
+              width: 2,
+              color: '#43ffffff',
+              radius: 30,
+              style: BorderStyle.Solid
+            })
+            .backgroundBlurStyle(BlurStyle.Thin,
+              { colorMode: ThemeColorMode.LIGHT, adaptiveColor: AdaptiveColor.DEFAULT, scale: 1.0 })
+
+            ForEach(this.editItems, (item: Item, index: number) => {
+              if (this.matchesEditItemSearch(item)) {
+                Row({ space: 8 }) {
+                  Text(this.isEditSelected(item.id) ? '☑' : '☐')
+                    .fontSize(20)
+                    .fontColor(this.isEditSelected(item.id) ? '#007AFF' : '#CCC')
+                  Column({ space: 2 }) {
+                    Text(item.name)
+                      .fontSize(14)
+                      .fontColor('#333')
+                      .maxLines(1)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
+                    if (item.category !== '') {
+                      Text(item.category)
+                        .fontSize(11)
+                        .fontColor('#999')
+                    }
+                  }
+                  .alignItems(HorizontalAlign.Start)
+                  .layoutWeight(1)
+                }
+                .width('100%')
+                .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+                .backgroundColor(this.isEditSelected(item.id) ? '#F0F7FF' : Color.White)
+                .borderRadius(8)
+                .onClick(() => {
+                  this.toggleEditSelect(item.id);
+                })
               }
-              .width('100%')
-              .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-              .backgroundColor(this.isEditSelected(item.id) ? '#F0F7FF' : Color.White)
-              .borderRadius(8)
-              .onClick(() => {
-                this.toggleEditSelect(item.id);
-              })
             }, (item: Item, index: number) => item.id.toString())
           }
         }
@@ -342,6 +420,72 @@ export struct EventDetailPage {
       .margin({ top: 12, bottom: 8 })
       .onClick(() => {
         this.saveEditedItems();
+      })
+    }
+    .padding({ left: 24, right: 24, top: 8, bottom: 24 })
+    .width('100%')
+    .height('100%')
+  }
+
+  @Builder
+  EditDateSheet() {
+    Column() {
+      Text('修改时间')
+        .fontSize(20)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#1A1A1A')
+        .width('100%')
+        .textAlign(TextAlign.Start)
+        .margin({ bottom: 20 })
+
+      DatePicker({ selected: this.editSelectedDate })
+        .height(120)
+        .backgroundColor('#F5F5F5')
+        .borderRadius(10)
+        .width('100%')
+        .onChange((value: DatePickerResult) => {
+          const year: number = value.year ?? this.editSelectedDate.getFullYear();
+          const month: number = value.month ?? this.editSelectedDate.getMonth() + 1;
+          const day: number = value.day ?? this.editSelectedDate.getDate();
+          this.editSelectedDate = new Date(year, month - 1, day);
+          this.updateEditEventDate();
+        })
+
+      TimePicker({ selected: this.editSelectedTime })
+        .useMilitaryTime(true)
+        .height(96)
+        .backgroundColor('#F5F5F5')
+        .borderRadius(10)
+        .width('100%')
+        .margin({ top: 12 })
+        .onChange((value: TimePickerResult) => {
+          const hour: number = value.hour ?? this.editSelectedTime.getHours();
+          const minute: number = value.minute ?? this.editSelectedTime.getMinutes();
+          this.editSelectedTime = new Date(0, 0, 1, hour, minute, 0, 0);
+          this.updateEditEventDate();
+        })
+
+      Text(this.editEventDate)
+        .fontSize(12)
+        .fontColor('#999')
+        .width('100%')
+        .margin({ top: 8 })
+
+      Blank()
+
+      Button() {
+        Text('保存')
+          .fontSize(16)
+          .fontColor(Color.White)
+          .fontWeight(FontWeight.Medium)
+      }
+      .width('100%')
+      .height(48)
+      .backgroundColor('#007AFF')
+      .borderRadius(24)
+      .margin({ top: 12, bottom: 8 })
+      .onClick(() => {
+        this.saveEditedDate();
       })
     }
     .padding({ left: 24, right: 24, top: 8, bottom: 24 })
@@ -544,8 +688,14 @@ export struct EventDetailPage {
                     .fontSize(15)
                     .fontColor('#333')
                     .layoutWeight(1)
+                  Text('修改')
+                    .fontSize(13)
+                    .fontColor('#007AFF')
                 }
                 .width('100%')
+                .onClick(() => {
+                  this.openEditDateSheet();
+                })
               }
               if (this.event.note !== '') {
                 Row() {
@@ -703,6 +853,15 @@ export struct EventDetailPage {
       title: { title: '修改物品' },
       onDisappear: () => {
         this.showEditItemsSheet = false;
+      },
+    })
+    .bindSheet(this.showEditDateSheet, this.EditDateSheet, {
+      height: '55%',
+      dragBar: true,
+      showClose: true,
+      title: { title: '修改时间' },
+      onDisappear: () => {
+        this.showEditDateSheet = false;
       },
     })
   }

@@ -35,6 +35,7 @@ export class EventRepository {
       'note': event.note,
       'status': event.status,
       'createTime': event.createTime,
+      'completeTime': event.completeTime ?? '',
       'calendarEventId': calendarEventId,
     };
     return await store.insert(EVENT_TABLE_NAME, valueBucket);
@@ -48,6 +49,7 @@ export class EventRepository {
       'note': event.note,
       'status': event.status,
       'createTime': event.createTime,
+      'completeTime': event.completeTime ?? '',
       'calendarEventId': event.calendarEventId ?? null,
     };
     return await store.insert(EVENT_TABLE_NAME, valueBucket);
@@ -57,7 +59,7 @@ export class EventRepository {
     const store = this.db.getStore();
     const predicates = new relationalStore.RdbPredicates(EVENT_TABLE_NAME);
     predicates.orderByDesc('createTime');
-    const resultSet = await store.query(predicates, ['id', 'title', 'date', 'note', 'status', 'createTime', 'calendarEventId']);
+    const resultSet = await store.query(predicates, ['id', 'title', 'date', 'note', 'status', 'createTime', 'completeTime', 'calendarEventId']);
     const events: Event[] = [];
     while (resultSet.goToNextRow()) {
       const calIdVal = resultSet.getLong(resultSet.getColumnIndex('calendarEventId'));
@@ -68,6 +70,7 @@ export class EventRepository {
         note: resultSet.getString(resultSet.getColumnIndex('note')),
         status: resultSet.getLong(resultSet.getColumnIndex('status')),
         createTime: resultSet.getString(resultSet.getColumnIndex('createTime')),
+        completeTime: resultSet.getString(resultSet.getColumnIndex('completeTime')),
         calendarEventId: calIdVal === 0 ? null : calIdVal,
       });
     }
@@ -117,7 +120,7 @@ export class EventRepository {
     const store = this.db.getStore();
     const predicates = new relationalStore.RdbPredicates(EVENT_TABLE_NAME);
     predicates.equalTo('id', id);
-    const resultSet = await store.query(predicates, ['id', 'title', 'date', 'note', 'status', 'createTime', 'calendarEventId']);
+    const resultSet = await store.query(predicates, ['id', 'title', 'date', 'note', 'status', 'createTime', 'completeTime', 'calendarEventId']);
     let event: Event | null = null;
     if (resultSet.goToNextRow()) {
       const calIdVal = resultSet.getLong(resultSet.getColumnIndex('calendarEventId'));
@@ -128,6 +131,7 @@ export class EventRepository {
         note: resultSet.getString(resultSet.getColumnIndex('note')),
         status: resultSet.getLong(resultSet.getColumnIndex('status')),
         createTime: resultSet.getString(resultSet.getColumnIndex('createTime')),
+        completeTime: resultSet.getString(resultSet.getColumnIndex('completeTime')),
         calendarEventId: calIdVal === 0 ? null : calIdVal,
       };
     }
@@ -139,7 +143,7 @@ export class EventRepository {
     const store = this.db.getStore();
     const predicates = new relationalStore.RdbPredicates(EVENT_TABLE_NAME);
     predicates.equalTo('calendarEventId', calendarEventId);
-    const resultSet = await store.query(predicates, ['id', 'title', 'date', 'note', 'status', 'createTime', 'calendarEventId']);
+    const resultSet = await store.query(predicates, ['id', 'title', 'date', 'note', 'status', 'createTime', 'completeTime', 'calendarEventId']);
     let event: Event | null = null;
     if (resultSet.goToNextRow()) {
       const calIdVal = resultSet.getLong(resultSet.getColumnIndex('calendarEventId'));
@@ -150,11 +154,69 @@ export class EventRepository {
         note: resultSet.getString(resultSet.getColumnIndex('note')),
         status: resultSet.getLong(resultSet.getColumnIndex('status')),
         createTime: resultSet.getString(resultSet.getColumnIndex('createTime')),
+        completeTime: resultSet.getString(resultSet.getColumnIndex('completeTime')),
         calendarEventId: calIdVal === 0 ? null : calIdVal,
       };
     }
     resultSet.close();
     return event;
+  }
+
+  async getByTitleAndDate(title: string, date: string): Promise<Event | null> {
+    const store = this.db.getStore();
+    const predicates = new relationalStore.RdbPredicates(EVENT_TABLE_NAME);
+    predicates.equalTo('title', title);
+    predicates.equalTo('date', date);
+    const resultSet = await store.query(predicates, ['id', 'title', 'date', 'note', 'status', 'createTime', 'completeTime', 'calendarEventId']);
+    let event: Event | null = null;
+    if (resultSet.goToNextRow()) {
+      const calIdVal = resultSet.getLong(resultSet.getColumnIndex('calendarEventId'));
+      event = {
+        id: resultSet.getLong(resultSet.getColumnIndex('id')),
+        title: resultSet.getString(resultSet.getColumnIndex('title')),
+        date: resultSet.getString(resultSet.getColumnIndex('date')),
+        note: resultSet.getString(resultSet.getColumnIndex('note')),
+        status: resultSet.getLong(resultSet.getColumnIndex('status')),
+        createTime: resultSet.getString(resultSet.getColumnIndex('createTime')),
+        completeTime: resultSet.getString(resultSet.getColumnIndex('completeTime')),
+        calendarEventId: calIdVal === 0 ? null : calIdVal,
+      };
+    }
+    resultSet.close();
+    return event;
+  }
+
+  async updateEventDate(eventId: number, date: string): Promise<number> {
+    const evt: Event | null = await this.getById(eventId);
+    let calendarEventId: number | null = evt !== null ? evt.calendarEventId : null;
+
+    if (evt !== null && evt.calendarEventId !== null) {
+      try {
+        await this.calendarService.deleteEvent(evt.calendarEventId);
+        calendarEventId = null;
+      } catch (_e) {
+        calendarEventId = evt.calendarEventId;
+      }
+    }
+
+    if (evt !== null) {
+      const startTime: number = parseEventDateStartTime(date);
+      if (!Number.isNaN(startTime)) {
+        const id = await this.calendarService.addEvent(evt.title, startTime, undefined, evt.note);
+        if (id !== undefined) {
+          calendarEventId = id;
+        }
+      }
+    }
+
+    const store = this.db.getStore();
+    const valueBucket: relationalStore.ValuesBucket = {
+      'date': date,
+      'calendarEventId': calendarEventId,
+    };
+    const predicates = new relationalStore.RdbPredicates(EVENT_TABLE_NAME);
+    predicates.equalTo('id', eventId);
+    return await store.update(valueBucket, predicates);
   }
 
   async updateEventItemPrepared(id: number, isPrepared: boolean): Promise<number> {
@@ -199,6 +261,7 @@ export class EventRepository {
     const store = this.db.getStore();
     const valueBucket: relationalStore.ValuesBucket = {
       'status': 1,
+      'completeTime': new Date().toISOString(),
     };
     const predicates = new relationalStore.RdbPredicates(EVENT_TABLE_NAME);
     predicates.equalTo('id', eventId);

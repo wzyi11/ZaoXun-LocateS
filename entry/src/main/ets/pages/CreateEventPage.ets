@@ -1,5 +1,5 @@
 import { router } from '@kit.ArkUI';
-import { EventInput, formatEventDate } from '../model/EventModel';
+import { EventInput, formatEventDateTime } from '../model/EventModel';
 import { Item } from '../model/ItemModel';
 import { EventRepository } from '../data/EventRepository';
 import { ItemRepository } from '../data/ItemRepository';
@@ -12,9 +12,11 @@ export struct CreateEventPage {
   @State title: string = '';
   @State date: string = '';
   @State selectedDate: Date = new Date();
+  @State selectedTime: Date = new Date();
   @State note: string = '';
   @State items: Item[] = [];
   @State selectedIds: number[] = [];
+  @State itemSearchKeyword: string = '';
   @State loading: boolean = true;
   private eventRepo: EventRepository = new EventRepository();
   private itemRepo: ItemRepository = new ItemRepository();
@@ -22,7 +24,8 @@ export struct CreateEventPage {
   aboutToAppear(): void {
     if (this.date === '') {
       this.selectedDate = new Date();
-      this.date = formatEventDate(this.selectedDate);
+      this.selectedTime = new Date();
+      this.updateDateTime();
     }
     this.loadItems();
   }
@@ -54,6 +57,27 @@ export struct CreateEventPage {
     } else {
       this.selectedIds = [...this.selectedIds, id];
     }
+  }
+
+  updateDateTime(): void {
+    const selected: Date = new Date(
+      this.selectedDate.getFullYear(),
+      this.selectedDate.getMonth(),
+      this.selectedDate.getDate(),
+      this.selectedTime.getHours(),
+      this.selectedTime.getMinutes(),
+      0,
+      0
+    );
+    this.date = formatEventDateTime(selected);
+  }
+
+  matchesItemSearch(item: Item): boolean {
+    const keyword: string = this.itemSearchKeyword.trim().toLowerCase();
+    if (keyword === '') {
+      return true;
+    }
+    return item.name.toLowerCase().includes(keyword) || item.category.toLowerCase().includes(keyword);
   }
 
   async save(): Promise<void> {
@@ -134,7 +158,19 @@ export struct CreateEventPage {
               const day: number = value.day ?? this.selectedDate.getDate();
               const selected: Date = new Date(year, month - 1, day);
               this.selectedDate = selected;
-              this.date = formatEventDate(selected);
+              this.updateDateTime();
+            })
+          TimePicker({ selected: this.selectedTime })
+            .useMilitaryTime(true)
+            .height(96)
+            .width('100%')
+            .backgroundColor('#F5F5F5')
+            .borderRadius(10)
+            .onChange((value: TimePickerResult) => {
+              const hour: number = value.hour ?? this.selectedTime.getHours();
+              const minute: number = value.minute ?? this.selectedTime.getMinutes();
+              this.selectedTime = new Date(0, 0, 1, hour, minute, 0, 0);
+              this.updateDateTime();
             })
           Text(this.date)
             .fontSize(12)
@@ -176,34 +212,63 @@ export struct CreateEventPage {
           EmptyState({ icon: '📦', title: '还没有物品', subtitle: '请先在物品页添加物品' })
         } else {
           List({ space: 4 }) {
-            ForEach(this.items, (item: Item, index: number) => {
-              ListItem() {
-                Row({ space: 8 }) {
-                  Text(this.isSelected(item.id) ? '☑' : '☐')
-                    .fontSize(20)
-                    .fontColor(this.isSelected(item.id) ? '#007AFF' : '#CCC')
-                  Column({ space: 2 }) {
-                    Text(item.name)
-                      .fontSize(14)
-                      .fontColor('#333')
-                      .maxLines(1)
-                      .textOverflow({ overflow: TextOverflow.Ellipsis })
-                    if (item.category !== '') {
-                      Text(item.category)
-                        .fontSize(11)
-                        .fontColor('#999')
-                    }
-                  }
-                  .alignItems(HorizontalAlign.Start)
+            ListItem() {
+              Row() {
+                TextInput({ placeholder: '搜索物品名称', text: this.itemSearchKeyword })
+                  .backgroundColor(Color.Transparent)
                   .layoutWeight(1)
+                  .height(40)
+                  .fontSize(14)
+                  .onChange((value: string) => {
+                    this.itemSearchKeyword = value;
+                  })
+                Text('🔍')
+                  .fontSize(18)
+                  .width(28)
+                  .height(28)
+              }
+              .width('100%')
+              .height(40)
+              .borderRadius(30)
+              .border({
+                width: 2,
+                color: '#43ffffff',
+                radius: 30,
+                style: BorderStyle.Solid
+              })
+              .backgroundBlurStyle(BlurStyle.Thin,
+                { colorMode: ThemeColorMode.LIGHT, adaptiveColor: AdaptiveColor.DEFAULT, scale: 1.0 })
+            }
+            ForEach(this.items, (item: Item, index: number) => {
+              if (this.matchesItemSearch(item)) {
+                ListItem() {
+                  Row({ space: 8 }) {
+                    Text(this.isSelected(item.id) ? '☑' : '☐')
+                      .fontSize(20)
+                      .fontColor(this.isSelected(item.id) ? '#007AFF' : '#CCC')
+                    Column({ space: 2 }) {
+                      Text(item.name)
+                        .fontSize(14)
+                        .fontColor('#333')
+                        .maxLines(1)
+                        .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      if (item.category !== '') {
+                        Text(item.category)
+                          .fontSize(11)
+                          .fontColor('#999')
+                      }
+                    }
+                    .alignItems(HorizontalAlign.Start)
+                    .layoutWeight(1)
+                  }
+                  .width('100%')
+                  .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+                  .backgroundColor(this.isSelected(item.id) ? '#F0F7FF' : Color.White)
+                  .borderRadius(8)
+                  .onClick(() => {
+                    this.toggleSelect(item.id);
+                  })
                 }
-                .width('100%')
-                .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-                .backgroundColor(this.isSelected(item.id) ? '#F0F7FF' : Color.White)
-                .borderRadius(8)
-                .onClick(() => {
-                  this.toggleSelect(item.id);
-                })
               }
             }, (item: Item, index: number) => item.id.toString())
           }

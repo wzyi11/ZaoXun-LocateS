@@ -1,6 +1,14 @@
 import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from '@ohos/hypium';
 import { SPACE_CREATE_SQL } from '../main/ets/model/SpaceModel';
-import { formatEventDate, isEventDateWithinNextDays, parseEventDateStartTime } from '../main/ets/model/EventModel';
+import {
+  buildEventImportKey,
+  formatEventDate,
+  formatEventDateTime,
+  isCalendarEventAllDay,
+  isEventDateWithinNextDays,
+  isSystemCalendarEventSkippable,
+  parseEventDateStartTime,
+} from '../main/ets/model/EventModel';
 import { centerImageOffset, clampImageOffset, normalizeImagePoint } from '../main/ets/model/ImageDragModel';
 
 export default function localUnitTest() {
@@ -54,6 +62,7 @@ export default function localUnitTest() {
     it('eventDateHelpersUseStableDateOnlyFormat', 0, () => {
       const date: Date = new Date(2026, 6, 5);
       expect(formatEventDate(date)).assertEqual('2026-07-05');
+      expect(formatEventDateTime(new Date(2026, 6, 5, 9, 8))).assertEqual('2026-07-05 09:08');
 
       const startTime: number = parseEventDateStartTime('2026-07-05');
       const parsed: Date = new Date(startTime);
@@ -61,6 +70,11 @@ export default function localUnitTest() {
       expect(parsed.getMonth()).assertEqual(6);
       expect(parsed.getDate()).assertEqual(5);
       expect(parsed.getHours()).assertEqual(0);
+
+      const timedStartTime: number = parseEventDateStartTime('2026-07-05 09:08');
+      const timedParsed: Date = new Date(timedStartTime);
+      expect(timedParsed.getHours()).assertEqual(9);
+      expect(timedParsed.getMinutes()).assertEqual(8);
     });
 
     it('eventDateHelpersLimitSystemImportToNextThirtyDays', 0, () => {
@@ -69,6 +83,23 @@ export default function localUnitTest() {
       expect(isEventDateWithinNextDays(new Date(2026, 6, 31).getTime(), base, 30)).assertTrue();
       expect(isEventDateWithinNextDays(new Date(2026, 7, 1).getTime(), base, 30)).assertFalse();
       expect(isEventDateWithinNextDays(new Date(2026, 5, 30).getTime(), base, 30)).assertFalse();
+    });
+
+    it('eventImportHelpersSkipAllDayAndCalendarFestivalEntries', 0, () => {
+      const start: number = new Date(2026, 6, 24, 0, 0).getTime();
+      const end: number = new Date(2026, 6, 25, 0, 0).getTime();
+      expect(isCalendarEventAllDay(true, start, end)).assertTrue();
+      expect(isCalendarEventAllDay(false, start, end)).assertTrue();
+      expect(isCalendarEventAllDay(false, new Date(2026, 6, 24, 9, 0).getTime(), new Date(2026, 6, 24, 10, 0).getTime())).assertFalse();
+
+      expect(isSystemCalendarEventSkippable('大暑', false, start, end)).assertTrue();
+      expect(isSystemCalendarEventSkippable('中伏', false, start, end)).assertTrue();
+      expect(isSystemCalendarEventSkippable('拿快递', false, new Date(2026, 6, 24, 9, 0).getTime(), new Date(2026, 6, 24, 10, 0).getTime())).assertFalse();
+    });
+
+    it('eventImportKeyUsesTitleAndExactTime', 0, () => {
+      const start: number = new Date(2026, 6, 24, 9, 8).getTime();
+      expect(buildEventImportKey('  拿快递  ', start)).assertEqual('拿快递|2026-07-24 09:08');
     });
   });
 }

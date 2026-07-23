@@ -5,8 +5,9 @@ import { EventRepository } from '../data/EventRepository';
 import {
   Event as StorageEvent,
   EventInput,
-  formatEventDate,
+  formatEventDateTime,
   isEventDateWithinNextDays,
+  isSystemCalendarEventSkippable,
   parseEventDateStartTime,
 } from '../model/EventModel';
 
@@ -120,13 +121,21 @@ export struct CalendarPageView {
       if (!isEventDateWithinNextDays(e.startTime, now, 30)) {
         continue;
       }
+      if (isSystemCalendarEventSkippable(e.title ?? '', e.isAllDay, e.startTime, e.endTime)) {
+        continue;
+      }
       const existing: StorageEvent | null = await this.repo.getByCalendarEventId(e.id);
       if (existing !== null) {
         continue;
       }
+      const eventDate: string = formatEventDateTime(new Date(e.startTime));
+      const sameTitleAndDate: StorageEvent | null = await this.repo.getByTitleAndDate(e.title ?? '(无标题)', eventDate);
+      if (sameTitleAndDate !== null) {
+        continue;
+      }
       const eventInput: EventInput = {
         title: e.title ?? '(无标题)',
-        date: formatEventDate(new Date(e.startTime)),
+        date: eventDate,
         note: e.description ?? '',
         status: 0,
         createTime: new Date().toISOString(),
@@ -139,6 +148,9 @@ export struct CalendarPageView {
   recalcEventDays(): void {
     const days: Set<number> = new Set();
     for (const e of this.localEvents) {
+      if (e.status !== 0) {
+        continue;
+      }
       const startTime: number = parseEventDateStartTime(e.date);
       if (Number.isNaN(startTime)) {
         continue;
@@ -146,14 +158,6 @@ export struct CalendarPageView {
       const d: Date = new Date(startTime);
       if (d.getFullYear() === this.currentYear && d.getMonth() + 1 === this.currentMonth) {
         days.add(d.getDate());
-      }
-    }
-    for (const e of this.allEvents) {
-      if (e.startTime) {
-        const d: Date = new Date(e.startTime);
-        if (d.getFullYear() === this.currentYear && d.getMonth() + 1 === this.currentMonth) {
-          days.add(d.getDate());
-        }
       }
     }
     this.eventDays = Array.from(days).sort((a, b) => a - b);

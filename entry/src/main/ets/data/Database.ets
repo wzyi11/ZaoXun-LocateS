@@ -69,6 +69,7 @@ export class Database {
     }
 
     await this.addColumnIfMissing("ALTER TABLE event ADD COLUMN calendarEventId INTEGER DEFAULT NULL");
+    await this.addColumnIfMissing("ALTER TABLE event ADD COLUMN completeTime TEXT DEFAULT ''");
   }
 
   private async addColumnIfMissing(sql: string): Promise<void> {

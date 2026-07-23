@@ -1,5 +1,5 @@
 import { router } from '@kit.ArkUI';
-import { Event, EventInput, EventItem, formatEventDate } from '../model/EventModel';
+import { Event, EventInput, EventItem, formatEventDateTime, parseEventDateStartTime } from '../model/EventModel';
 import { Item } from '../model/ItemModel';
 import { EventRepository } from '../data/EventRepository';
 import { ItemRepository } from '../data/ItemRepository';
@@ -24,9 +24,11 @@ export struct EventPage {
   @State newEventTitle: string = '';
   @State newEventDate: string = '';
   @State newEventSelectedDate: Date = new Date();
+  @State newEventSelectedTime: Date = new Date();
   @State newEventNote: string = '';
   @State eventItems: Item[] = [];
   @State selectedItemIds: number[] = [];
+  @State eventItemSearchKeyword: string = '';
   @State eventItemsLoading: boolean = true;
   @State activeTab: string = 'active';
   @StorageLink('eventRefreshToken') @Watch('onRefreshToken') eventRefreshToken: number = 0;
@@ -67,9 +69,11 @@ export struct EventPage {
     const today: Date = new Date();
     this.newEventTitle = '';
     this.newEventSelectedDate = today;
-    this.newEventDate = formatEventDate(today);
+    this.newEventSelectedTime = today;
+    this.newEventDate = formatEventDateTime(today);
     this.newEventNote = '';
     this.selectedItemIds = [];
+    this.eventItemSearchKeyword = '';
   }
 
   async loadEventItems(): Promise<void> {
@@ -99,6 +103,27 @@ export struct EventPage {
     } else {
       this.selectedItemIds = [...this.selectedItemIds, id];
     }
+  }
+
+  updateNewEventDateTime(): void {
+    const selected: Date = new Date(
+      this.newEventSelectedDate.getFullYear(),
+      this.newEventSelectedDate.getMonth(),
+      this.newEventSelectedDate.getDate(),
+      this.newEventSelectedTime.getHours(),
+      this.newEventSelectedTime.getMinutes(),
+      0,
+      0
+    );
+    this.newEventDate = formatEventDateTime(selected);
+  }
+
+  matchesEventItemSearch(item: Item): boolean {
+    const keyword: string = this.eventItemSearchKeyword.trim().toLowerCase();
+    if (keyword === '') {
+      return true;
+    }
+    return item.name.toLowerCase().includes(keyword) || item.category.toLowerCase().includes(keyword);
   }
 
   async saveNewEvent(): Promise<void> {
@@ -152,6 +177,14 @@ export struct EventPage {
         active.push(listItem);
       }
     }
+    active.sort((a: EventListItem, b: EventListItem) => {
+      return parseEventDateStartTime(a.event.date) - parseEventDateStartTime(b.event.date);
+    });
+    completed.sort((a: EventListItem, b: EventListItem) => {
+      const bTime: number = Date.parse(b.event.completeTime);
+      const aTime: number = Date.parse(a.event.completeTime);
+      return (Number.isNaN(bTime) ? 0 : bTime) - (Number.isNaN(aTime) ? 0 : aTime);
+    });
     this.activeEvents = active;
     this.completedEvents = completed;
     this.loading = false;
@@ -201,7 +234,19 @@ export struct EventPage {
                 const day: number = value.day ?? this.newEventSelectedDate.getDate();
                 const selected: Date = new Date(year, month - 1, day);
                 this.newEventSelectedDate = selected;
-                this.newEventDate = formatEventDate(selected);
+                this.updateNewEventDateTime();
+              })
+            TimePicker({ selected: this.newEventSelectedTime })
+              .useMilitaryTime(true)
+              .height(96)
+              .backgroundColor('#F5F5F5')
+              .borderRadius(10)
+              .width('100%')
+              .onChange((value: TimePickerResult) => {
+                const hour: number = value.hour ?? this.newEventSelectedTime.getHours();
+                const minute: number = value.minute ?? this.newEventSelectedTime.getMinutes();
+                this.newEventSelectedTime = new Date(0, 0, 1, hour, minute, 0, 0);
+                this.updateNewEventDateTime();
               })
             Text(this.newEventDate)
               .fontSize(12)
@@ -239,33 +284,61 @@ export struct EventPage {
               EmptyState({ icon: '📦', title: '还没有物品', subtitle: '可以先添加物品后再关联' })
             } else {
               Column({ space: 8 }) {
-                ForEach(this.eventItems, (item: Item, index: number) => {
-                  Row({ space: 8 }) {
-                    Text(this.isSelected(item.id) ? '☑' : '☐')
-                      .fontSize(20)
-                      .fontColor(this.isSelected(item.id) ? '#007AFF' : '#CCC')
-                    Column({ space: 2 }) {
-                      Text(item.name)
-                        .fontSize(14)
-                        .fontColor('#333')
-                        .maxLines(1)
-                        .textOverflow({ overflow: TextOverflow.Ellipsis })
-                      if (item.category !== '') {
-                        Text(item.category)
-                          .fontSize(11)
-                          .fontColor('#999')
-                      }
-                    }
-                    .alignItems(HorizontalAlign.Start)
+                Row() {
+                  TextInput({ placeholder: '搜索物品名称', text: this.eventItemSearchKeyword })
+                    .backgroundColor(Color.Transparent)
                     .layoutWeight(1)
+                    .height(40)
+                    .fontSize(14)
+                    .onChange((value: string) => {
+                      this.eventItemSearchKeyword = value;
+                    })
+                  Text('🔍')
+                    .fontSize(18)
+                    .width(28)
+                    .height(28)
+                }
+                .width('100%')
+                .height(40)
+                .borderRadius(30)
+                .border({
+                  width: 2,
+                  color: '#43ffffff',
+                  radius: 30,
+                  style: BorderStyle.Solid
+                })
+                .backgroundBlurStyle(BlurStyle.Thin,
+                  { colorMode: ThemeColorMode.LIGHT, adaptiveColor: AdaptiveColor.DEFAULT, scale: 1.0 })
+
+                ForEach(this.eventItems, (item: Item, index: number) => {
+                  if (this.matchesEventItemSearch(item)) {
+                    Row({ space: 8 }) {
+                      Text(this.isSelected(item.id) ? '☑' : '☐')
+                        .fontSize(20)
+                        .fontColor(this.isSelected(item.id) ? '#007AFF' : '#CCC')
+                      Column({ space: 2 }) {
+                        Text(item.name)
+                          .fontSize(14)
+                          .fontColor('#333')
+                          .maxLines(1)
+                          .textOverflow({ overflow: TextOverflow.Ellipsis })
+                        if (item.category !== '') {
+                          Text(item.category)
+                            .fontSize(11)
+                            .fontColor('#999')
+                        }
+                      }
+                      .alignItems(HorizontalAlign.Start)
+                      .layoutWeight(1)
+                    }
+                    .width('100%')
+                    .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+                    .backgroundColor(this.isSelected(item.id) ? '#F0F7FF' : Color.White)
+                    .borderRadius(8)
+                    .onClick(() => {
+                      this.toggleSelect(item.id);
+                    })
                   }
-                  .width('100%')
-                  .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-                  .backgroundColor(this.isSelected(item.id) ? '#F0F7FF' : Color.White)
-                  .borderRadius(8)
-                  .onClick(() => {
-                    this.toggleSelect(item.id);
-                  })
                 }, (item: Item, index: number) => item.id.toString())
               }
               .width('100%')
