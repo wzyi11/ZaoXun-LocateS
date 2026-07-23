@@ -7,10 +7,10 @@ import {
   ScrollEffectType,
 } from '@kit.UIDesignKit';
 import { PageKeyEnum, TabsBarModel } from '../model/ToolsBarModel';
-import { ItemPage } from './ItemPage';
-import { SpacePage } from './SpacePage';
-import { EventPage } from './EventPage';
-import { ProfilePage } from './ProfilePage';
+import { ItemPage } from '../tabs/ItemPage';
+import { SpacePage } from '../tabs/SpacePage';
+import { EventPage } from '../tabs/EventPage';
+import { ProfilePage } from '../tabs/ProfilePage';
 import { PageBackground } from '../components/PageBackground';
 
 @Entry

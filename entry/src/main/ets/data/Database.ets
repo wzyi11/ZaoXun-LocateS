@@ -37,6 +37,7 @@ export class Database {
       await this.store.executeSql(EVENT_ITEM_CREATE_SQL);
       await this.store.executeSql(CATEGORY_CREATE_SQL);
       await this.ensureSpaceColumns();
+      await this.ensureEventColumns();
       console.info('Database initialized successfully');
     } catch (err) {
       let e = err as BusinessError;
@@ -60,6 +61,14 @@ export class Database {
     await this.addColumnIfMissing("ALTER TABLE space ADD COLUMN markerX REAL DEFAULT 0.5");
     await this.addColumnIfMissing("ALTER TABLE space ADD COLUMN markerY REAL DEFAULT 0.5");
     await this.addColumnIfMissing("ALTER TABLE space ADD COLUMN markerColor TEXT DEFAULT '#5B8DEF'");
+  }
+
+  private async ensureEventColumns(): Promise<void> {
+    if (!this.store) {
+      return;
+    }
+
+    await this.addColumnIfMissing("ALTER TABLE event ADD COLUMN calendarEventId INTEGER DEFAULT NULL");
   }
 
   private async addColumnIfMissing(sql: string): Promise<void> {

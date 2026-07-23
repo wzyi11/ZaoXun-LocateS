@@ -145,6 +145,7 @@ export struct EventDetailPage {
       'note': this.event.note,
       'status': 1,
       'createTime': this.event.createTime,
+      'calendarEventId': this.event.calendarEventId,
     };
     this.event = updatedEvent;
     AppStorage.setOrCreate('eventRefreshToken', Date.now());

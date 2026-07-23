@@ -4,6 +4,7 @@ import { Item } from '../model/ItemModel';
 import { EventRepository } from '../data/EventRepository';
 import { ItemRepository } from '../data/ItemRepository';
 import { EventCard } from '../components/EventCard';
+import { CalendarPageView } from '../components/CalendarPageView';
 import { EmptyState } from '../components/EmptyState';
 import { PageBackground } from '../components/PageBackground';
 
@@ -26,6 +27,7 @@ export struct EventPage {
   @State eventItems: Item[] = [];
   @State selectedItemIds: number[] = [];
   @State eventItemsLoading: boolean = true;
+  @State activeTab: string = 'active';
   @StorageLink('eventRefreshToken') @Watch('onRefreshToken') eventRefreshToken: number = 0;
   @StorageLink('quickAddEvent') @Watch('onQuickAddEvent') quickAddEvent: number = 0;
   private repo: EventRepository = new EventRepository();
@@ -297,9 +299,47 @@ export struct EventPage {
     Stack() {
       PageBackground()
       Column() {
-        Row()
-          .width('100%')
-          .height(60)
+        // 日历组件
+        Row(){
+          CalendarPageView({ compact: true, refreshKey: this.eventRefreshToken })
+        }
+        .width('90%')
+        .margin({ top: 60 })
+
+        // 分段控件
+        Row({ space: 0 }) {
+          Text('进行中')
+            .fontSize(14)
+            .fontWeight(this.activeTab === 'active' ? FontWeight.Medium : FontWeight.Regular)
+            .fontColor(this.activeTab === 'active' ? '#FFFFFF' : '#666')
+            .width('50%')
+            .textAlign(TextAlign.Center)
+            .padding({ top: 8, bottom: 8 })
+            .backgroundColor(this.activeTab === 'active' ? '#007AFF' : '#F2F2F2')
+            .borderRadius({ topLeft: 8, bottomLeft: 8 })
+            .onClick(() => {
+              this.activeTab = 'active';
+            })
+
+          Text('已完成')
+            .fontSize(14)
+            .fontWeight(this.activeTab === 'completed' ? FontWeight.Medium : FontWeight.Regular)
+            .fontColor(this.activeTab === 'completed' ? '#FFFFFF' : '#666')
+            .width('50%')
+            .textAlign(TextAlign.Center)
+            .padding({ top: 8, bottom: 8 })
+            .backgroundColor(this.activeTab === 'completed' ? '#34C759' : '#F2F2F2')
+            .borderRadius({ topRight: 8, bottomRight: 8 })
+            .onClick(() => {
+              this.activeTab = 'completed';
+            })
+        }
+        .width('100%')
+        .height(36)
+        .margin({ top: 12, left: 16, right: 16 })
+        .borderRadius(8)
+
+        // 内容区域
         if (this.loading) {
           Column() {
             LoadingProgress()
@@ -310,70 +350,56 @@ export struct EventPage {
           .width('100%')
           .layoutWeight(1)
           .justifyContent(FlexAlign.Center)
-        } else if (this.activeEvents.length === 0 && this.completedEvents.length === 0) {
-          Column() {
-            EmptyState({ icon: '🎒', title: '还没有事件', subtitle: '点击底部加号创建第一个事件' })
-          }
-          .width('100%')
-          .layoutWeight(1)
         } else {
           List({ space: 8 }) {
-            if (this.activeEvents.length > 0) {
-              ListItem() {
-                Row() {
-                  Text('进行中')
-                    .fontSize(13)
-                    .fontColor('#999')
-                    .fontWeight(FontWeight.Medium)
-                }
-                .width('100%')
-                .padding({ left: 16, right: 16, top: 4, bottom: 4 })
-              }
-              ForEach(this.activeEvents, (item: EventListItem, index: number) => {
+            if (this.activeTab === 'active') {
+              if (this.activeEvents.length === 0) {
                 ListItem() {
-                  EventCard({
-                    title: item.event.title,
-                    date: item.event.date,
-                    status: item.event.status,
-                    prepared: item.prepared,
-                    total: item.total,
-                    onTap: () => {
-                      AppStorage.setOrCreate('currentEventId', item.event.id);
-                      router.pushUrl({ url: 'pages/EventDetailPage' });
-                    }
-                  })
-                    .margin({ left: 16, right: 16 })
+                  EmptyState({ icon: '🎒', title: '没有进行中的事件', subtitle: '点击底部加号创建新事件' })
                 }
-              }, (item: EventListItem, index: number) => this.getEventListKey(item))
+              } else {
+                ForEach(this.activeEvents, (item: EventListItem, index: number) => {
+                  ListItem() {
+                    EventCard({
+                      title: item.event.title,
+                      date: item.event.date,
+                      status: item.event.status,
+                      prepared: item.prepared,
+                      total: item.total,
+                      onTap: () => {
+                        AppStorage.setOrCreate('currentEventId', item.event.id);
+                        router.pushUrl({ url: 'pages/EventDetailPage' });
+                      }
+                    })
+                      .margin({ left: 16, right: 16 })
+                  }
+                }, (item: EventListItem, index: number) => this.getEventListKey(item))
+              }
             }
 
-            if (this.completedEvents.length > 0) {
-              ListItem() {
-                Row() {
-                  Text('已完成')
-                    .fontSize(13)
-                    .fontColor('#999')
-                    .fontWeight(FontWeight.Medium)
-                }
-                .width('100%')
-                .padding({ left: 16, right: 16, top: 12, bottom: 4 })
-              }
-              ForEach(this.completedEvents, (item: EventListItem, index: number) => {
+            if (this.activeTab === 'completed') {
+              if (this.completedEvents.length === 0) {
                 ListItem() {
-                  EventCard({
-                    title: item.event.title,
-                    date: item.event.date,
-                    status: item.event.status,
-                    prepared: item.prepared,
-                    total: item.total,
-                    onTap: () => {
-                      AppStorage.setOrCreate('currentEventId', item.event.id);
-                      router.pushUrl({ url: 'pages/EventDetailPage' });
-                    }
-                  })
-                    .margin({ left: 16, right: 16 })
+                  EmptyState({ icon: '✅', title: '还没有已完成的事件', subtitle: '完成事件后会显示在这里' })
                 }
-              }, (item: EventListItem, index: number) => this.getEventListKey(item))
+              } else {
+                ForEach(this.completedEvents, (item: EventListItem, index: number) => {
+                  ListItem() {
+                    EventCard({
+                      title: item.event.title,
+                      date: item.event.date,
+                      status: item.event.status,
+                      prepared: item.prepared,
+                      total: item.total,
+                      onTap: () => {
+                        AppStorage.setOrCreate('currentEventId', item.event.id);
+                        router.pushUrl({ url: 'pages/EventDetailPage' });
+                      }
+                    })
+                      .margin({ left: 16, right: 16 })
+                  }
+                }, (item: EventListItem, index: number) => this.getEventListKey(item))
+              }
             }
             ListItem() {
               Row(){}.height(80)
@@ -381,9 +407,8 @@ export struct EventPage {
           }
           .width('100%')
           .layoutWeight(1)
-          .divider({ strokeWidth: 0 })
           .scrollBar(BarState.Off)
-          .padding({ top: 4 })
+          .padding({ top: 8, bottom: 80 })
         }
       }
       .width('100%')
