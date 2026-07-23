@@ -5,6 +5,7 @@ export interface Event {
   note: string;
   status: number;        // 0=进行中 1=已完成
   createTime: string;
+  calendarEventId: number | null;  // CalendarKit 事件 ID
 }
 
 export interface EventInput {
@@ -13,6 +14,7 @@ export interface EventInput {
   note: string;
   status: number;
   createTime: string;
+  calendarEventId?: number | null;
 }
 
 export interface EventItem {
@@ -31,7 +33,8 @@ export const EVENT_CREATE_SQL = `
     date TEXT DEFAULT '',
     note TEXT DEFAULT '',
     status INTEGER DEFAULT 0,
-    createTime TEXT NOT NULL
+    createTime TEXT NOT NULL,
+    calendarEventId INTEGER DEFAULT NULL
   )
 `;
 export const EVENT_ITEM_CREATE_SQL = `
