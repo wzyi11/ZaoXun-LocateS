@@ -54,6 +54,7 @@ export class CalendarService {
       if (!this.cal) {
         this.cal = await this.mgr.createCalendar(account);
       }
+
       this._ready = true;
     } catch (_e) {
       console.error('CalendarService: permission denied or init failed');
@@ -86,5 +87,32 @@ export class CalendarService {
       return [];
     }
     return await this.cal.getEvents();
+  }
+
+  /**
+   * 读取所有日历（包括系统默认日历）中的日程。
+   * 主要用于 EventPage 显示手机日历中的全部日程。
+   */
+  async getSystemEvents(): Promise<calendarManager.Event[]> {
+    if (!this.mgr) {
+      return [];
+    }
+    const allEvents: calendarManager.Event[] = [];
+    try {
+      const allCals: calendarManager.Calendar[] = await this.mgr.getAllCalendars();
+      for (const cal of allCals) {
+        try {
+          const events: calendarManager.Event[] = await cal.getEvents();
+          allEvents.push(...events);
+          console.info(`CalendarService: got ${events.length} events from one calendar`);
+        } catch (e) {
+          console.error(`CalendarService: read calendar events failed: ${JSON.stringify(e)}`);
+        }
+      }
+      console.info(`CalendarService: total ${allEvents.length} events from ${allCals.length} calendar(s)`);
+    } catch (_e) {
+      console.error(`CalendarService: getAllCalendars failed: ${JSON.stringify(_e)}`);
+    }
+    return allEvents;
   }
 }

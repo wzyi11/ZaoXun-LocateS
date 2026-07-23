@@ -5,6 +5,7 @@ import { CalendarService } from '../data/CalendarService';
 interface ScheduleItem {
   title: string;
   time: string;
+  fromApp: boolean;
 }
 
 function fmtTime(ts: number): string {
@@ -24,6 +25,7 @@ export struct CalendarPageView {
   @State currentMonth: number = 7;
   @State loading: boolean = true;
   private allEvents: calendarManager.Event[] = [];
+  private appEventIds: Set<number> = new Set();
 
 
   aboutToAppear(): void {
@@ -53,8 +55,39 @@ export struct CalendarPageView {
     }
 
     try {
-      const events: calendarManager.Event[] = await svc.getEvents();
-      this.allEvents = events;
+      // 读取应用自建日历的日程
+      const appEvents: calendarManager.Event[] = await svc.getEvents();
+      const appIdSet: Set<number> = new Set();
+      for (const e of appEvents) {
+        if (e.id !== undefined) {
+          appIdSet.add(e.id);
+        }
+      }
+      this.appEventIds = appIdSet;
+
+      // 读取所有日历（包括系统默认日历）的日程
+      const sysEvents: calendarManager.Event[] = await svc.getSystemEvents();
+
+      console.info(`CalendarPageView: app=${appEvents.length}, allCalendars=${sysEvents.length}`);
+
+      // 合并并去重（getSystemEvents 包含 app 自己的日历）
+      const seenIds: Set<number> = new Set();
+      const merged: calendarManager.Event[] = [];
+      for (const e of appEvents) {
+        merged.push(e);
+        if (e.id !== undefined) {
+          seenIds.add(e.id);
+        }
+      }
+      for (const e of sysEvents) {
+        if (e.id === undefined || !seenIds.has(e.id)) {
+          merged.push(e);
+          if (e.id !== undefined) {
+            seenIds.add(e.id);
+          }
+        }
+      }
+      this.allEvents = merged;
       this.recalcEventDays();
 
       const today: number = new Date().getDate();
@@ -96,6 +129,7 @@ export struct CalendarPageView {
         list.push({
           title: e.title ?? '(无标题)',
           time: fmtTime(e.startTime),
+          fromApp: e.id !== undefined && this.appEventIds.has(e.id),
         });
       }
     }
@@ -131,21 +165,41 @@ export struct CalendarPageView {
             .fontWeight(FontWeight.Medium)
             .fontColor('#007AFF')
             .width('100%')
-            .margin({ bottom: 8 })
+            .margin({ bottom: 4 })
+
+          // 来源图例
+          Row({ space: 16 }) {
+            Row({ space: 4 }) {
+              Text('●').fontSize(10).fontColor('#007AFF')
+              Text('本应用').fontSize(10).fontColor('#999')
+            }
+            Row({ space: 4 }) {
+              Text('○').fontSize(10).fontColor('#FF9500')
+              Text('系统日历').fontSize(10).fontColor('#999')
+            }
+          }
+          .width('100%')
+          .margin({ bottom: 8 })
 
           ForEach(this.schedules, (item: ScheduleItem, index: number) => {
             Row({ space: 8 }) {
+              // 来源指示点：应用事件蓝色●，系统日历橙色○
+              Text(item.fromApp ? '●' : '○')
+                .fontSize(12)
+                .fontColor(item.fromApp ? '#007AFF' : '#FF9500')
+                .width(18)
+                .textAlign(TextAlign.Center)
               Text(item.time)
                 .fontSize(12)
-                .fontColor('#666')
+                .fontColor(item.fromApp ? '#666' : '#999')
                 .fontWeight(FontWeight.Medium)
               Text(item.title)
                 .fontSize(13)
-                .fontColor('#333')
+                .fontColor(item.fromApp ? '#333' : '#666')
             }
             .width('100%')
             .padding({ top: 4, bottom: 4 })
-          }, (item: ScheduleItem, index: number) => `${item.time}-${item.title}`)
+          }, (item: ScheduleItem, index: number) => `${item.time}-${item.title}-${item.fromApp ? 'a' : 's'}`)
         }
         .width('100%')
         .padding({ top: 12, left: 12, right: 12 })
