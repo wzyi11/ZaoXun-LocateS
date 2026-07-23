@@ -81,13 +81,12 @@ export struct CalendarView {
 
   getDayColor(dayInfo: DayInfo): string {
     if (!dayInfo.isCurrentMonth) return '#CCC';
-    if (dayInfo.isToday && this.selectedDay === dayInfo.day) return '#FFFFFF';
+    if (this.selectedDay === dayInfo.day) return '#FFFFFF';
     return '#333';
   }
 
   getDayBg(dayInfo: DayInfo): string {
-    if (dayInfo.isToday && this.selectedDay === dayInfo.day) return '#007AFF';
-    if (this.selectedDay === dayInfo.day && dayInfo.isCurrentMonth) return '#E8F0FE';
+    if (this.selectedDay === dayInfo.day && dayInfo.isCurrentMonth) return '#007AFF';
     return 'transparent';
   }
 
@@ -133,21 +132,40 @@ export struct CalendarView {
         ForEach(this.dayGrid, (dayInfo: DayInfo, index: number) => {
           GridItem() {
             Column() {
-              Text(dayInfo.day.toString())
-                .fontSize(16)
-                .fontColor(this.getDayColor(dayInfo))
-                .fontWeight(dayInfo.isToday ? FontWeight.Bold : FontWeight.Normal)
-                .textAlign(TextAlign.Center)
-                .width(30)
-                .height(30)
-                .backgroundColor(this.getDayBg(dayInfo))
-                .borderRadius(15)
-                .borderWidth(dayInfo.isToday && this.selectedDay !== dayInfo.day ? 1.5 : 0)
-                .borderColor('#007AFF')
-                .borderStyle(BorderStyle.Solid)
+              Column() {
+                Text(dayInfo.day.toString())
+                  .fontSize(16)
+                  .fontColor(this.getDayColor(dayInfo))
+                  .fontWeight(dayInfo.isToday ? FontWeight.Bold : FontWeight.Normal)
+                  .textAlign(TextAlign.Center)
+                  .height(dayInfo.hasEvents && this.selectedDay === dayInfo.day ? 20 : 30)
+                  .width(34)
 
-              if (dayInfo.hasEvents) {
-                Text('●')
+                if (dayInfo.hasEvents && this.selectedDay === dayInfo.day) {
+                  Text('|')
+                    .fontSize(7)
+                    .fontColor('#FFFFFF')
+                    .height(5)
+                    .lineHeight(5)
+                  Text('•')
+                    .fontSize(12)
+                    .fontColor('#FFFFFF')
+                    .height(7)
+                    .lineHeight(7)
+                }
+              }
+              .width(34)
+              .height(34)
+              .justifyContent(FlexAlign.Center)
+              .alignItems(HorizontalAlign.Center)
+              .backgroundColor(this.getDayBg(dayInfo))
+              .borderRadius(17)
+              .borderWidth(dayInfo.isToday && this.selectedDay !== dayInfo.day ? 1.5 : 0)
+              .borderColor('#007AFF')
+              .borderStyle(BorderStyle.Solid)
+
+              if (dayInfo.hasEvents && this.selectedDay !== dayInfo.day) {
+                Text('•')
                   .fontSize(6)
                   .fontColor('#007AFF')
                   .lineHeight(6)

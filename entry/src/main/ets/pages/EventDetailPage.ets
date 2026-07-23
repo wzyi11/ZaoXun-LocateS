@@ -2,7 +2,7 @@ import { router } from '@kit.ArkUI';
 import { systemShare } from '@kit.ShareKit';
 import { uniformTypeDescriptor as utd } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
-import { Event, EventItem, formatEventDateTime, parseEventDateStartTime } from '../model/EventModel';
+import { Event, EventItem, combineEventDateAndTime, formatEventDateTime, parseEventDateStartTime } from '../model/EventModel';
 import { Item } from '../model/ItemModel';
 import { EventRepository } from '../data/EventRepository';
 import { ItemRepository } from '../data/ItemRepository';
@@ -28,12 +28,12 @@ export struct EventDetailPage {
   @State loading: boolean = true;
   @State currentEventId: number = 0;
   @State updatingItemId: number = 0;
-  @State showEditItemsSheet: boolean = false;
+  @State showDetailSheet: boolean = false;
+  @State detailSheetType: string = 'items';
   @State editItems: Item[] = [];
   @State editSelectedItemIds: number[] = [];
   @State editItemsLoading: boolean = true;
   @State editItemSearchKeyword: string = '';
-  @State showEditDateSheet: boolean = false;
   @State editSelectedDate: Date = new Date();
   @State editSelectedTime: Date = new Date();
   @State editEventDate: string = '';
@@ -197,7 +197,8 @@ export struct EventDetailPage {
     if (this.event === null) {
       return;
     }
-    this.showEditItemsSheet = true;
+    this.showDetailSheet = false;
+    this.detailSheetType = 'items';
     this.editItemsLoading = true;
     this.editItemSearchKeyword = '';
     const selectedIds: number[] = [];
@@ -207,6 +208,7 @@ export struct EventDetailPage {
     this.editSelectedItemIds = selectedIds;
     this.editItems = await this.itemRepo.getAll();
     this.editItemsLoading = false;
+    this.showDetailSheet = true;
   }
 
   matchesEditItemSearch(item: Item): boolean {
@@ -235,7 +237,7 @@ export struct EventDetailPage {
       await this.eventRepo.linkItemWithPrepared(this.event.id, itemId, preparedItemIds.indexOf(itemId) >= 0);
     }
 
-    this.showEditItemsSheet = false;
+    this.showDetailSheet = false;
     await this.loadData(this.event.id, false);
     AppStorage.setOrCreate('eventRefreshToken', Date.now());
   }
@@ -249,19 +251,12 @@ export struct EventDetailPage {
     this.editSelectedDate = selected;
     this.editSelectedTime = selected;
     this.editEventDate = formatEventDateTime(selected);
-    this.showEditDateSheet = true;
+    this.detailSheetType = 'date';
+    this.showDetailSheet = true;
   }
 
   updateEditEventDate(): void {
-    const selected: Date = new Date(
-      this.editSelectedDate.getFullYear(),
-      this.editSelectedDate.getMonth(),
-      this.editSelectedDate.getDate(),
-      this.editSelectedTime.getHours(),
-      this.editSelectedTime.getMinutes(),
-      0,
-      0
-    );
+    const selected: Date = combineEventDateAndTime(this.editSelectedDate, this.editSelectedTime);
     this.editEventDate = formatEventDateTime(selected);
   }
 
@@ -270,7 +265,7 @@ export struct EventDetailPage {
       return;
     }
     await this.eventRepo.updateEventDate(this.event.id, this.editEventDate);
-    this.showEditDateSheet = false;
+    this.showDetailSheet = false;
     await this.loadData(this.event.id, false);
     AppStorage.setOrCreate('eventRefreshToken', Date.now());
   }
@@ -293,6 +288,15 @@ export struct EventDetailPage {
       cornerRadius: 16,
     });
     this.deleteDialogController.open();
+  }
+
+  @Builder
+  DetailSheet() {
+    if (this.detailSheetType === 'items') {
+      this.EditItemsSheet()
+    } else {
+      this.EditDateSheet()
+    }
   }
 
   @Builder
@@ -438,16 +442,14 @@ export struct EventDetailPage {
         .textAlign(TextAlign.Start)
         .margin({ bottom: 20 })
 
-      DatePicker({ selected: this.editSelectedDate })
-        .height(120)
+      CalendarPicker({ selected: this.editSelectedDate, hintRadius: 16 })
+        .height(44)
         .backgroundColor('#F5F5F5')
         .borderRadius(10)
         .width('100%')
-        .onChange((value: DatePickerResult) => {
-          const year: number = value.year ?? this.editSelectedDate.getFullYear();
-          const month: number = value.month ?? this.editSelectedDate.getMonth() + 1;
-          const day: number = value.day ?? this.editSelectedDate.getDate();
-          this.editSelectedDate = new Date(year, month - 1, day);
+        .markToday(true)
+        .onChange((value: Date) => {
+          this.editSelectedDate = value;
           this.updateEditEventDate();
         })
 
@@ -461,7 +463,15 @@ export struct EventDetailPage {
         .onChange((value: TimePickerResult) => {
           const hour: number = value.hour ?? this.editSelectedTime.getHours();
           const minute: number = value.minute ?? this.editSelectedTime.getMinutes();
-          this.editSelectedTime = new Date(0, 0, 1, hour, minute, 0, 0);
+          this.editSelectedTime = new Date(
+            this.editSelectedDate.getFullYear(),
+            this.editSelectedDate.getMonth(),
+            this.editSelectedDate.getDate(),
+            hour,
+            minute,
+            0,
+            0
+          );
           this.updateEditEventDate();
         })
 
@@ -846,22 +856,13 @@ export struct EventDetailPage {
     }
     .width('100%')
     .height('100%')
-    .bindSheet(this.showEditItemsSheet, this.EditItemsSheet, {
-      height: '70%',
+    .bindSheet(this.showDetailSheet, this.DetailSheet, {
+      height: this.detailSheetType === 'items' ? '70%' : '55%',
       dragBar: true,
       showClose: true,
-      title: { title: '修改物品' },
+      title: { title: this.detailSheetType === 'items' ? '修改物品' : '修改时间' },
       onDisappear: () => {
-        this.showEditItemsSheet = false;
-      },
-    })
-    .bindSheet(this.showEditDateSheet, this.EditDateSheet, {
-      height: '55%',
-      dragBar: true,
-      showClose: true,
-      title: { title: '修改时间' },
-      onDisappear: () => {
-        this.showEditDateSheet = false;
+        this.showDetailSheet = false;
       },
     })
   }

@@ -80,8 +80,11 @@ export struct CalendarPageView {
       const sysEvents: calendarManager.Event[] = await svc.getSystemEvents();
 
       console.info(`CalendarPageView: app=${appEvents.length}, allCalendars=${sysEvents.length}`);
-      await this.importSystemEvents(sysEvents);
+      const importedCount: number = await this.importSystemEvents(sysEvents);
       this.localEvents = await this.repo.getAll();
+      if (importedCount > 0) {
+        AppStorage.setOrCreate('eventRefreshToken', Date.now());
+      }
 
       // 合并并去重（getSystemEvents 包含 app 自己的日历）
       const seenIds: Set<number> = new Set();
@@ -112,8 +115,9 @@ export struct CalendarPageView {
     this.loading = false;
   }
 
-  async importSystemEvents(sysEvents: calendarManager.Event[]): Promise<void> {
+  async importSystemEvents(sysEvents: calendarManager.Event[]): Promise<number> {
     const now: Date = new Date();
+    let importedCount: number = 0;
     for (const e of sysEvents) {
       if (e.id === undefined || e.startTime === undefined || this.appEventIds.has(e.id)) {
         continue;
@@ -142,7 +146,9 @@ export struct CalendarPageView {
         calendarEventId: e.id,
       };
       await this.repo.insertFromCalendar(eventInput);
+      importedCount++;
     }
+    return importedCount;
   }
 
   recalcEventDays(): void {

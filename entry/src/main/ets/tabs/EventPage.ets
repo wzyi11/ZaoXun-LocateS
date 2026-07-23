@@ -1,5 +1,5 @@
 import { router } from '@kit.ArkUI';
-import { Event, EventInput, EventItem, formatEventDateTime, parseEventDateStartTime } from '../model/EventModel';
+import { Event, EventInput, EventItem, combineEventDateAndTime, formatEventDateTime, parseEventDateStartTime } from '../model/EventModel';
 import { Item } from '../model/ItemModel';
 import { EventRepository } from '../data/EventRepository';
 import { ItemRepository } from '../data/ItemRepository';
@@ -106,15 +106,7 @@ export struct EventPage {
   }
 
   updateNewEventDateTime(): void {
-    const selected: Date = new Date(
-      this.newEventSelectedDate.getFullYear(),
-      this.newEventSelectedDate.getMonth(),
-      this.newEventSelectedDate.getDate(),
-      this.newEventSelectedTime.getHours(),
-      this.newEventSelectedTime.getMinutes(),
-      0,
-      0
-    );
+    const selected: Date = combineEventDateAndTime(this.newEventSelectedDate, this.newEventSelectedTime);
     this.newEventDate = formatEventDateTime(selected);
   }
 
@@ -223,17 +215,14 @@ export struct EventPage {
             Text('日期')
               .fontSize(14)
               .fontColor('#666')
-            DatePicker({ selected: this.newEventSelectedDate })
-              .height(120)
+            CalendarPicker({ selected: this.newEventSelectedDate, hintRadius: 16 })
+              .height(44)
               .backgroundColor('#F5F5F5')
               .borderRadius(10)
               .width('100%')
-              .onChange((value: DatePickerResult) => {
-                const year: number = value.year ?? this.newEventSelectedDate.getFullYear();
-                const month: number = value.month ?? this.newEventSelectedDate.getMonth() + 1;
-                const day: number = value.day ?? this.newEventSelectedDate.getDate();
-                const selected: Date = new Date(year, month - 1, day);
-                this.newEventSelectedDate = selected;
+              .markToday(true)
+              .onChange((value: Date) => {
+                this.newEventSelectedDate = value;
                 this.updateNewEventDateTime();
               })
             TimePicker({ selected: this.newEventSelectedTime })
@@ -245,7 +234,15 @@ export struct EventPage {
               .onChange((value: TimePickerResult) => {
                 const hour: number = value.hour ?? this.newEventSelectedTime.getHours();
                 const minute: number = value.minute ?? this.newEventSelectedTime.getMinutes();
-                this.newEventSelectedTime = new Date(0, 0, 1, hour, minute, 0, 0);
+                this.newEventSelectedTime = new Date(
+                  this.newEventSelectedDate.getFullYear(),
+                  this.newEventSelectedDate.getMonth(),
+                  this.newEventSelectedDate.getDate(),
+                  hour,
+                  minute,
+                  0,
+                  0
+                );
                 this.updateNewEventDateTime();
               })
             Text(this.newEventDate)

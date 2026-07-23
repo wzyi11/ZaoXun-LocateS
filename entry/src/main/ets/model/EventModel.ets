@@ -66,6 +66,18 @@ export function formatEventDateTime(date: Date): string {
   return `${formatEventDate(date)} ${padDatePart(hour)}:${padDatePart(minute)}`;
 }
 
+export function combineEventDateAndTime(selectedDate: Date, selectedTime: Date): Date {
+  return new Date(
+    selectedDate.getFullYear(),
+    selectedDate.getMonth(),
+    selectedDate.getDate(),
+    selectedTime.getHours(),
+    selectedTime.getMinutes(),
+    0,
+    0
+  );
+}
+
 export function parseEventDateStartTime(date: string): number {
   const normalized: string = date.trim();
   const dateAndTime: string[] = normalized.split(' ');

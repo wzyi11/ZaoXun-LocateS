@@ -2,6 +2,7 @@ import { describe, beforeAll, beforeEach, afterEach, afterAll, it, expect } from
 import { SPACE_CREATE_SQL } from '../main/ets/model/SpaceModel';
 import {
   buildEventImportKey,
+  combineEventDateAndTime,
   formatEventDate,
   formatEventDateTime,
   isCalendarEventAllDay,
@@ -100,6 +101,14 @@ export default function localUnitTest() {
     it('eventImportKeyUsesTitleAndExactTime', 0, () => {
       const start: number = new Date(2026, 6, 24, 9, 8).getTime();
       expect(buildEventImportKey('  拿快递  ', start)).assertEqual('拿快递|2026-07-24 09:08');
+    });
+
+    it('eventDateTimeCombinationKeepsCalendarDateAndPickerTime', 0, () => {
+      const selectedDate: Date = new Date(2026, 6, 24, 18, 45);
+      const selectedTime: Date = new Date(2026, 6, 24, 9, 8);
+      const combined: Date = combineEventDateAndTime(selectedDate, selectedTime);
+
+      expect(formatEventDateTime(combined)).assertEqual('2026-07-24 09:08');
     });
   });
 }

@@ -1,5 +1,5 @@
 import { router } from '@kit.ArkUI';
-import { EventInput, formatEventDateTime } from '../model/EventModel';
+import { EventInput, combineEventDateAndTime, formatEventDateTime } from '../model/EventModel';
 import { Item } from '../model/ItemModel';
 import { EventRepository } from '../data/EventRepository';
 import { ItemRepository } from '../data/ItemRepository';
@@ -60,15 +60,7 @@ export struct CreateEventPage {
   }
 
   updateDateTime(): void {
-    const selected: Date = new Date(
-      this.selectedDate.getFullYear(),
-      this.selectedDate.getMonth(),
-      this.selectedDate.getDate(),
-      this.selectedTime.getHours(),
-      this.selectedTime.getMinutes(),
-      0,
-      0
-    );
+    const selected: Date = combineEventDateAndTime(this.selectedDate, this.selectedTime);
     this.date = formatEventDateTime(selected);
   }
 
@@ -147,17 +139,14 @@ export struct CreateEventPage {
             .fontSize(13)
             .fontColor('#999')
             .padding({ left: 2 })
-          DatePicker({ selected: this.selectedDate })
-            .height(120)
+          CalendarPicker({ selected: this.selectedDate, hintRadius: 16 })
+            .height(44)
             .width('100%')
             .backgroundColor('#F5F5F5')
             .borderRadius(10)
-            .onChange((value: DatePickerResult) => {
-              const year: number = value.year ?? this.selectedDate.getFullYear();
-              const month: number = value.month ?? this.selectedDate.getMonth() + 1;
-              const day: number = value.day ?? this.selectedDate.getDate();
-              const selected: Date = new Date(year, month - 1, day);
-              this.selectedDate = selected;
+            .markToday(true)
+            .onChange((value: Date) => {
+              this.selectedDate = value;
               this.updateDateTime();
             })
           TimePicker({ selected: this.selectedTime })
@@ -169,7 +158,15 @@ export struct CreateEventPage {
             .onChange((value: TimePickerResult) => {
               const hour: number = value.hour ?? this.selectedTime.getHours();
               const minute: number = value.minute ?? this.selectedTime.getMinutes();
-              this.selectedTime = new Date(0, 0, 1, hour, minute, 0, 0);
+              this.selectedTime = new Date(
+                this.selectedDate.getFullYear(),
+                this.selectedDate.getMonth(),
+                this.selectedDate.getDate(),
+                hour,
+                minute,
+                0,
+                0
+              );
               this.updateDateTime();
             })
           Text(this.date)
