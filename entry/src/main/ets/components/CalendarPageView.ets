@@ -1,6 +1,14 @@
 import { calendarManager } from '@kit.CalendarKit';
 import { CalendarView } from './CalendarView';
 import { CalendarService } from '../data/CalendarService';
+import { EventRepository } from '../data/EventRepository';
+import {
+  Event as StorageEvent,
+  EventInput,
+  formatEventDate,
+  isEventDateWithinNextDays,
+  parseEventDateStartTime,
+} from '../model/EventModel';
 
 interface ScheduleItem {
   title: string;
@@ -25,7 +33,9 @@ export struct CalendarPageView {
   @State currentMonth: number = 7;
   @State loading: boolean = true;
   private allEvents: calendarManager.Event[] = [];
+  private localEvents: StorageEvent[] = [];
   private appEventIds: Set<number> = new Set();
+  private repo: EventRepository = new EventRepository();
 
 
   aboutToAppear(): void {
@@ -69,6 +79,8 @@ export struct CalendarPageView {
       const sysEvents: calendarManager.Event[] = await svc.getSystemEvents();
 
       console.info(`CalendarPageView: app=${appEvents.length}, allCalendars=${sysEvents.length}`);
+      await this.importSystemEvents(sysEvents);
+      this.localEvents = await this.repo.getAll();
 
       // 合并并去重（getSystemEvents 包含 app 自己的日历）
       const seenIds: Set<number> = new Set();
@@ -99,8 +111,43 @@ export struct CalendarPageView {
     this.loading = false;
   }
 
+  async importSystemEvents(sysEvents: calendarManager.Event[]): Promise<void> {
+    const now: Date = new Date();
+    for (const e of sysEvents) {
+      if (e.id === undefined || e.startTime === undefined || this.appEventIds.has(e.id)) {
+        continue;
+      }
+      if (!isEventDateWithinNextDays(e.startTime, now, 30)) {
+        continue;
+      }
+      const existing: StorageEvent | null = await this.repo.getByCalendarEventId(e.id);
+      if (existing !== null) {
+        continue;
+      }
+      const eventInput: EventInput = {
+        title: e.title ?? '(无标题)',
+        date: formatEventDate(new Date(e.startTime)),
+        note: e.description ?? '',
+        status: 0,
+        createTime: new Date().toISOString(),
+        calendarEventId: e.id,
+      };
+      await this.repo.insertFromCalendar(eventInput);
+    }
+  }
+
   recalcEventDays(): void {
     const days: Set<number> = new Set();
+    for (const e of this.localEvents) {
+      const startTime: number = parseEventDateStartTime(e.date);
+      if (Number.isNaN(startTime)) {
+        continue;
+      }
+      const d: Date = new Date(startTime);
+      if (d.getFullYear() === this.currentYear && d.getMonth() + 1 === this.currentMonth) {
+        days.add(d.getDate());
+      }
+    }
     for (const e of this.allEvents) {
       if (e.startTime) {
         const d: Date = new Date(e.startTime);
@@ -118,8 +165,31 @@ export struct CalendarPageView {
       return;
     }
     const list: ScheduleItem[] = [];
+    const localCalendarIds: Set<number> = new Set();
+    for (const e of this.localEvents) {
+      if (e.calendarEventId !== null) {
+        localCalendarIds.add(e.calendarEventId);
+      }
+      const startTime: number = parseEventDateStartTime(e.date);
+      if (Number.isNaN(startTime)) {
+        continue;
+      }
+      const d: Date = new Date(startTime);
+      if (d.getDate() === this.selectedDay &&
+          d.getMonth() + 1 === this.currentMonth &&
+          d.getFullYear() === this.currentYear) {
+        list.push({
+          title: e.title,
+          time: fmtTime(startTime),
+          fromApp: e.calendarEventId === null || this.appEventIds.has(e.calendarEventId),
+        });
+      }
+    }
     for (const e of this.allEvents) {
       if (!e.startTime) {
+        continue;
+      }
+      if (e.id !== undefined && localCalendarIds.has(e.id)) {
         continue;
       }
       const d: Date = new Date(e.startTime);

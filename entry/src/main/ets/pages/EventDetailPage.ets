@@ -28,6 +28,10 @@ export struct EventDetailPage {
   @State loading: boolean = true;
   @State currentEventId: number = 0;
   @State updatingItemId: number = 0;
+  @State showEditItemsSheet: boolean = false;
+  @State editItems: Item[] = [];
+  @State editSelectedItemIds: number[] = [];
+  @State editItemsLoading: boolean = true;
   private eventRepo: EventRepository = new EventRepository();
   private itemRepo: ItemRepository = new ItemRepository();
   private deleteDialogController: CustomDialogController | null = null;
@@ -160,6 +164,67 @@ export struct EventDetailPage {
     router.back();
   }
 
+  isEditSelected(id: number): boolean {
+    for (let i = 0; i < this.editSelectedItemIds.length; i++) {
+      if (this.editSelectedItemIds[i] === id) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  toggleEditSelect(id: number): void {
+    if (this.isEditSelected(id)) {
+      const nextIds: number[] = [];
+      for (let i = 0; i < this.editSelectedItemIds.length; i++) {
+        if (this.editSelectedItemIds[i] !== id) {
+          nextIds.push(this.editSelectedItemIds[i]);
+        }
+      }
+      this.editSelectedItemIds = nextIds;
+    } else {
+      this.editSelectedItemIds = [...this.editSelectedItemIds, id];
+    }
+  }
+
+  async openEditItemsSheet(): Promise<void> {
+    if (this.event === null) {
+      return;
+    }
+    this.showEditItemsSheet = true;
+    this.editItemsLoading = true;
+    const selectedIds: number[] = [];
+    for (let i = 0; i < this.checklist.length; i++) {
+      selectedIds.push(this.checklist[i].itemId);
+    }
+    this.editSelectedItemIds = selectedIds;
+    this.editItems = await this.itemRepo.getAll();
+    this.editItemsLoading = false;
+  }
+
+  async saveEditedItems(): Promise<void> {
+    if (this.event === null) {
+      return;
+    }
+
+    const preparedItemIds: number[] = [];
+    for (let i = 0; i < this.checklist.length; i++) {
+      if (this.checklist[i].isPrepared) {
+        preparedItemIds.push(this.checklist[i].itemId);
+      }
+    }
+
+    await this.eventRepo.deleteEventItems(this.event.id);
+    for (let i = 0; i < this.editSelectedItemIds.length; i++) {
+      const itemId: number = this.editSelectedItemIds[i];
+      await this.eventRepo.linkItemWithPrepared(this.event.id, itemId, preparedItemIds.indexOf(itemId) >= 0);
+    }
+
+    this.showEditItemsSheet = false;
+    await this.loadData(this.event.id, false);
+    AppStorage.setOrCreate('eventRefreshToken', Date.now());
+  }
+
   openDeleteEventDialog(): void {
     if (this.event === null) {
       return;
@@ -195,6 +260,93 @@ export struct EventDetailPage {
     .onClick(() => {
       this.openDeleteEventDialog();
     })
+  }
+
+  @Builder
+  EditItemsSheet() {
+    Column() {
+      Text('修改物品')
+        .fontSize(20)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#1A1A1A')
+        .width('100%')
+        .textAlign(TextAlign.Start)
+        .margin({ bottom: 20 })
+
+      Scroll() {
+        Column({ space: 8 }) {
+          if (this.editItemsLoading) {
+            LoadingProgress()
+              .width(32)
+              .height(32)
+              .color('#007AFF')
+          } else if (this.editItems.length === 0) {
+            Text('还没有物品')
+              .fontSize(14)
+              .fontColor('#999')
+              .width('100%')
+              .textAlign(TextAlign.Center)
+              .padding({ top: 40 })
+          } else {
+            ForEach(this.editItems, (item: Item, index: number) => {
+              Row({ space: 8 }) {
+                Text(this.isEditSelected(item.id) ? '☑' : '☐')
+                  .fontSize(20)
+                  .fontColor(this.isEditSelected(item.id) ? '#007AFF' : '#CCC')
+                Column({ space: 2 }) {
+                  Text(item.name)
+                    .fontSize(14)
+                    .fontColor('#333')
+                    .maxLines(1)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                  if (item.category !== '') {
+                    Text(item.category)
+                      .fontSize(11)
+                      .fontColor('#999')
+                  }
+                }
+                .alignItems(HorizontalAlign.Start)
+                .layoutWeight(1)
+              }
+              .width('100%')
+              .padding({ left: 12, right: 12, top: 10, bottom: 10 })
+              .backgroundColor(this.isEditSelected(item.id) ? '#F0F7FF' : Color.White)
+              .borderRadius(8)
+              .onClick(() => {
+                this.toggleEditSelect(item.id);
+              })
+            }, (item: Item, index: number) => item.id.toString())
+          }
+        }
+        .width('100%')
+      }
+      .layoutWeight(1)
+      .width('100%')
+
+      Text(`已选择 ${this.editSelectedItemIds.length} 个物品`)
+        .fontSize(12)
+        .fontColor('#999')
+        .width('100%')
+        .margin({ top: 10 })
+
+      Button() {
+        Text('保存')
+          .fontSize(16)
+          .fontColor(Color.White)
+          .fontWeight(FontWeight.Medium)
+      }
+      .width('100%')
+      .height(48)
+      .backgroundColor('#007AFF')
+      .borderRadius(24)
+      .margin({ top: 12, bottom: 8 })
+      .onClick(() => {
+        this.saveEditedItems();
+      })
+    }
+    .padding({ left: 24, right: 24, top: 8, bottom: 24 })
+    .width('100%')
+    .height('100%')
   }
 
   getStatusText(): string {
@@ -446,11 +598,22 @@ export struct EventDetailPage {
           .borderRadius(8)
 
           if (this.total > 0) {
-            Text('物品清单')
-              .fontSize(14)
-              .fontColor('#666')
-              .fontWeight(FontWeight.Medium)
-              .padding({ left: 4 })
+            Row() {
+              Text('物品清单')
+                .fontSize(14)
+                .fontColor('#666')
+                .fontWeight(FontWeight.Medium)
+                .padding({ left: 4 })
+              Blank()
+              Button('修改物品')
+                .type(ButtonType.Normal)
+                .backgroundColor(Color.Transparent)
+                .fontColor('#007AFF')
+                .onClick(() => {
+                  this.openEditItemsSheet();
+                })
+            }
+            .width('100%')
 
             List({ space: 4 }) {
               ForEach(this.checklist, (detail: EventItemDetail, index: number) => {
@@ -505,6 +668,21 @@ export struct EventDetailPage {
             .layoutWeight(1)
             .divider({ strokeWidth: 0 })
           } else {
+            Row() {
+              Text('物品清单')
+                .fontSize(14)
+                .fontColor('#666')
+                .fontWeight(FontWeight.Medium)
+              Blank()
+              Button('修改物品')
+                .type(ButtonType.Normal)
+                .backgroundColor(Color.Transparent)
+                .fontColor('#007AFF')
+                .onClick(() => {
+                  this.openEditItemsSheet();
+                })
+            }
+            .width('100%')
             this.DeleteEventButton()
           }
         }
@@ -518,5 +696,14 @@ export struct EventDetailPage {
     }
     .width('100%')
     .height('100%')
+    .bindSheet(this.showEditItemsSheet, this.EditItemsSheet, {
+      height: '70%',
+      dragBar: true,
+      showClose: true,
+      title: { title: '修改物品' },
+      onDisappear: () => {
+        this.showEditItemsSheet = false;
+      },
+    })
   }
 }

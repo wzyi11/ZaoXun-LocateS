@@ -1,5 +1,5 @@
 import { router } from '@kit.ArkUI';
-import { Event, EventInput, EventItem } from '../model/EventModel';
+import { Event, EventInput, EventItem, formatEventDate } from '../model/EventModel';
 import { Item } from '../model/ItemModel';
 import { EventRepository } from '../data/EventRepository';
 import { ItemRepository } from '../data/ItemRepository';
@@ -23,6 +23,7 @@ export struct EventPage {
   @State eventSheetKey: number = 0;
   @State newEventTitle: string = '';
   @State newEventDate: string = '';
+  @State newEventSelectedDate: Date = new Date();
   @State newEventNote: string = '';
   @State eventItems: Item[] = [];
   @State selectedItemIds: number[] = [];
@@ -63,8 +64,10 @@ export struct EventPage {
   }
 
   resetNewEventForm(): void {
+    const today: Date = new Date();
     this.newEventTitle = '';
-    this.newEventDate = '';
+    this.newEventSelectedDate = today;
+    this.newEventDate = formatEventDate(today);
     this.newEventNote = '';
     this.selectedItemIds = [];
   }
@@ -99,7 +102,7 @@ export struct EventPage {
   }
 
   async saveNewEvent(): Promise<void> {
-    if (this.newEventTitle.trim() === '') {
+    if (this.newEventTitle.trim() === '' || this.newEventDate === '') {
       return;
     }
     const createTime: string = new Date().toISOString();
@@ -187,14 +190,22 @@ export struct EventPage {
             Text('日期')
               .fontSize(14)
               .fontColor('#666')
-            TextInput({ text: this.newEventDate, placeholder: 'YYYY-MM-DD' })
-              .height(44)
+            DatePicker({ selected: this.newEventSelectedDate })
+              .height(120)
               .backgroundColor('#F5F5F5')
               .borderRadius(10)
-              .padding({ left: 14 })
-              .onChange((value: string) => {
-                this.newEventDate = value;
+              .width('100%')
+              .onChange((value: DatePickerResult) => {
+                const year: number = value.year ?? this.newEventSelectedDate.getFullYear();
+                const month: number = value.month ?? this.newEventSelectedDate.getMonth() + 1;
+                const day: number = value.day ?? this.newEventSelectedDate.getDate();
+                const selected: Date = new Date(year, month - 1, day);
+                this.newEventSelectedDate = selected;
+                this.newEventDate = formatEventDate(selected);
               })
+            Text(this.newEventDate)
+              .fontSize(12)
+              .fontColor('#999')
           }
           .width('100%')
           .alignItems(HorizontalAlign.Start)
@@ -282,10 +293,10 @@ export struct EventPage {
       }
       .width('100%')
       .height(48)
-      .backgroundColor(this.newEventTitle.trim() ? '#007AFF' : '#B0D4FF')
+      .backgroundColor(this.newEventTitle.trim() && this.newEventDate !== '' ? '#007AFF' : '#B0D4FF')
       .borderRadius(24)
       .margin({ top: 12, bottom: 8 })
-      .enabled(this.newEventTitle.trim().length > 0)
+      .enabled(this.newEventTitle.trim().length > 0 && this.newEventDate !== '')
       .onClick(() => {
         this.saveNewEvent();
       })
@@ -334,7 +345,7 @@ export struct EventPage {
               this.activeTab = 'completed';
             })
         }
-        .width('100%')
+        .width('90%')
         .height(36)
         .margin({ top: 12, left: 16, right: 16 })
         .borderRadius(8)

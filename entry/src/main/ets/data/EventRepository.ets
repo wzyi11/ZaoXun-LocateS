@@ -1,5 +1,12 @@
 import { relationalStore } from '@kit.ArkData';
-import { Event, EventInput, EventItem, EVENT_TABLE_NAME, EVENT_ITEM_TABLE_NAME } from '../model/EventModel';
+import {
+  Event,
+  EventInput,
+  EventItem,
+  EVENT_TABLE_NAME,
+  EVENT_ITEM_TABLE_NAME,
+  parseEventDateStartTime,
+} from '../model/EventModel';
 import { Database } from './Database';
 import { CalendarService } from './CalendarService';
 
@@ -12,10 +19,12 @@ export class EventRepository {
 
     // 同步到 CalendarKit
     if (event.date) {
-      const startTime: number = new Date(event.date + 'T00:00:00').getTime();
-      const id = await this.calendarService.addEvent(event.title, startTime, undefined, event.note);
-      if (id !== undefined) {
-        calendarEventId = id;
+      const startTime: number = parseEventDateStartTime(event.date);
+      if (!Number.isNaN(startTime)) {
+        const id = await this.calendarService.addEvent(event.title, startTime, undefined, event.note);
+        if (id !== undefined) {
+          calendarEventId = id;
+        }
       }
     }
 
@@ -27,6 +36,19 @@ export class EventRepository {
       'status': event.status,
       'createTime': event.createTime,
       'calendarEventId': calendarEventId,
+    };
+    return await store.insert(EVENT_TABLE_NAME, valueBucket);
+  }
+
+  async insertFromCalendar(event: EventInput): Promise<number> {
+    const store = this.db.getStore();
+    const valueBucket: relationalStore.ValuesBucket = {
+      'title': event.title,
+      'date': event.date,
+      'note': event.note,
+      'status': event.status,
+      'createTime': event.createTime,
+      'calendarEventId': event.calendarEventId ?? null,
     };
     return await store.insert(EVENT_TABLE_NAME, valueBucket);
   }
@@ -63,6 +85,16 @@ export class EventRepository {
     return await store.insert(EVENT_ITEM_TABLE_NAME, valueBucket);
   }
 
+  async linkItemWithPrepared(eventId: number, itemId: number, isPrepared: boolean): Promise<number> {
+    const store = this.db.getStore();
+    const valueBucket: relationalStore.ValuesBucket = {
+      'eventId': eventId,
+      'itemId': itemId,
+      'isPrepared': isPrepared ? 1 : 0,
+    };
+    return await store.insert(EVENT_ITEM_TABLE_NAME, valueBucket);
+  }
+
   async getEventItems(eventId: number): Promise<EventItem[]> {
     const store = this.db.getStore();
     const predicates = new relationalStore.RdbPredicates(EVENT_ITEM_TABLE_NAME);
@@ -85,6 +117,28 @@ export class EventRepository {
     const store = this.db.getStore();
     const predicates = new relationalStore.RdbPredicates(EVENT_TABLE_NAME);
     predicates.equalTo('id', id);
+    const resultSet = await store.query(predicates, ['id', 'title', 'date', 'note', 'status', 'createTime', 'calendarEventId']);
+    let event: Event | null = null;
+    if (resultSet.goToNextRow()) {
+      const calIdVal = resultSet.getLong(resultSet.getColumnIndex('calendarEventId'));
+      event = {
+        id: resultSet.getLong(resultSet.getColumnIndex('id')),
+        title: resultSet.getString(resultSet.getColumnIndex('title')),
+        date: resultSet.getString(resultSet.getColumnIndex('date')),
+        note: resultSet.getString(resultSet.getColumnIndex('note')),
+        status: resultSet.getLong(resultSet.getColumnIndex('status')),
+        createTime: resultSet.getString(resultSet.getColumnIndex('createTime')),
+        calendarEventId: calIdVal === 0 ? null : calIdVal,
+      };
+    }
+    resultSet.close();
+    return event;
+  }
+
+  async getByCalendarEventId(calendarEventId: number): Promise<Event | null> {
+    const store = this.db.getStore();
+    const predicates = new relationalStore.RdbPredicates(EVENT_TABLE_NAME);
+    predicates.equalTo('calendarEventId', calendarEventId);
     const resultSet = await store.query(predicates, ['id', 'title', 'date', 'note', 'status', 'createTime', 'calendarEventId']);
     let event: Event | null = null;
     if (resultSet.goToNextRow()) {

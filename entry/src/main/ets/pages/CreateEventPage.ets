@@ -1,5 +1,5 @@
 import { router } from '@kit.ArkUI';
-import { EventInput } from '../model/EventModel';
+import { EventInput, formatEventDate } from '../model/EventModel';
 import { Item } from '../model/ItemModel';
 import { EventRepository } from '../data/EventRepository';
 import { ItemRepository } from '../data/ItemRepository';
@@ -11,6 +11,7 @@ import { PageBackground } from '../components/PageBackground';
 export struct CreateEventPage {
   @State title: string = '';
   @State date: string = '';
+  @State selectedDate: Date = new Date();
   @State note: string = '';
   @State items: Item[] = [];
   @State selectedIds: number[] = [];
@@ -19,6 +20,10 @@ export struct CreateEventPage {
   private itemRepo: ItemRepository = new ItemRepository();
 
   aboutToAppear(): void {
+    if (this.date === '') {
+      this.selectedDate = new Date();
+      this.date = formatEventDate(this.selectedDate);
+    }
     this.loadItems();
   }
 
@@ -52,7 +57,7 @@ export struct CreateEventPage {
   }
 
   async save(): Promise<void> {
-    if (this.title.trim() === '') {
+    if (this.title.trim() === '' || this.date === '') {
       return;
     }
     const createTime: string = new Date().toISOString();
@@ -118,10 +123,22 @@ export struct CreateEventPage {
             .fontSize(13)
             .fontColor('#999')
             .padding({ left: 2 })
-          TextInput({ text: this.date, placeholder: 'YYYY-MM-DD' })
-            .onChange((value: string) => {
-              this.date = value;
+          DatePicker({ selected: this.selectedDate })
+            .height(120)
+            .width('100%')
+            .backgroundColor('#F5F5F5')
+            .borderRadius(10)
+            .onChange((value: DatePickerResult) => {
+              const year: number = value.year ?? this.selectedDate.getFullYear();
+              const month: number = value.month ?? this.selectedDate.getMonth() + 1;
+              const day: number = value.day ?? this.selectedDate.getDate();
+              const selected: Date = new Date(year, month - 1, day);
+              this.selectedDate = selected;
+              this.date = formatEventDate(selected);
             })
+          Text(this.date)
+            .fontSize(12)
+            .fontColor('#999')
         }
         .alignItems(HorizontalAlign.Start)
         .width('100%')

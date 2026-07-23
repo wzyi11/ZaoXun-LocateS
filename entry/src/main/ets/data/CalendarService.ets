@@ -35,6 +35,7 @@ export class CalendarService {
     const permissions: Permissions[] = [
       'ohos.permission.READ_CALENDAR',
       'ohos.permission.WRITE_CALENDAR',
+      'ohos.permission.READ_WHOLE_CALENDAR',
     ];
     const atManager = abilityAccessCtrl.createAtManager();
     try {

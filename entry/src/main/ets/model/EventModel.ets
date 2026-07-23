@@ -45,3 +45,42 @@ export const EVENT_ITEM_CREATE_SQL = `
     isPrepared INTEGER DEFAULT 0
   )
 `;
+
+function padDatePart(value: number): string {
+  return value < 10 ? `0${value}` : value.toString();
+}
+
+export function formatEventDate(date: Date): string {
+  const year: number = date.getFullYear();
+  const month: number = date.getMonth() + 1;
+  const day: number = date.getDate();
+  return `${year}-${padDatePart(month)}-${padDatePart(day)}`;
+}
+
+export function parseEventDateStartTime(date: string): number {
+  const parts: string[] = date.split('-');
+  if (parts.length !== 3) {
+    return NaN;
+  }
+  const year: number = Number(parts[0]);
+  const month: number = Number(parts[1]);
+  const day: number = Number(parts[2]);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+    return NaN;
+  }
+  return new Date(year, month - 1, day, 0, 0, 0, 0).getTime();
+}
+
+export function isEventDateWithinNextDays(startTime: number, baseDate: Date, days: number): boolean {
+  const baseStart: number = new Date(
+    baseDate.getFullYear(),
+    baseDate.getMonth(),
+    baseDate.getDate(),
+    0,
+    0,
+    0,
+    0
+  ).getTime();
+  const endExclusive: number = baseStart + (days + 1) * 24 * 60 * 60 * 1000;
+  return startTime >= baseStart && startTime < endExclusive;
+}
