@@ -318,7 +318,7 @@ export struct ProfilePage {
 
           ListItem() {
             Column({ space: 4 }) {
-              Text('智能收纳管家')
+              Text('枣寻 - LocateS')
                 .fontSize(16)
                 .fontColor('#333')
                 .fontWeight(FontWeight.Medium)

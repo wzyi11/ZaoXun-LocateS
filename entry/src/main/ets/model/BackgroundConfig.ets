@@ -50,6 +50,7 @@ export const GRADIENT_PRESETS: Array<GradientPreset> = [
 ];
 
 export const IMAGE_PRESETS: Array<string> = [
+  'bg_default',
   'bg_preset_1',
   'bg_preset_2',
   'bg_preset_3',
@@ -57,6 +58,7 @@ export const IMAGE_PRESETS: Array<string> = [
 ];
 
 export const IMAGE_PRESET_NAMES: Array<string> = [
+  '默认壁纸',
   '山峰自然',
   '海洋水纹',
   '抽象几何',

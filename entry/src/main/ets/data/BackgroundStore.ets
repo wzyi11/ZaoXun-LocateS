@@ -19,10 +19,13 @@ const APP_STORAGE_BG_VALUE: string = 'bgValue';
 export class BackgroundStore {
   private static store: preferences.Preferences | undefined = undefined;
 
+  static readonly DEFAULT_BG_TYPE: string = BACKGROUND_TYPE_IMAGE_PRESET;
+  static readonly DEFAULT_BG_VALUE: string = 'bg_default';
+
   static init(context: common.UIAbilityContext): void {
     BackgroundStore.store = preferences.getPreferencesSync(context, { name: STORE_NAME });
-    const bgType: string = BackgroundStore.store.getSync(KEY_BG_TYPE, BACKGROUND_TYPE_NONE) as string;
-    const bgValue: string = BackgroundStore.store.getSync(KEY_BG_VALUE, '') as string;
+    const bgType: string = BackgroundStore.store.getSync(KEY_BG_TYPE, BackgroundStore.DEFAULT_BG_TYPE) as string;
+    const bgValue: string = BackgroundStore.store.getSync(KEY_BG_VALUE, BackgroundStore.DEFAULT_BG_VALUE) as string;
     hilog.info(DOMAIN, TAG, 'init bgType=%{public}s bgValue=%{public}s', bgType, bgValue);
     AppStorage.setOrCreate(APP_STORAGE_BG_TYPE, bgType);
     AppStorage.setOrCreate(APP_STORAGE_BG_VALUE, bgValue);
@@ -45,14 +48,14 @@ export class BackgroundStore {
   }
 
   static async reset(): Promise<void> {
-    await BackgroundStore.save(BACKGROUND_TYPE_NONE, '');
+    await BackgroundStore.save(BackgroundStore.DEFAULT_BG_TYPE, BackgroundStore.DEFAULT_BG_VALUE);
   }
 
   static getCurrentType(): string {
-    return AppStorage.get<string>(APP_STORAGE_BG_TYPE) ?? BACKGROUND_TYPE_NONE;
+    return AppStorage.get<string>(APP_STORAGE_BG_TYPE) ?? BackgroundStore.DEFAULT_BG_TYPE;
   }
 
   static getCurrentValue(): string {
-    return AppStorage.get<string>(APP_STORAGE_BG_VALUE) ?? '';
+    return AppStorage.get<string>(APP_STORAGE_BG_VALUE) ?? BackgroundStore.DEFAULT_BG_VALUE;
   }
 }

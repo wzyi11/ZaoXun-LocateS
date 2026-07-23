@@ -78,7 +78,11 @@ export struct PageBackground {
             .backgroundColor('#F5F5F5')
         }
       } else if (this.bgType === BACKGROUND_TYPE_IMAGE_PRESET) {
-        if (this.bgValue === 'bg_preset_1') {
+        if (this.bgValue === 'bg_default') {
+          Image($r('app.media.bg_default'))
+            .width('100%').height('100%')
+            .objectFit(ImageFit.Cover)
+        } else if (this.bgValue === 'bg_preset_1') {
           Image($r('app.media.bg_preset_1'))
             .width('100%').height('100%')
             .objectFit(ImageFit.Cover)
