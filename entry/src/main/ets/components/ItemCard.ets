@@ -35,7 +35,14 @@ export struct ItemCard {
     }
     .width('100%')
     .padding(12)
-    .backgroundColor(Color.White)
+    .backgroundColor('#b9ffffff')
+    .border({
+      width: 3,
+      color: '#43ffffff',
+      radius: 8,
+      style: BorderStyle.Solid
+    })
+
     .borderRadius(8)
     .onClick(() => {
       this.onTap();

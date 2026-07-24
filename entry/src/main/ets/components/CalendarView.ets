@@ -2,16 +2,18 @@ export interface DayInfo {
   day: number;
   isCurrentMonth: boolean;
   isToday: boolean;
-  hasEvents: boolean;
+  hasAppEvents: boolean;
+  hasSystemEvents: boolean;
 }
 
 export function buildCalendarDayKey(dayInfo: DayInfo): string {
-  return `${dayInfo.day}-${dayInfo.isCurrentMonth}-${dayInfo.isToday}-${dayInfo.hasEvents}`;
+  return `${dayInfo.day}-${dayInfo.isCurrentMonth}-${dayInfo.isToday}-${dayInfo.hasAppEvents}-${dayInfo.hasSystemEvents}`;
 }
 
 @Component
 export struct CalendarView {
-  @Prop @Watch('rebuildGrid') events: number[] = [];
+  @Prop @Watch('rebuildGrid') appEventDays: number[] = [];
+  @Prop @Watch('rebuildGrid') systemEventDays: number[] = [];
   onDateClick?: (day: number) => void;
   onMonthChange?: (year: number, month: number) => void;
   @State @Watch('rebuildGrid') currentYear: number = 2026;
@@ -39,7 +41,7 @@ export struct CalendarView {
     // 上月补齐
     const prevMonthDays: number = new Date(this.currentYear, this.currentMonth - 1, 0).getDate();
     for (let i = firstDay - 1; i >= 0; i--) {
-      days.push({ day: prevMonthDays - i, isCurrentMonth: false, isToday: false, hasEvents: false });
+      days.push({ day: prevMonthDays - i, isCurrentMonth: false, isToday: false, hasAppEvents: false, hasSystemEvents: false });
     }
 
     // 本月
@@ -48,14 +50,21 @@ export struct CalendarView {
         day: d,
         isCurrentMonth: true,
         isToday: d === todayDate && this.currentMonth === todayMonth && this.currentYear === todayYear,
-        hasEvents: this.events.indexOf(d) >= 0,
+        hasAppEvents: this.appEventDays.indexOf(d) >= 0,
+        hasSystemEvents: this.systemEventDays.indexOf(d) >= 0,
       });
     }
 
     // 下月补齐
     const remainder: number = (7 - (days.length % 7)) % 7;
     for (let d = 1; d <= remainder; d++) {
-      days.push({ day: d, isCurrentMonth: false, isToday: false, hasEvents: false });
+      days.push({
+        day: d,
+        isCurrentMonth: false,
+        isToday: false,
+        hasAppEvents: false,
+        hasSystemEvents: false
+      });
     }
 
     this.dayGrid = days;
@@ -85,17 +94,25 @@ export struct CalendarView {
 
   getDayColor(dayInfo: DayInfo): string {
     if (!dayInfo.isCurrentMonth) return '#CCC';
-    if (this.selectedDay === dayInfo.day) return '#FFFFFF';
-    return '#333';
+    if (dayInfo.isToday)
+    {
+      if (this.selectedDay===dayInfo.day) return '#FFFFFF';
+      return '#ff000000';
+    }
+    if (this.selectedDay!=dayInfo.day) return 'Color.Black';
+    return '#000';
   }
 
   getDayBg(dayInfo: DayInfo): string {
-    if (this.selectedDay === dayInfo.day && dayInfo.isCurrentMonth) return '#007AFF';
+    if (this.selectedDay === dayInfo.day && dayInfo.isCurrentMonth) {
+      if (dayInfo.isToday) return '#007AFF'; // 本日选中 → 深蓝
+      return '#ffdaecff'; // 非本日选中 → 浅蓝
+    }
     return 'transparent';
   }
 
   build() {
-    Column({ space: 4 }) {
+    Column({ space: 3 }) {
       // 月份导航栏
       Row() {
         Button('‹')
@@ -142,47 +159,38 @@ export struct CalendarView {
                   .fontColor(this.getDayColor(dayInfo))
                   .fontWeight(dayInfo.isToday ? FontWeight.Bold : FontWeight.Normal)
                   .textAlign(TextAlign.Center)
-                  .height(dayInfo.hasEvents && this.selectedDay === dayInfo.day ? 20 : 26)
-                  .width(34)
-
-                if (dayInfo.hasEvents && this.selectedDay === dayInfo.day) {
-                  Text('|')
-                    .fontSize(7)
-                    .fontColor('#FFFFFF')
-                    .height(5)
-                    .lineHeight(5)
-                  Text('•')
-                    .fontSize(14)
-                    .fontColor('#FFFFFF')
-                    .height(8)
-                    .lineHeight(8)
-                }
+                  .width(30)
               }
-              .width(34)
-              .height(dayInfo.hasEvents && this.selectedDay !== dayInfo.day ? 30 : 34)
+              .width(32)
+              .height(32)
               .justifyContent(FlexAlign.Center)
               .alignItems(HorizontalAlign.Center)
               .backgroundColor(this.getDayBg(dayInfo))
-              .borderRadius(dayInfo.hasEvents && this.selectedDay !== dayInfo.day ? 15 : 17)
+              .borderRadius(16)
               .borderWidth(dayInfo.isToday && this.selectedDay !== dayInfo.day ? 1.5 : 0)
               .borderColor('#007AFF')
               .borderStyle(BorderStyle.Solid)
 
-              if (dayInfo.hasEvents && this.selectedDay !== dayInfo.day) {
+              if (dayInfo.hasAppEvents) {
                 Text('•')
-                  .fontSize(12)
+                  .fontSize(18)
                   .fontColor('#007AFF')
-                  .height(9)
-                  .lineHeight(9)
+                  .height(4)
+                  .lineHeight(4)
+              } else if (dayInfo.hasSystemEvents) {
+                Text('•')
+                  .fontSize(18)
+                  .fontColor('#FF9500')
+                  .height(4)
+                  .lineHeight(4)
               } else {
                 Text('')
-                  .fontSize(9)
-                  .lineHeight(9)
+                  .height(4)
               }
             }
             .width('100%')
             .alignItems(HorizontalAlign.Center)
-            .height(42)
+            .height(44)
           }
           .onClick(() => {
             if (dayInfo.isCurrentMonth) {
@@ -197,10 +205,10 @@ export struct CalendarView {
       .rowsGap(0)
       .columnsGap(0)
       .width('100%')
-      .height(250)
+      .height(200)
     }
     .width('100%')
-    .padding(6)
+    .padding(5)
     .backgroundColor(Color.White)
     .borderRadius(10)
   }

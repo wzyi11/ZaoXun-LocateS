@@ -574,7 +574,7 @@ export struct ItemPage {
           .width('100%')
           .layoutWeight(1)
         } else {
-          List({ space: 8 }) {
+          List({ space: 7 }) {
             ForEach(this.filteredItems, (item: Item, index: number) => {
               ListItem() {
                 ItemCard({

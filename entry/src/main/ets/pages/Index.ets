@@ -44,6 +44,19 @@ struct Index {
         .borderRadius('100%')
         .justifyContent(FlexAlign.Center)
         .alignItems(HorizontalAlign.Center)
+        .gesture(
+          LongPressGesture({ repeat: false })
+            .onAction(() => {
+              if (this.currentTabIndex === 0) {
+                AppStorage.setOrCreate('quickAddItemSpaceId', 0);
+                AppStorage.setOrCreate('quickAddItem', Date.now());
+              } else if (this.currentTabIndex === 1) {
+                AppStorage.setOrCreate('quickAddSpace', Date.now());
+              } else if (this.currentTabIndex === 2) {
+                AppStorage.setOrCreate('quickAddEvent', Date.now());
+              }
+            })
+        )
       } else {
         Row() {
           this.buildMiniAddAction('📦', () => {

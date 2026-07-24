@@ -313,7 +313,7 @@ export struct ItemDetailPage {
       }
       .width('100%')
       .height(48)
-      .backgroundColor(this.selectedCategory !== '' ? '#007AFF' : '#B0D4FF')
+      .backgroundColor(this.selectedCategory !== '' ? '#007AFF' : '#ffa7cefd')
       .borderRadius(24)
       .margin({ top: 16, bottom: 8 })
       .enabled(this.selectedCategory !== '')
@@ -330,7 +330,7 @@ export struct ItemDetailPage {
     Stack() { PageBackground()
       Column() {
       Row() {
-        Button('返回')
+        Button('<')
           .type(ButtonType.Normal)
           .backgroundColor(Color.Transparent)
           .fontColor('#007AFF')
@@ -346,7 +346,7 @@ export struct ItemDetailPage {
           .layoutWeight(1)
         Blank()
         if (this.item !== null) {
-          Button('删除')
+          Button('🗑️')
             .type(ButtonType.Normal)
             .backgroundColor(Color.Transparent)
             .fontColor('#FF3B30')
@@ -356,8 +356,10 @@ export struct ItemDetailPage {
         }
       }
       .width('100%')
-      .padding(16)
-      .backgroundColor(Color.White)
+        .padding({top: 20})
+      // .margin({top:60})
+      //.padding(16)
+      //.backgroundColor(Color.White)
 
       if (this.loading) {
         Column() {
@@ -392,8 +394,15 @@ export struct ItemDetailPage {
           }
           .width('100%')
           .padding(12)
-          .backgroundColor(Color.White)
+          // .backgroundColor(Color.White)
           .borderRadius(8)
+          .backgroundColor('#b9ffffff')
+          .border({
+            width: 3,
+            color: '#43ffffff',
+            radius: 8,
+            style: BorderStyle.Solid
+          })
 
           Row() {
             Text('分类')
@@ -413,8 +422,15 @@ export struct ItemDetailPage {
           }
           .width('100%')
           .padding(12)
-          .backgroundColor(Color.White)
+          //.backgroundColor(Color.White)
           .borderRadius(8)
+          .backgroundColor('#b9ffffff')
+          .border({
+            width: 3,
+            color: '#43ffffff',
+            radius: 8,
+            style: BorderStyle.Solid
+          })
           .onClick(() => {
             this.openCategorySheet();
           })
@@ -448,8 +464,15 @@ export struct ItemDetailPage {
           }
           .width('100%')
           .padding(12)
-          .backgroundColor(Color.White)
+          //.backgroundColor(Color.White)
           .borderRadius(8)
+          .backgroundColor('#b9ffffff')
+          .border({
+            width: 3,
+            color: '#43ffffff',
+            radius: 8,
+            style: BorderStyle.Solid
+          })
           .onClick(() => {this.openAssignSheet()})
 
           if (this.item.purchaseDate !== '') {
@@ -465,8 +488,15 @@ export struct ItemDetailPage {
             }
             .width('100%')
             .padding(12)
-            .backgroundColor(Color.White)
+            //.backgroundColor(Color.White)
             .borderRadius(8)
+            .backgroundColor('#b9ffffff')
+            .border({
+              width: 3,
+              color: '#43ffffff',
+              radius: 8,
+              style: BorderStyle.Solid
+            })
           }
 
           if (this.item.note !== '') {
@@ -482,8 +512,15 @@ export struct ItemDetailPage {
             }
             .width('100%')
             .padding(12)
-            .backgroundColor(Color.White)
+            //.backgroundColor(Color.White)
             .borderRadius(8)
+            .backgroundColor('#b9ffffff')
+            .border({
+              width: 3,
+              color: '#43ffffff',
+              radius: 8,
+              style: BorderStyle.Solid
+            })
           }
 
           Row() {
@@ -498,8 +535,15 @@ export struct ItemDetailPage {
           }
           .width('100%')
           .padding(12)
-          .backgroundColor(Color.White)
+          //.backgroundColor(Color.White)
           .borderRadius(8)
+          .backgroundColor('#b9ffffff')
+          .border({
+            width: 3,
+            color: '#43ffffff',
+            radius: 8,
+            style: BorderStyle.Solid
+          })
         }
         .padding(16)
         .layoutWeight(1)

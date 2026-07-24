@@ -28,7 +28,8 @@ export struct CalendarPageView {
   @Prop @Watch('reload') refreshKey: number = 0;
   onDateSelected?: (day: number) => void;
   @State schedules: ScheduleItem[] = [];
-  @State eventDays: number[] = [];
+  @State appEventDays: number[] = [];
+  @State systemEventDays: number[] = [];
   @State selectedDay: number = -1;
   @State currentYear: number = 2026;
   @State currentMonth: number = 7;
@@ -157,7 +158,10 @@ export struct CalendarPageView {
   }
 
   recalcEventDays(): void {
-    const days: Set<number> = new Set();
+    const appDays: Set<number> = new Set();
+    const sysDays: Set<number> = new Set();
+
+    // 本应用数据库中的日程
     for (const e of this.localEvents) {
       if (e.status !== 0) {
         continue;
@@ -168,10 +172,37 @@ export struct CalendarPageView {
       }
       const d: Date = new Date(startTime);
       if (d.getFullYear() === this.currentYear && d.getMonth() + 1 === this.currentMonth) {
-        days.add(d.getDate());
+        // 跟 filterSchedules 一样的判断逻辑
+        if (e.calendarEventId === null || this.appEventIds.has(e.calendarEventId)) {
+          appDays.add(d.getDate()); // 本应用日程 → 蓝点
+        } else {
+          sysDays.add(d.getDate()); // 从系统日历导入的 → 橙红点
+        }
       }
     }
-    this.eventDays = Array.from(days).sort((a, b) => a - b);
+
+    // 系统日历中未导入/未识别的日程
+    const importedIds: Set<number> = new Set();
+    for (const e of this.localEvents) {
+      if (e.calendarEventId !== null) {
+        importedIds.add(e.calendarEventId);
+      }
+    }
+    for (const e of this.allEvents) {
+      if (!e.startTime) {
+        continue;
+      }
+      if (e.id !== undefined && (importedIds.has(e.id) || this.appEventIds.has(e.id))) {
+        continue; // 已导入或属于本应用日历的，跳过
+      }
+      const d: Date = new Date(e.startTime);
+      if (d.getFullYear() === this.currentYear && d.getMonth() + 1 === this.currentMonth) {
+        sysDays.add(d.getDate());
+      }
+    }
+
+    this.appEventDays = Array.from(appDays).sort((a, b) => a - b);
+    this.systemEventDays = Array.from(sysDays).sort((a, b) => a - b);
   }
 
   filterSchedules(): void {
@@ -238,7 +269,8 @@ export struct CalendarPageView {
   build() {
     Column() {
       CalendarView({
-        events: this.eventDays,
+        appEventDays: this.appEventDays,
+        systemEventDays: this.systemEventDays,
         onDateClick: (day: number) => this.onDateClick(day),
         onMonthChange: (year: number, month: number) => this.onMonthChange(year, month),
       })
