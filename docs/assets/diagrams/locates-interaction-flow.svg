@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1500" viewBox="0 0 2200 1500">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#555"/></marker><filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.12"/></filter></defs>
+<rect width="2200" height="1500" fill="#ffffff"/>
+<text x="60" y="32" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="24" font-weight="700" fill="#111">枣寻 LocateS 创意视觉设计与交互逻辑总流程</text>
+<rect x="60" y="40" width="2080" height="190" rx="18" fill="#EEF6FF" stroke="#007AFF" stroke-width="2" opacity="0.72"/>
+<text x="78" y="74" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="22" font-weight="700" fill="#007AFF">启动与全局能力</text>
+<rect x="60" y="280" width="470" height="750" rx="18" fill="#F5FFF5" stroke="#34C759" stroke-width="2" opacity="0.72"/>
+<text x="78" y="314" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="22" font-weight="700" fill="#34C759">物品管理</text>
+<rect x="570" y="280" width="610" height="930" rx="18" fill="#FFF7E8" stroke="#F59A2A" stroke-width="2" opacity="0.72"/>
+<text x="588" y="314" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="22" font-weight="700" fill="#F59A2A">空间影像标记</text>
+<rect x="1220" y="280" width="560" height="900" rx="18" fill="#F7F0FF" stroke="#B06CFF" stroke-width="2" opacity="0.72"/>
+<text x="1238" y="314" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="22" font-weight="700" fill="#B06CFF">事件清单与日历同步</text>
+<rect x="1820" y="280" width="320" height="620" rx="18" fill="#F8F8F8" stroke="#888888" stroke-width="2" opacity="0.72"/>
+<text x="1838" y="314" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="22" font-weight="700" fill="#888888">我的与视觉个性化</text>
+<rect x="60" y="1250" width="2080" height="210" rx="18" fill="#FAFAFA" stroke="#666666" stroke-width="2" opacity="0.72"/>
+<text x="78" y="1284" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="22" font-weight="700" fill="#666666">刷新闭环与数据层</text>
+<path d="M 380 127 C 410 127, 410 127, 440 127" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 670 127 C 700 127, 700 127, 730 127" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 980 127 C 1010 127, 1010 127, 1040 127" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1260 127 C 1290 127, 1290 127, 1320 127" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1620 127 C 1655 127, 1655 127, 1690 127" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1320 127 C 855 127, 855 369, 390 369" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1320 127 C 1157.5 127, 1157.5 369, 995 369" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1470 159 C 1485 159, 1485 340, 1500 340" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1620 127 C 1740 127, 1740 369, 1860 369" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1690 127 C 1040 127, 1040 574, 390 574" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1690 127 C 1265 127, 1265 468, 840 468" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1815 159 C 1662.5 159, 1662.5 545, 1510 545" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 270 398 C 230 398, 230 440, 190 440" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 390 369 C 345 369, 345 468, 300 468" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 270 398 C 270 398, 270 545, 270 545" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 270 603 C 270 603, 270 650, 270 650" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 270 708 C 270 708, 270 755, 270 755" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 150 784 C 195 784, 195 887, 240 887" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 270 813 C 302.5 813, 302.5 860, 335 860" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 270 813 C 270 813, 270 950, 270 950" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 755 369 C 797.5 369, 797.5 468, 840 468" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 840 468 C 865 468, 865 468, 890 468" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 890 468 C 952.5 468, 952.5 574, 1015 574" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 885 603 C 885 603, 885 650, 885 650" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 755 679 C 802.5 679, 802.5 782, 850 782" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1015 679 C 952.5 679, 952.5 782, 890 782" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 890 782 C 952.5 782, 952.5 889, 1015 889" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 885 918 C 885 918, 885 965, 885 965" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 885 1023 C 885 1023, 885 1070, 885 1070" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 885 1128 C 885 1128, 885 1165, 885 1165" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 885 708 C 815 708, 815 1320, 745 1320" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 885 708 C 952.5 708, 952.5 1320, 1020 1320" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1020 1378 C 1022.5 1378, 1022.5 1410, 1025 1410" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1500 398 C 1505 398, 1505 440, 1510 440" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1510 496 C 1510 496, 1510 545, 1510 545" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1380 574 C 1422.5 574, 1422.5 677, 1465 677" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1640 574 C 1577.5 574, 1577.5 677, 1515 677" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1465 677 C 1422.5 677, 1422.5 784, 1380 784" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1620 704 C 1570 704, 1570 755, 1520 755" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1520 813 C 1515 813, 1515 860, 1510 860" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1510 918 C 1505 918, 1505 965, 1500 965" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1380 994 C 1422.5 994, 1422.5 1097, 1465 1097" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1465 1097 C 1487.5 1097, 1487.5 1097, 1510 1097" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1500 1023 C 1427.5 1023, 1427.5 1160, 1355 1160" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1500 1023 C 1562.5 1023, 1562.5 1160, 1625 1160" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1980 398 C 1980 398, 1980 440, 1980 440" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1980 398 C 1980 398, 1980 515, 1980 515" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1980 398 C 1980 398, 1980 590, 1980 590" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1980 398 C 1980 398, 1980 665, 1980 665" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1980 398 C 1980 398, 1980 740, 1980 740" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1980 792 C 1980 792, 1980 815, 1980 815" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1845 841 C 1552.5 841, 1552.5 127, 1260 127" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 390 679 C 640 679, 640 1327, 890 1327" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 240 887 C 565 887, 565 1327, 890 1327" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 415 887 C 652.5 887, 652.5 1327, 890 1327" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 390 977 C 640 977, 640 1327, 890 1327" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1015 1194 C 952.5 1194, 952.5 1327, 890 1327" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1025 1410 C 1037.5 1410, 1037.5 1359, 1050 1359" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1520 813 C 1285 813, 1285 1295, 1050 1295" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1510 1097 C 1360 1097, 1360 1327, 1210 1327" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1245 1187 C 1227.5 1187, 1227.5 1327, 1210 1327" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1510 1187 C 1360 1187, 1360 1327, 1210 1327" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 1210 1327 C 1330 1327, 1330 1411, 1450 1411" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 555 159 C 447.5 159, 447.5 1385, 340 1385" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 555 159 C 602.5 159, 602.5 1385, 650 1385" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 555 159 C 742.5 159, 742.5 1385, 930 1385" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<path d="M 555 159 C 882.5 159, 882.5 1385, 1210 1385" fill="none" stroke="#6b7280" stroke-width="2" marker-end="url(#arrow)" opacity="0.72"/>
+<rect x="120" y="95" width="260" height="64" rx="14" fill="#ffffff" stroke="#007AFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="250" y="135" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">启动枣寻 LocateS</text>
+<rect x="440" y="95" width="230" height="64" rx="14" fill="#ffffff" stroke="#007AFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="555" y="135" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">初始化数据库</text>
+<rect x="730" y="95" width="250" height="64" rx="14" fill="#ffffff" stroke="#007AFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="855" y="111" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">CalendarKit </text>
+<text x="855" y="135" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">日</text>
+<text x="855" y="159" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">历</text>
+<rect x="1040" y="95" width="220" height="64" rx="14" fill="#ffffff" stroke="#007AFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="1150" y="135" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">背景配置</text>
+<rect x="1320" y="95" width="300" height="64" rx="14" fill="#ffffff" stroke="#007AFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="1470" y="123" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">沉浸式首页 HdsTab</text>
+<text x="1470" y="147" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">s</text>
+<rect x="1690" y="95" width="250" height="64" rx="14" fill="#ffffff" stroke="#007AFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="1815" y="135" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">悬浮迷你加号</text>
+<rect x="150" y="340" width="240" height="58" rx="14" fill="#ffffff" stroke="#34C759" stroke-width="2" filter="url(#shadow)"/>
+<text x="270" y="377" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">物品 Tab</text>
+<rect x="100" y="440" width="180" height="56" rx="14" fill="#ffffff" stroke="#34C759" stroke-width="2" filter="url(#shadow)"/>
+<text x="190" y="476" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">搜索名称</text>
+<rect x="300" y="440" width="180" height="56" rx="14" fill="#ffffff" stroke="#34C759" stroke-width="2" filter="url(#shadow)"/>
+<text x="390" y="476" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">分类筛选/管理</text>
+<rect x="150" y="545" width="240" height="58" rx="14" fill="#ffffff" stroke="#34C759" stroke-width="2" filter="url(#shadow)"/>
+<text x="270" y="582" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">添加物品半模态</text>
+<rect x="150" y="650" width="240" height="58" rx="14" fill="#ffffff" stroke="#34C759" stroke-width="2" filter="url(#shadow)"/>
+<text x="270" y="687" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">写入 item 表</text>
+<rect x="150" y="755" width="240" height="58" rx="14" fill="#ffffff" stroke="#34C759" stroke-width="2" filter="url(#shadow)"/>
+<text x="270" y="792" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">物品详情</text>
+<rect x="80" y="860" width="160" height="54" rx="14" fill="#ffffff" stroke="#34C759" stroke-width="2" filter="url(#shadow)"/>
+<text x="160" y="895" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">修改分类</text>
+<rect x="255" y="860" width="160" height="54" rx="14" fill="#ffffff" stroke="#34C759" stroke-width="2" filter="url(#shadow)"/>
+<text x="335" y="895" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">分配位置</text>
+<rect x="150" y="950" width="240" height="54" rx="14" fill="#ffffff" stroke="#34C759" stroke-width="2" filter="url(#shadow)"/>
+<text x="270" y="985" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">删除并清理关联</text>
+<rect x="755" y="340" width="240" height="58" rx="14" fill="#ffffff" stroke="#F59A2A" stroke-width="2" filter="url(#shadow)"/>
+<text x="875" y="377" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">空间 Tab</text>
+<rect x="650" y="440" width="190" height="56" rx="14" fill="#ffffff" stroke="#F59A2A" stroke-width="2" filter="url(#shadow)"/>
+<text x="745" y="476" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">创建空间</text>
+<rect x="890" y="440" width="230" height="56" rx="14" fill="#ffffff" stroke="#F59A2A" stroke-width="2" filter="url(#shadow)"/>
+<text x="1005" y="476" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">拍照/相册选择图片</text>
+<rect x="755" y="545" width="260" height="58" rx="14" fill="#ffffff" stroke="#F59A2A" stroke-width="2" filter="url(#shadow)"/>
+<text x="885" y="558" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">写入 space lev</text>
+<text x="885" y="582" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">el=</text>
+<text x="885" y="606" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">1</text>
+<rect x="755" y="650" width="260" height="58" rx="14" fill="#ffffff" stroke="#F59A2A" stroke-width="2" filter="url(#shadow)"/>
+<text x="885" y="687" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">空间图片视图</text>
+<rect x="640" y="755" width="210" height="54" rx="14" fill="#ffffff" stroke="#F59A2A" stroke-width="2" filter="url(#shadow)"/>
+<text x="745" y="790" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">拖拽平移图片</text>
+<rect x="890" y="755" width="220" height="54" rx="14" fill="#ffffff" stroke="#F59A2A" stroke-width="2" filter="url(#shadow)"/>
+<text x="1000" y="790" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">点击放置标记点</text>
+<rect x="755" y="860" width="260" height="58" rx="14" fill="#ffffff" stroke="#F59A2A" stroke-width="2" filter="url(#shadow)"/>
+<text x="885" y="897" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">创建分区 level=2</text>
+<rect x="755" y="965" width="260" height="58" rx="14" fill="#ffffff" stroke="#F59A2A" stroke-width="2" filter="url(#shadow)"/>
+<text x="885" y="1002" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">彩色标记点叠加</text>
+<rect x="755" y="1070" width="260" height="58" rx="14" fill="#ffffff" stroke="#F59A2A" stroke-width="2" filter="url(#shadow)"/>
+<text x="885" y="1107" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">进入分区物品列表</text>
+<rect x="755" y="1165" width="260" height="58" rx="14" fill="#ffffff" stroke="#F59A2A" stroke-width="2" filter="url(#shadow)"/>
+<text x="885" y="1202" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">关联未分配物品</text>
+<rect x="620" y="1320" width="250" height="58" rx="14" fill="#ffffff" stroke="#F59A2A" stroke-width="2" filter="url(#shadow)"/>
+<text x="745" y="1357" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">全屏预览/点标记跳转</text>
+<rect x="930" y="1320" width="180" height="58" rx="14" fill="#ffffff" stroke="#F59A2A" stroke-width="2" filter="url(#shadow)"/>
+<text x="1020" y="1357" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">替换图片</text>
+<rect x="910" y="1410" width="230" height="58" rx="14" fill="#ffffff" stroke="#F59A2A" stroke-width="2" filter="url(#shadow)"/>
+<text x="1025" y="1447" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">清理旧分区和关联</text>
+<rect x="1380" y="340" width="240" height="58" rx="14" fill="#ffffff" stroke="#B06CFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="1500" y="377" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">事件 Tab</text>
+<rect x="1380" y="440" width="260" height="56" rx="14" fill="#ffffff" stroke="#B06CFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="1510" y="476" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">日历视图/事件列表</text>
+<rect x="1380" y="545" width="260" height="58" rx="14" fill="#ffffff" stroke="#B06CFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="1510" y="582" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">创建事件半模态</text>
+<rect x="1255" y="650" width="210" height="54" rx="14" fill="#ffffff" stroke="#B06CFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="1360" y="685" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">选择日期时间</text>
+<rect x="1515" y="650" width="210" height="54" rx="14" fill="#ffffff" stroke="#B06CFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="1620" y="685" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">搜索勾选物品</text>
+<rect x="1380" y="755" width="280" height="58" rx="14" fill="#ffffff" stroke="#B06CFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="1520" y="768" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">写入 event/eve</text>
+<text x="1520" y="792" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">nt_ite</text>
+<text x="1520" y="816" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">m</text>
+<rect x="1380" y="860" width="260" height="58" rx="14" fill="#ffffff" stroke="#B06CFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="1510" y="873" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">同步 CalendarK</text>
+<text x="1510" y="897" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">i</text>
+<text x="1510" y="921" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">t</text>
+<rect x="1380" y="965" width="240" height="58" rx="14" fill="#ffffff" stroke="#B06CFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="1500" y="1002" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">事件详情</text>
+<rect x="1245" y="1070" width="220" height="54" rx="14" fill="#ffffff" stroke="#B06CFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="1355" y="1105" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">勾选 prepared</text>
+<rect x="1510" y="1070" width="230" height="54" rx="14" fill="#ffffff" stroke="#B06CFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="1625" y="1105" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">进度条乐观更新</text>
+<rect x="1245" y="1160" width="220" height="54" rx="14" fill="#ffffff" stroke="#B06CFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="1355" y="1195" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">修改物品/时间</text>
+<rect x="1510" y="1160" width="230" height="54" rx="14" fill="#ffffff" stroke="#B06CFF" stroke-width="2" filter="url(#shadow)"/>
+<text x="1625" y="1195" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">分享/完成/删除</text>
+<rect x="1860" y="340" width="240" height="58" rx="14" fill="#ffffff" stroke="#888888" stroke-width="2" filter="url(#shadow)"/>
+<text x="1980" y="377" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">我的 Tab</text>
+<rect x="1875" y="440" width="210" height="52" rx="14" fill="#ffffff" stroke="#888888" stroke-width="2" filter="url(#shadow)"/>
+<text x="1980" y="474" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">物品总数</text>
+<rect x="1875" y="515" width="210" height="52" rx="14" fill="#ffffff" stroke="#888888" stroke-width="2" filter="url(#shadow)"/>
+<text x="1980" y="549" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">分类统计</text>
+<rect x="1875" y="590" width="210" height="52" rx="14" fill="#ffffff" stroke="#888888" stroke-width="2" filter="url(#shadow)"/>
+<text x="1980" y="624" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">事件统计</text>
+<rect x="1875" y="665" width="210" height="52" rx="14" fill="#ffffff" stroke="#888888" stroke-width="2" filter="url(#shadow)"/>
+<text x="1980" y="699" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">进行中提醒</text>
+<rect x="1875" y="740" width="210" height="52" rx="14" fill="#ffffff" stroke="#888888" stroke-width="2" filter="url(#shadow)"/>
+<text x="1980" y="774" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">背景设置</text>
+<rect x="1845" y="815" width="270" height="52" rx="14" fill="#ffffff" stroke="#888888" stroke-width="2" filter="url(#shadow)"/>
+<text x="1980" y="849" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">渐变/预设/自定义背景</text>
+<rect x="890" y="1295" width="320" height="64" rx="14" fill="#ffffff" stroke="#666666" stroke-width="2" filter="url(#shadow)"/>
+<text x="1050" y="1311" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">AppStorage 刷</text>
+<text x="1050" y="1335" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">新令</text>
+<text x="1050" y="1359" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">牌</text>
+<rect x="260" y="1385" width="160" height="52" rx="14" fill="#ffffff" stroke="#666666" stroke-width="2" filter="url(#shadow)"/>
+<text x="340" y="1419" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">item</text>
+<rect x="520" y="1385" width="260" height="52" rx="14" fill="#ffffff" stroke="#666666" stroke-width="2" filter="url(#shadow)"/>
+<text x="650" y="1407" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">space 图片与标记坐</text>
+<text x="650" y="1431" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">标</text>
+<rect x="850" y="1385" width="160" height="52" rx="14" fill="#ffffff" stroke="#666666" stroke-width="2" filter="url(#shadow)"/>
+<text x="930" y="1419" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">event</text>
+<rect x="1080" y="1385" width="260" height="52" rx="14" fill="#ffffff" stroke="#666666" stroke-width="2" filter="url(#shadow)"/>
+<text x="1210" y="1395" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">event_item 清</text>
+<text x="1210" y="1419" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">单状</text>
+<text x="1210" y="1443" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">态</text>
+<rect x="1450" y="1385" width="280" height="52" rx="14" fill="#ffffff" stroke="#666666" stroke-width="2" filter="url(#shadow)"/>
+<text x="1590" y="1419" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" text-anchor="middle" fill="#111">跨 Tab 自动刷新</text>
+</svg>
