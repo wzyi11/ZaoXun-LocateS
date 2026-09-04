@@ -16,7 +16,7 @@
   <img alt="Storage" src="https://img.shields.io/badge/Storage-RelationalStore-43A047" />
 </p>
 
-> **《枣寻（LocateS）》** 是一款基于 HarmonyOS 的智能收纳管家 App，围绕「**物品记录 · 空间定位 · 事件提醒 · 沉浸体验**」，把 *东西放在哪* 和 *出门要带什么* 变成所见即所得。本作品为 **2026 中国高校计算机大赛 — 人工智能创意赛（鸿蒙赛道）· 初赛** 应用创新方向参赛作品。
+> **《枣寻（LocateS）》** 是一款基于 HarmonyOS 的智能收纳管家 App，围绕「**物品记录 · 空间定位 · 事件提醒 · 沉浸体验**」，把 *东西放在哪* 和 *出门要带什么* 变成所见即所得。
 
 ## 📱 界面一览
 
@@ -38,17 +38,14 @@
 ### 📦 物品管理
 - 多分类管理与**名称搜索**，支持**自定义分类**（衣物 / 书籍 / 数码 / 厨房 / 文件 / 其他 …）
 - 物品可分配到具体空间位置，展示**层级化位置标签**
-- 实现：`category` / `item` 表，`ItemRepository` 提供完整 CRUD，`AppStorage` 全局状态驱动跨页面自动刷新
 
 ### 🗺️ 空间影像标记
 - 上传 / 拍摄**空间平面图**，点击图片放置**彩色标记点**创建分区
 - 物品关联至分区；支持**拖拽平移**、**双击全屏预览**，预览页可直接打点
-- 实现：`space` 表以 `markerX` / `markerY` **归一化坐标（0–1）** 记录标记位置；`clampImageOffset` 保证拖拽不越界；替换图片时级联清理子分区与物品关联
 
 ### 📋 事件驱动清单
 - 创建旅行 / 考试 / 搬家等事件，从物品库勾选所需物品，一键生成**准备清单**
 - 清单项可勾选 / 取消，已完成项显示**删除线**，**进度条实时更新**；支持**一键分享**与标记完成
-- 实现：`event` × `event_item` 关联表（多对多），`EventRepository` 提供完整 CRUD；采用 **Optimistic UI** 先更新本地再异步同步；分享集成系统 `systemShare`
 
 ### 🗓️ 事件日历
 - 日历视图展示事件标记，支持**系统日历导入**与待办日程同步
@@ -57,7 +54,6 @@
 - 基于 **HDS（HarmonyOS Design System）**：顶部页签 + 底部**悬浮导航** + **沉浸光感材质**，MiniBar 展开 / 收起
 - **6 种渐变色 + 4 种图片背景**预设，并支持从相册选择**自定义背景**
 - 集成 **2×2 / 2×4 桌面服务卡片**，桌面直达「进行中的事件与待办清单」
-- 实现：`HdsTabs` 配合 `setWindowLayoutFullScreen(true)`；`BackgroundStore` 持久化背景配置；`PageBackground` 统一渲染
 
 ## 🏗️ 技术栈
 
@@ -118,39 +114,4 @@
 - `pages/EventDetailPage`：事件详情、物品准备清单、进度与分享。
 - `pages/ProfilePage`：个人主页、统计信息与背景设置入口。
 
-## 数据模型
 
-应用使用 `RelationalStore` 持久化本地数据，共五张表：
-
-| 表 | 说明 |
-| --- | ---- |
-| `item` | 物品信息（名称、分类、位置、图片、购买日期、备注） |
-| `space` | 空间层级与平面图标记（`markerX` / `markerY` 归一化坐标） |
-| `event` | 事件计划（标题、日期、备注、状态） |
-| `event_item` | 事件与物品的关联及准备状态（`isPrepared`） |
-| `category` | 物品自定义分类（UNIQUE 约束） |
-
-## 🚀 运行方式
-
-1. 使用 [DevEco Studio](https://developer.huawei.com/consumer/cn/deveco-studio/) 打开仓库根目录（需支持 HarmonyOS 6.1）。
-2. 等待 Hvigor 同步依赖与工程配置。
-3. 选择 `entry` 模块，登录华为账号自动签名。
-4. 连接 HarmonyOS 真机或启动模拟器，点击 **Run ▶** 构建并安装。
-
-## 📄 文档
-
-- 仓库文档索引：[docs/README.md](docs/README.md)
-- 架构说明：[docs/competition/architecture.md](docs/competition/architecture.md)
-- 测试报告：[docs/competition/test-report.md](docs/competition/test-report.md)
-
-## 🏆 参赛信息
-
-| 项目 | 内容 |
-| ---- | ---- |
-| 赛事 | 2026 中国高校计算机大赛 — 人工智能创意赛（鸿蒙赛道）· 初赛 |
-| 赛题方向 | 应用创新 |
-| 作品名称 | 《枣寻（LocateS）》 |
-| 参赛学校 | 西安交通大学 |
-| 参赛团队 | 枣La |
-
-> 本仓库用于竞赛作品展示与学习交流；不含报名表等含个人联系信息的材料。
